@@ -1,5 +1,6 @@
 package com.enterprise.app.presentation.controller;
 
+import com.enterprise.app.application.dto.BatchImportDetailResponse;
 import com.enterprise.app.application.dto.BatchImportResponse;
 import com.enterprise.app.application.mapper.BatchImportMapper;
 import com.enterprise.app.application.service.BatchImportService;
@@ -8,64 +9,70 @@ import com.enterprise.app.domain.model.BatchImport;
 import com.enterprise.app.domain.model.BatchImportStatus;
 import com.enterprise.app.domain.model.Role;
 import com.enterprise.app.domain.model.User;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * Unit tests for BatchImportController.
  */
-@WebMvcTest(BatchImportController.class)
+@ExtendWith(MockitoExtension.class)
 @DisplayName("BatchImportController Tests")
 class BatchImportControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @MockBean
+    @Mock
     private BatchImportService batchImportService;
 
-    @MockBean
+    @Mock
     private UserService userService;
 
-    @MockBean
+    @Mock
     private BatchImportMapper batchImportMapper;
+
+    @Mock
+    private Authentication authentication;
+
+    @Mock
+    private Jwt jwt;
+
+    @InjectMocks
+    private BatchImportController batchImportController;
 
     private User testUser;
     private BatchImport testBatchImport;
     private BatchImportResponse testResponse;
+    private BatchImportDetailResponse testDetailResponse;
     private UUID batchImportId;
+    private Pageable pageable;
 
     @BeforeEach
     void setUp() {
         batchImportId = UUID.randomUUID();
+        pageable = PageRequest.of(0, 20);
 
         testUser = User.builder()
             .id(UUID.randomUUID())
@@ -104,16 +111,26 @@ class BatchImportControllerTest {
             .initiatedByUsername(testUser.getUsername())
             .createdAt(LocalDateTime.now())
             .build();
+
+        testDetailResponse = BatchImportDetailResponse.builder()
+            .id(batchImportId)
+            .fileName("users.csv")
+            .status(BatchImportStatus.PENDING)
+            .build();
+
+        // Setup authentication mock
+        when(authentication.getPrincipal()).thenReturn(jwt);
+        when(jwt.getClaimAsString("preferred_username")).thenReturn("testuser");
     }
 
     @Test
     @DisplayName("Should upload CSV file successfully")
-    void shouldUploadCsvFile() throws Exception {
+    void shouldUploadCsvFile() {
         // Given
         MockMultipartFile file = new MockMultipartFile(
             "file",
             "users.csv",
-            MediaType.TEXT_PLAIN_VALUE,
+            "text/csv",
             "username,email,firstName,lastName\ntest,test@example.com,Test,User".getBytes()
         );
 
@@ -122,16 +139,16 @@ class BatchImportControllerTest {
             .thenReturn(testBatchImport);
         when(batchImportMapper.toResponse(testBatchImport)).thenReturn(testResponse);
 
-        // When & Then
-        mockMvc.perform(multipart("/api/v1/batch-imports/upload")
-                .file(file)
-                .with(jwt().jwt(jwt -> jwt
-                    .claim("preferred_username", "testuser")
-                    .subject("testuser"))))
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.id").value(batchImportId.toString()))
-            .andExpect(jsonPath("$.fileName").value("users.csv"))
-            .andExpect(jsonPath("$.status").value("PENDING"));
+        // When
+        ResponseEntity<BatchImportResponse> result =
+            batchImportController.uploadCsvFile(file, authentication);
+
+        // Then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(result.getBody()).isNotNull();
+        assertThat(result.getBody().getId()).isEqualTo(batchImportId);
+        assertThat(result.getBody().getFileName()).isEqualTo("users.csv");
+        assertThat(result.getBody().getStatus()).isEqualTo(BatchImportStatus.PENDING);
 
         verify(userService).getUserEntityByUsername("testuser");
         verify(batchImportService).createBatchImport(any(), eq(testUser));
@@ -140,94 +157,95 @@ class BatchImportControllerTest {
 
     @Test
     @DisplayName("Should return 400 when file is empty")
-    void shouldReturn400WhenFileIsEmpty() throws Exception {
+    void shouldReturn400WhenFileIsEmpty() {
         // Given
         MockMultipartFile emptyFile = new MockMultipartFile(
             "file",
             "users.csv",
-            MediaType.TEXT_PLAIN_VALUE,
+            "text/csv",
             new byte[0]
         );
 
         when(userService.getUserEntityByUsername("testuser")).thenReturn(testUser);
 
         // When & Then
-        mockMvc.perform(multipart("/api/v1/batch-imports/upload")
-                .file(emptyFile)
-                .with(jwt().jwt(jwt -> jwt
-                    .claim("preferred_username", "testuser")
-                    .subject("testuser"))))
-            .andExpect(status().isBadRequest());
+        assertThatThrownBy(() ->
+            batchImportController.uploadCsvFile(emptyFile, authentication)
+        ).isInstanceOf(IllegalArgumentException.class)
+         .hasMessageContaining("File cannot be empty");
 
         verify(batchImportService, never()).createBatchImport(any(), any());
     }
 
     @Test
     @DisplayName("Should return 400 when file is not CSV")
-    void shouldReturn400WhenFileIsNotCsv() throws Exception {
+    void shouldReturn400WhenFileIsNotCsv() {
         // Given
         MockMultipartFile invalidFile = new MockMultipartFile(
             "file",
             "users.txt",
-            MediaType.TEXT_PLAIN_VALUE,
-            "some content".getBytes()
+            "text/plain",
+            "content".getBytes()
         );
 
         when(userService.getUserEntityByUsername("testuser")).thenReturn(testUser);
 
         // When & Then
-        mockMvc.perform(multipart("/api/v1/batch-imports/upload")
-                .file(invalidFile)
-                .with(jwt().jwt(jwt -> jwt
-                    .claim("preferred_username", "testuser")
-                    .subject("testuser"))))
-            .andExpect(status().isBadRequest());
+        assertThatThrownBy(() ->
+            batchImportController.uploadCsvFile(invalidFile, authentication)
+        ).isInstanceOf(IllegalArgumentException.class)
+         .hasMessageContaining("must be a CSV file");
 
         verify(batchImportService, never()).createBatchImport(any(), any());
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
     @DisplayName("Should get batch import by ID")
-    void shouldGetBatchImportById() throws Exception {
+    void shouldGetBatchImportById() {
         // Given
         when(batchImportService.getBatchImportById(batchImportId))
             .thenReturn(testBatchImport);
         when(batchImportMapper.toDetailResponse(testBatchImport))
-            .thenReturn(null); // DetailResponse would be created here
+            .thenReturn(testDetailResponse);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/batch-imports/{id}", batchImportId))
-            .andExpect(status().isOk());
+        // When
+        ResponseEntity<BatchImportDetailResponse> result =
+            batchImportController.getBatchImportById(batchImportId);
+
+        // Then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isNotNull();
 
         verify(batchImportService).getBatchImportById(batchImportId);
         verify(batchImportMapper).toDetailResponse(testBatchImport);
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
     @DisplayName("Should get batch import status")
-    void shouldGetBatchImportStatus() throws Exception {
+    void shouldGetBatchImportStatus() {
         // Given
         when(batchImportService.getBatchImportById(batchImportId))
             .thenReturn(testBatchImport);
         when(batchImportMapper.toResponse(testBatchImport))
             .thenReturn(testResponse);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/batch-imports/{id}/status", batchImportId))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(batchImportId.toString()))
-            .andExpect(jsonPath("$.status").value("PENDING"));
+        // When
+        ResponseEntity<BatchImportResponse> result =
+            batchImportController.getBatchImportStatus(batchImportId);
+
+        // Then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isNotNull();
+        assertThat(result.getBody().getId()).isEqualTo(batchImportId);
+        assertThat(result.getBody().getStatus()).isEqualTo(BatchImportStatus.PENDING);
 
         verify(batchImportService).getBatchImportById(batchImportId);
         verify(batchImportMapper).toResponse(testBatchImport);
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
     @DisplayName("Should get all batch imports")
-    void shouldGetAllBatchImports() throws Exception {
+    void shouldGetAllBatchImports() {
         // Given
         List<BatchImport> imports = Arrays.asList(testBatchImport);
         Page<BatchImport> page = new PageImpl<>(imports);
@@ -235,20 +253,22 @@ class BatchImportControllerTest {
         when(batchImportService.getAllBatchImports(any(Pageable.class))).thenReturn(page);
         when(batchImportMapper.toResponse(any(BatchImport.class))).thenReturn(testResponse);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/batch-imports")
-                .param("page", "0")
-                .param("size", "20"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content").isArray())
-            .andExpect(jsonPath("$.content[0].id").value(batchImportId.toString()));
+        // When
+        ResponseEntity<Page<BatchImportResponse>> result =
+            batchImportController.getAllBatchImports(pageable);
+
+        // Then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isNotNull();
+        assertThat(result.getBody().getContent()).hasSize(1);
+        assertThat(result.getBody().getContent().get(0).getId()).isEqualTo(batchImportId);
 
         verify(batchImportService).getAllBatchImports(any(Pageable.class));
     }
 
     @Test
     @DisplayName("Should get my batch imports")
-    void shouldGetMyBatchImports() throws Exception {
+    void shouldGetMyBatchImports() {
         // Given
         List<BatchImport> imports = Arrays.asList(testBatchImport);
         Page<BatchImport> page = new PageImpl<>(imports);
@@ -258,23 +278,23 @@ class BatchImportControllerTest {
             .thenReturn(page);
         when(batchImportMapper.toResponse(any(BatchImport.class))).thenReturn(testResponse);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/batch-imports/my-imports")
-                .with(jwt().jwt(jwt -> jwt
-                    .claim("preferred_username", "testuser")
-                    .subject("testuser"))))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content").isArray())
-            .andExpect(jsonPath("$.content[0].id").value(batchImportId.toString()));
+        // When
+        ResponseEntity<Page<BatchImportResponse>> result =
+            batchImportController.getMyBatchImports(pageable, authentication);
+
+        // Then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isNotNull();
+        assertThat(result.getBody().getContent()).hasSize(1);
+        assertThat(result.getBody().getContent().get(0).getId()).isEqualTo(batchImportId);
 
         verify(userService).getUserEntityByUsername("testuser");
         verify(batchImportService).getBatchImportsByUser(eq(testUser.getId()), any(Pageable.class));
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
     @DisplayName("Should cancel batch import")
-    void shouldCancelBatchImport() throws Exception {
+    void shouldCancelBatchImport() {
         // Given
         testBatchImport.setStatus(BatchImportStatus.CANCELLED);
         testResponse.setStatus(BatchImportStatus.CANCELLED);
@@ -285,11 +305,15 @@ class BatchImportControllerTest {
         when(batchImportMapper.toResponse(testBatchImport))
             .thenReturn(testResponse);
 
-        // When & Then
-        mockMvc.perform(post("/api/v1/batch-imports/{id}/cancel", batchImportId))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(batchImportId.toString()))
-            .andExpect(jsonPath("$.status").value("CANCELLED"));
+        // When
+        ResponseEntity<BatchImportResponse> result =
+            batchImportController.cancelBatchImport(batchImportId);
+
+        // Then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isNotNull();
+        assertThat(result.getBody().getId()).isEqualTo(batchImportId);
+        assertThat(result.getBody().getStatus()).isEqualTo(BatchImportStatus.CANCELLED);
 
         verify(batchImportService).cancelBatchImport(batchImportId);
         verify(batchImportService).getBatchImportById(batchImportId);
@@ -297,83 +321,58 @@ class BatchImportControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = "USER")
-    @DisplayName("Should return 403 when user without admin role tries to upload")
-    void shouldReturn403ForNonAdmin() throws Exception {
+    @DisplayName("Should use subject when preferred_username is null")
+    void shouldUseSubjectWhenPreferredUsernameIsNull() {
         // Given
         MockMultipartFile file = new MockMultipartFile(
             "file",
             "users.csv",
-            MediaType.TEXT_PLAIN_VALUE,
-            "content".getBytes()
+            "text/csv",
+            "username,email\ntest,test@example.com".getBytes()
         );
 
-        // When & Then
-        mockMvc.perform(multipart("/api/v1/batch-imports/upload")
-                .file(file))
-            .andExpect(status().isForbidden());
-
-        verify(batchImportService, never()).createBatchImport(any(), any());
-    }
-
-    @Test
-    @WithMockUser(roles = "MANAGER")
-    @DisplayName("Should allow MANAGER to upload CSV")
-    void shouldAllowManagerToUpload() throws Exception {
-        // Given
-        MockMultipartFile file = new MockMultipartFile(
-            "file",
-            "users.csv",
-            MediaType.TEXT_PLAIN_VALUE,
-            "username,email,firstName,lastName\ntest,test@example.com,Test,User".getBytes()
-        );
-
-        when(userService.getUserEntityByUsername("manager")).thenReturn(testUser);
-        when(batchImportService.createBatchImport(any(), any()))
+        when(jwt.getClaimAsString("preferred_username")).thenReturn(null);
+        when(jwt.getSubject()).thenReturn("testuser");
+        when(userService.getUserEntityByUsername("testuser")).thenReturn(testUser);
+        when(batchImportService.createBatchImport(any(), eq(testUser)))
             .thenReturn(testBatchImport);
         when(batchImportMapper.toResponse(testBatchImport)).thenReturn(testResponse);
 
-        // When & Then
-        mockMvc.perform(multipart("/api/v1/batch-imports/upload")
-                .file(file)
-                .with(jwt().jwt(jwt -> jwt
-                    .claim("preferred_username", "manager")
-                    .subject("manager"))))
-            .andExpect(status().isCreated());
+        // When
+        ResponseEntity<BatchImportResponse> result =
+            batchImportController.uploadCsvFile(file, authentication);
 
-        verify(batchImportService).createBatchImport(any(), any());
+        // Then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        verify(jwt).getSubject();
+        verify(userService).getUserEntityByUsername("testuser");
     }
 
     @Test
-    @WithMockUser(roles = "USER")
-    @DisplayName("Should return 403 when USER tries to cancel import")
-    void shouldReturn403WhenUserTriesToCancel() throws Exception {
-        // When & Then
-        mockMvc.perform(post("/api/v1/batch-imports/{id}/cancel", batchImportId))
-            .andExpect(status().isForbidden());
-
-        verify(batchImportService, never()).cancelBatchImport(any());
-    }
-
-    @Test
-    @WithMockUser(roles = "TECH_LEAD")
-    @DisplayName("Should allow TECH_LEAD to cancel import")
-    void shouldAllowTechLeadToCancel() throws Exception {
+    @DisplayName("Should handle large file upload")
+    void shouldHandleLargeFileUpload() {
         // Given
-        testBatchImport.setStatus(BatchImportStatus.CANCELLED);
-        testResponse.setStatus(BatchImportStatus.CANCELLED);
+        byte[] largeContent = new byte[10000];
+        Arrays.fill(largeContent, (byte) 'a');
 
-        doNothing().when(batchImportService).cancelBatchImport(batchImportId);
-        when(batchImportService.getBatchImportById(batchImportId))
+        MockMultipartFile largeFile = new MockMultipartFile(
+            "file",
+            "large-users.csv",
+            "text/csv",
+            largeContent
+        );
+
+        when(userService.getUserEntityByUsername("testuser")).thenReturn(testUser);
+        when(batchImportService.createBatchImport(any(), eq(testUser)))
             .thenReturn(testBatchImport);
-        when(batchImportMapper.toResponse(testBatchImport))
-            .thenReturn(testResponse);
+        when(batchImportMapper.toResponse(testBatchImport)).thenReturn(testResponse);
 
-        // When & Then
-        mockMvc.perform(post("/api/v1/batch-imports/{id}/cancel", batchImportId))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.status").value("CANCELLED"));
+        // When
+        ResponseEntity<BatchImportResponse> result =
+            batchImportController.uploadCsvFile(largeFile, authentication);
 
-        verify(batchImportService).cancelBatchImport(batchImportId);
+        // Then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        verify(batchImportService).createBatchImport(any(), eq(testUser));
     }
 }

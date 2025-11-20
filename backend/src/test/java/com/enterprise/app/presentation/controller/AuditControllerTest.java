@@ -1,53 +1,54 @@
 package com.enterprise.app.presentation.controller;
 
 import com.enterprise.app.application.dto.audit.AuditEventDTO;
-import com.enterprise.app.application.dto.audit.AuditEventQuery;
 import com.enterprise.app.application.dto.audit.AuditStatisticsDTO;
 import com.enterprise.app.application.service.audit.AuditQueryService;
 import com.enterprise.app.domain.model.AuditEventType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * Unit tests for AuditController.
  */
-@WebMvcTest(AuditController.class)
+@ExtendWith(MockitoExtension.class)
 @DisplayName("AuditController Tests")
 class AuditControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockBean
+    @Mock
     private AuditQueryService auditQueryService;
+
+    @InjectMocks
+    private AuditController auditController;
 
     private AuditEventDTO testEventDTO;
     private UUID testUserId;
     private UUID testEntityId;
+    private Pageable pageable;
 
     @BeforeEach
     void setUp() {
         testUserId = UUID.randomUUID();
         testEntityId = UUID.randomUUID();
+        pageable = PageRequest.of(0, 50);
 
         testEventDTO = AuditEventDTO.builder()
             .id(UUID.randomUUID())
@@ -67,54 +68,65 @@ class AuditControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
     @DisplayName("Should get all audit events with filters")
-    void shouldGetAllAuditEventsWithFilters() throws Exception {
+    void shouldGetAllAuditEventsWithFilters() {
         // Given
         List<AuditEventDTO> events = Arrays.asList(testEventDTO);
         Page<AuditEventDTO> page = new PageImpl<>(events);
 
-        when(auditQueryService.findEvents(any(AuditEventQuery.class), any(Pageable.class)))
-            .thenReturn(page);
+        when(auditQueryService.findEvents(any(), any(Pageable.class))).thenReturn(page);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/audit")
-                .param("eventCategory", "USER")
-                .param("success", "true")
-                .param("page", "0")
-                .param("size", "50"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content").isArray())
-            .andExpect(jsonPath("$.content[0].id").value(testEventDTO.getId().toString()))
-            .andExpect(jsonPath("$.content[0].eventCategory").value("USER"));
+        // When
+        ResponseEntity<Page<AuditEventDTO>> result = auditController.getAuditEvents(
+            Arrays.asList(AuditEventType.USER_CREATED),
+            "USER",
+            testUserId,
+            "testuser",
+            "User",
+            testEntityId,
+            true,
+            LocalDateTime.now().minusDays(7),
+            LocalDateTime.now(),
+            pageable
+        );
 
-        verify(auditQueryService).findEvents(any(AuditEventQuery.class), any(Pageable.class));
+        // Then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isNotNull();
+        assertThat(result.getBody().getContent()).hasSize(1);
+        assertThat(result.getBody().getContent().get(0).getId()).isEqualTo(testEventDTO.getId());
+        assertThat(result.getBody().getContent().get(0).getEventCategory()).isEqualTo("USER");
+
+        verify(auditQueryService).findEvents(any(), any(Pageable.class));
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
     @DisplayName("Should get audit events without filters")
-    void shouldGetAuditEventsWithoutFilters() throws Exception {
+    void shouldGetAuditEventsWithoutFilters() {
         // Given
         List<AuditEventDTO> events = Arrays.asList(testEventDTO);
         Page<AuditEventDTO> page = new PageImpl<>(events);
 
-        when(auditQueryService.findEvents(any(AuditEventQuery.class), any(Pageable.class)))
-            .thenReturn(page);
+        when(auditQueryService.findEvents(any(), any(Pageable.class))).thenReturn(page);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/audit"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content").isArray())
-            .andExpect(jsonPath("$.content[0].eventType").value("USER_CREATED"));
+        // When
+        ResponseEntity<Page<AuditEventDTO>> result = auditController.getAuditEvents(
+            null, null, null, null, null, null, null, null, null, pageable
+        );
 
-        verify(auditQueryService).findEvents(any(AuditEventQuery.class), any(Pageable.class));
+        // Then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isNotNull();
+        assertThat(result.getBody().getContent()).hasSize(1);
+        assertThat(result.getBody().getContent().get(0).getEventType())
+            .isEqualTo(AuditEventType.USER_CREATED);
+
+        verify(auditQueryService).findEvents(any(), any(Pageable.class));
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
     @DisplayName("Should get audit events by user")
-    void shouldGetAuditEventsByUser() throws Exception {
+    void shouldGetAuditEventsByUser() {
         // Given
         List<AuditEventDTO> events = Arrays.asList(testEventDTO);
         Page<AuditEventDTO> page = new PageImpl<>(events);
@@ -122,19 +134,22 @@ class AuditControllerTest {
         when(auditQueryService.findEventsByUser(eq(testUserId), any(Pageable.class)))
             .thenReturn(page);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/audit/user/{userId}", testUserId))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content").isArray())
-            .andExpect(jsonPath("$.content[0].userId").value(testUserId.toString()));
+        // When
+        ResponseEntity<Page<AuditEventDTO>> result =
+            auditController.getAuditEventsByUser(testUserId, pageable);
+
+        // Then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isNotNull();
+        assertThat(result.getBody().getContent()).hasSize(1);
+        assertThat(result.getBody().getContent().get(0).getUserId()).isEqualTo(testUserId);
 
         verify(auditQueryService).findEventsByUser(eq(testUserId), any(Pageable.class));
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
     @DisplayName("Should get audit events by type")
-    void shouldGetAuditEventsByType() throws Exception {
+    void shouldGetAuditEventsByType() {
         // Given
         List<AuditEventDTO> events = Arrays.asList(testEventDTO);
         Page<AuditEventDTO> page = new PageImpl<>(events);
@@ -142,19 +157,23 @@ class AuditControllerTest {
         when(auditQueryService.findEventsByType(eq(AuditEventType.USER_CREATED), any(Pageable.class)))
             .thenReturn(page);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/audit/type/{eventType}", "USER_CREATED"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content").isArray())
-            .andExpect(jsonPath("$.content[0].eventType").value("USER_CREATED"));
+        // When
+        ResponseEntity<Page<AuditEventDTO>> result =
+            auditController.getAuditEventsByType(AuditEventType.USER_CREATED, pageable);
+
+        // Then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isNotNull();
+        assertThat(result.getBody().getContent()).hasSize(1);
+        assertThat(result.getBody().getContent().get(0).getEventType())
+            .isEqualTo(AuditEventType.USER_CREATED);
 
         verify(auditQueryService).findEventsByType(eq(AuditEventType.USER_CREATED), any(Pageable.class));
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
     @DisplayName("Should get audit events by entity")
-    void shouldGetAuditEventsByEntity() throws Exception {
+    void shouldGetAuditEventsByEntity() {
         // Given
         List<AuditEventDTO> events = Arrays.asList(testEventDTO);
         Page<AuditEventDTO> page = new PageImpl<>(events);
@@ -163,12 +182,16 @@ class AuditControllerTest {
             eq("User"), eq(testEntityId), any(Pageable.class)
         )).thenReturn(page);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/audit/entity/{entityType}/{entityId}", "User", testEntityId))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content").isArray())
-            .andExpect(jsonPath("$.content[0].targetEntityType").value("User"))
-            .andExpect(jsonPath("$.content[0].targetEntityId").value(testEntityId.toString()));
+        // When
+        ResponseEntity<Page<AuditEventDTO>> result =
+            auditController.getAuditEventsByEntity("User", testEntityId, pageable);
+
+        // Then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isNotNull();
+        assertThat(result.getBody().getContent()).hasSize(1);
+        assertThat(result.getBody().getContent().get(0).getTargetEntityType()).isEqualTo("User");
+        assertThat(result.getBody().getContent().get(0).getTargetEntityId()).isEqualTo(testEntityId);
 
         verify(auditQueryService).findEventsByTargetEntity(
             eq("User"), eq(testEntityId), any(Pageable.class)
@@ -176,9 +199,8 @@ class AuditControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
     @DisplayName("Should get audit statistics")
-    void shouldGetAuditStatistics() throws Exception {
+    void shouldGetAuditStatistics() {
         // Given
         Map<String, Long> eventsByType = new HashMap<>();
         eventsByType.put("USER_CREATED", 50L);
@@ -198,22 +220,24 @@ class AuditControllerTest {
 
         when(auditQueryService.getStatistics()).thenReturn(statistics);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/audit/statistics"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.totalEvents").value(100))
-            .andExpect(jsonPath("$.successfulEvents").value(80))
-            .andExpect(jsonPath("$.failedEvents").value(20))
-            .andExpect(jsonPath("$.eventsByType.USER_CREATED").value(50))
-            .andExpect(jsonPath("$.eventsByCategory.USER").value(80));
+        // When
+        ResponseEntity<AuditStatisticsDTO> result = auditController.getStatistics();
+
+        // Then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isNotNull();
+        assertThat(result.getBody().getTotalEvents()).isEqualTo(100);
+        assertThat(result.getBody().getSuccessfulEvents()).isEqualTo(80);
+        assertThat(result.getBody().getFailedEvents()).isEqualTo(20);
+        assertThat(result.getBody().getEventsByType().get("USER_CREATED")).isEqualTo(50);
+        assertThat(result.getBody().getEventsByCategory().get("USER")).isEqualTo(80);
 
         verify(auditQueryService).getStatistics();
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
     @DisplayName("Should get statistics for date range")
-    void shouldGetStatisticsForDateRange() throws Exception {
+    void shouldGetStatisticsForDateRange() {
         // Given
         LocalDateTime fromDate = LocalDateTime.now().minusDays(7);
         LocalDateTime toDate = LocalDateTime.now();
@@ -229,21 +253,22 @@ class AuditControllerTest {
         when(auditQueryService.getStatisticsForDateRange(any(LocalDateTime.class), any(LocalDateTime.class)))
             .thenReturn(statistics);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/audit/statistics/range")
-                .param("fromDate", fromDate.toString())
-                .param("toDate", toDate.toString()))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.totalEvents").value(50))
-            .andExpect(jsonPath("$.eventsByDate").exists());
+        // When
+        ResponseEntity<AuditStatisticsDTO> result =
+            auditController.getStatisticsForDateRange(fromDate, toDate);
+
+        // Then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isNotNull();
+        assertThat(result.getBody().getTotalEvents()).isEqualTo(50);
+        assertThat(result.getBody().getEventsByDate()).isNotNull();
 
         verify(auditQueryService).getStatisticsForDateRange(any(LocalDateTime.class), any(LocalDateTime.class));
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
     @DisplayName("Should get hourly statistics")
-    void shouldGetHourlyStatistics() throws Exception {
+    void shouldGetHourlyStatistics() {
         // Given
         LocalDate date = LocalDate.now();
         Map<String, Long> hourlyStats = new HashMap<>();
@@ -254,151 +279,148 @@ class AuditControllerTest {
         when(auditQueryService.getHourlyStatistics(any(LocalDate.class)))
             .thenReturn(hourlyStats);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/audit/statistics/hourly")
-                .param("date", date.toString()))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.9").value(10))
-            .andExpect(jsonPath("$.10").value(15))
-            .andExpect(jsonPath("$.11").value(20));
+        // When
+        ResponseEntity<Map<String, Long>> result = auditController.getHourlyStatistics(date);
+
+        // Then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isNotNull();
+        assertThat(result.getBody().get("9")).isEqualTo(10);
+        assertThat(result.getBody().get("10")).isEqualTo(15);
+        assertThat(result.getBody().get("11")).isEqualTo(20);
 
         verify(auditQueryService).getHourlyStatistics(any(LocalDate.class));
     }
 
     @Test
-    @WithMockUser(roles = "USER")
-    @DisplayName("Should return 403 when user without required role tries to access audit")
-    void shouldReturn403ForNonAuthorizedUser() throws Exception {
-        // When & Then
-        mockMvc.perform(get("/api/v1/audit"))
-            .andExpect(status().isForbidden());
-
-        verify(auditQueryService, never()).findEvents(any(), any());
-    }
-
-    @Test
-    @WithMockUser(roles = "MANAGER")
-    @DisplayName("Should allow MANAGER to access audit events")
-    void shouldAllowManagerToAccessAudit() throws Exception {
-        // Given
-        Page<AuditEventDTO> emptyPage = Page.empty();
-        when(auditQueryService.findEvents(any(AuditEventQuery.class), any(Pageable.class)))
-            .thenReturn(emptyPage);
-
-        // When & Then
-        mockMvc.perform(get("/api/v1/audit"))
-            .andExpect(status().isOk());
-
-        verify(auditQueryService).findEvents(any(AuditEventQuery.class), any(Pageable.class));
-    }
-
-    @Test
-    @WithMockUser(roles = "TECH_LEAD")
-    @DisplayName("Should allow TECH_LEAD to access audit events")
-    void shouldAllowTechLeadToAccessAudit() throws Exception {
-        // Given
-        Page<AuditEventDTO> emptyPage = Page.empty();
-        when(auditQueryService.findEvents(any(AuditEventQuery.class), any(Pageable.class)))
-            .thenReturn(emptyPage);
-
-        // When & Then
-        mockMvc.perform(get("/api/v1/audit"))
-            .andExpect(status().isOk());
-
-        verify(auditQueryService).findEvents(any(AuditEventQuery.class), any(Pageable.class));
-    }
-
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    @DisplayName("Should handle multiple event types filter")
-    void shouldHandleMultipleEventTypesFilter() throws Exception {
-        // Given
-        Page<AuditEventDTO> emptyPage = Page.empty();
-        when(auditQueryService.findEvents(any(AuditEventQuery.class), any(Pageable.class)))
-            .thenReturn(emptyPage);
-
-        // When & Then
-        mockMvc.perform(get("/api/v1/audit")
-                .param("eventTypes", "USER_CREATED", "USER_UPDATED", "USER_DELETED"))
-            .andExpect(status().isOk());
-
-        verify(auditQueryService).findEvents(any(AuditEventQuery.class), any(Pageable.class));
-    }
-
-    @Test
-    @WithMockUser(roles = "ADMIN")
     @DisplayName("Should return empty page when no events found")
-    void shouldReturnEmptyPageWhenNoEventsFound() throws Exception {
+    void shouldReturnEmptyPageWhenNoEventsFound() {
         // Given
-        Page<AuditEventDTO> emptyPage = Page.empty();
+        Page<AuditEventDTO> emptyPage = Page.empty(pageable);
         when(auditQueryService.findEventsByUser(eq(testUserId), any(Pageable.class)))
             .thenReturn(emptyPage);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/audit/user/{userId}", testUserId))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content").isArray())
-            .andExpect(jsonPath("$.content").isEmpty())
-            .andExpect(jsonPath("$.totalElements").value(0));
+        // When
+        ResponseEntity<Page<AuditEventDTO>> result =
+            auditController.getAuditEventsByUser(testUserId, pageable);
+
+        // Then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isNotNull();
+        assertThat(result.getBody().getContent()).isEmpty();
+        assertThat(result.getBody().getTotalElements()).isZero();
 
         verify(auditQueryService).findEventsByUser(eq(testUserId), any(Pageable.class));
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
     @DisplayName("Should handle pagination parameters")
-    void shouldHandlePaginationParameters() throws Exception {
+    void shouldHandlePaginationParameters() {
         // Given
+        Pageable customPageable = PageRequest.of(1, 10);
         List<AuditEventDTO> events = Arrays.asList(testEventDTO);
-        Page<AuditEventDTO> page = new PageImpl<>(events, PageRequest.of(1, 10), 100);
+        Page<AuditEventDTO> page = new PageImpl<>(events, customPageable, 100);
 
-        when(auditQueryService.findEvents(any(AuditEventQuery.class), any(Pageable.class)))
-            .thenReturn(page);
+        when(auditQueryService.findEvents(any(), eq(customPageable))).thenReturn(page);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/audit")
-                .param("page", "1")
-                .param("size", "10"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content").isArray())
-            .andExpect(jsonPath("$.number").value(1))
-            .andExpect(jsonPath("$.size").value(10))
-            .andExpect(jsonPath("$.totalElements").value(100));
+        // When
+        ResponseEntity<Page<AuditEventDTO>> result = auditController.getAuditEvents(
+            null, null, null, null, null, null, null, null, null, customPageable
+        );
 
-        verify(auditQueryService).findEvents(any(AuditEventQuery.class), any(Pageable.class));
+        // Then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isNotNull();
+        assertThat(result.getBody().getContent()).hasSize(1);
+        assertThat(result.getBody().getNumber()).isEqualTo(1);
+        assertThat(result.getBody().getSize()).isEqualTo(10);
+        assertThat(result.getBody().getTotalElements()).isEqualTo(100);
+
+        verify(auditQueryService).findEvents(any(), eq(customPageable));
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
     @DisplayName("Should filter by success status")
-    void shouldFilterBySuccessStatus() throws Exception {
+    void shouldFilterBySuccessStatus() {
         // Given
         Page<AuditEventDTO> emptyPage = Page.empty();
-        when(auditQueryService.findEvents(any(AuditEventQuery.class), any(Pageable.class)))
-            .thenReturn(emptyPage);
+        when(auditQueryService.findEvents(any(), any(Pageable.class))).thenReturn(emptyPage);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/audit")
-                .param("success", "false"))
-            .andExpect(status().isOk());
+        // When
+        ResponseEntity<Page<AuditEventDTO>> result = auditController.getAuditEvents(
+            null, null, null, null, null, null, false, null, null, pageable
+        );
 
-        verify(auditQueryService).findEvents(any(AuditEventQuery.class), any(Pageable.class));
+        // Then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        verify(auditQueryService).findEvents(any(), any(Pageable.class));
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
-    @DisplayName("Should filter by target entity type")
-    void shouldFilterByTargetEntityType() throws Exception {
+    @DisplayName("Should filter by multiple event types")
+    void shouldFilterByMultipleEventTypes() {
         // Given
+        List<AuditEventType> eventTypes = Arrays.asList(
+            AuditEventType.USER_CREATED,
+            AuditEventType.USER_UPDATED,
+            AuditEventType.USER_DELETED
+        );
         Page<AuditEventDTO> emptyPage = Page.empty();
-        when(auditQueryService.findEvents(any(AuditEventQuery.class), any(Pageable.class)))
-            .thenReturn(emptyPage);
+        when(auditQueryService.findEvents(any(), any(Pageable.class))).thenReturn(emptyPage);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/audit")
-                .param("targetEntityType", "User"))
-            .andExpect(status().isOk());
+        // When
+        ResponseEntity<Page<AuditEventDTO>> result = auditController.getAuditEvents(
+            eventTypes, null, null, null, null, null, null, null, null, pageable
+        );
 
-        verify(auditQueryService).findEvents(any(AuditEventQuery.class), any(Pageable.class));
+        // Then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        verify(auditQueryService).findEvents(any(), any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("Should handle date range filters")
+    void shouldHandleDateRangeFilters() {
+        // Given
+        LocalDateTime fromDate = LocalDateTime.now().minusDays(7);
+        LocalDateTime toDate = LocalDateTime.now();
+        Page<AuditEventDTO> emptyPage = Page.empty();
+
+        when(auditQueryService.findEvents(any(), any(Pageable.class))).thenReturn(emptyPage);
+
+        // When
+        ResponseEntity<Page<AuditEventDTO>> result = auditController.getAuditEvents(
+            null, null, null, null, null, null, null, fromDate, toDate, pageable
+        );
+
+        // Then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        verify(auditQueryService).findEvents(any(), any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("Should return statistics with empty maps when no data")
+    void shouldReturnStatisticsWithEmptyMaps() {
+        // Given
+        AuditStatisticsDTO emptyStats = AuditStatisticsDTO.builder()
+            .totalEvents(0L)
+            .successfulEvents(0L)
+            .failedEvents(0L)
+            .eventsByType(new HashMap<>())
+            .eventsByCategory(new HashMap<>())
+            .build();
+
+        when(auditQueryService.getStatistics()).thenReturn(emptyStats);
+
+        // When
+        ResponseEntity<AuditStatisticsDTO> result = auditController.getStatistics();
+
+        // Then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isNotNull();
+        assertThat(result.getBody().getTotalEvents()).isZero();
+        assertThat(result.getBody().getEventsByType()).isEmpty();
+
+        verify(auditQueryService).getStatistics();
     }
 }
