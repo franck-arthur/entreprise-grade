@@ -5,7 +5,7 @@ import com.enterprise.app.application.dto.audit.AuditEventQuery;
 import com.enterprise.app.application.dto.audit.AuditStatisticsDTO;
 import com.enterprise.app.domain.model.AuditEventProjection;
 import com.enterprise.app.domain.model.AuditEventType;
-import com.enterprise.app.infrastructure.persistence.repository.AuditEventProjectionRepository;
+import com.enterprise.app.domain.port.AuditEventQueryPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -38,6 +38,9 @@ import java.util.stream.Collectors;
  * 2. Complex queries and aggregations without impacting writes
  * 3. Caching strategies for performance
  * 4. Denormalized data for faster queries
+ *
+ * Follows hexagonal architecture by depending on ports (interfaces)
+ * instead of concrete implementations.
  */
 @Service
 @RequiredArgsConstructor
@@ -45,7 +48,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class AuditQueryService {
 
-    private final AuditEventProjectionRepository projectionRepository;
+    private final AuditEventQueryPort auditEventQueryPort;
 
     /**
      * Find audit events by complex query (QUERY).
@@ -55,7 +58,7 @@ public class AuditQueryService {
     public Page<AuditEventDTO> findEvents(AuditEventQuery query, Pageable pageable) {
         log.debug("Querying audit events with filters");
 
-        Page<AuditEventProjection> projections = projectionRepository.findByFilters(
+        Page<AuditEventProjection> projections = auditEventQueryPort.findByFilters(
             query.getEventTypes(),
             query.getEventCategory(),
             query.getUserId(),
@@ -78,7 +81,7 @@ public class AuditQueryService {
         log.debug("Finding all audit events - page: {}, size: {}",
             pageable.getPageNumber(), pageable.getPageSize());
 
-        return projectionRepository.findAll(pageable)
+        return auditEventQueryPort.findAll(pageable)
             .map(this::toDTO);
     }
 
@@ -88,7 +91,7 @@ public class AuditQueryService {
     public Page<AuditEventDTO> findEventsByUser(UUID userId, Pageable pageable) {
         log.debug("Finding audit events for user: {}", userId);
 
-        return projectionRepository.findByUserIdOrderByTimestampDesc(userId, pageable)
+        return auditEventQueryPort.findByUserIdOrderByTimestampDesc(userId, pageable)
             .map(this::toDTO);
     }
 
@@ -98,7 +101,7 @@ public class AuditQueryService {
     public Page<AuditEventDTO> findEventsByType(AuditEventType eventType, Pageable pageable) {
         log.debug("Finding audit events by type: {}", eventType);
 
-        return projectionRepository.findByEventTypeOrderByTimestampDesc(eventType, pageable)
+        return auditEventQueryPort.findByEventTypeOrderByTimestampDesc(eventType, pageable)
             .map(this::toDTO);
     }
 
@@ -108,7 +111,7 @@ public class AuditQueryService {
     public Page<AuditEventDTO> findEventsByCategory(String category, Pageable pageable) {
         log.debug("Finding audit events by category: {}", category);
 
-        return projectionRepository.findByEventCategoryOrderByTimestampDesc(category, pageable)
+        return auditEventQueryPort.findByEventCategoryOrderByTimestampDesc(category, pageable)
             .map(this::toDTO);
     }
 
@@ -118,7 +121,7 @@ public class AuditQueryService {
     public Page<AuditEventDTO> findEventsBySuccess(boolean success, Pageable pageable) {
         log.debug("Finding audit events by success: {}", success);
 
-        return projectionRepository.findBySuccessOrderByTimestampDesc(success, pageable)
+        return auditEventQueryPort.findBySuccessOrderByTimestampDesc(success, pageable)
             .map(this::toDTO);
     }
 
@@ -130,7 +133,7 @@ public class AuditQueryService {
     ) {
         log.debug("Finding audit events between {} and {}", fromDate, toDate);
 
-        return projectionRepository.findByTimestampBetweenOrderByTimestampDesc(
+        return auditEventQueryPort.findByTimestampBetweenOrderByTimestampDesc(
                 fromDate, toDate, pageable)
             .map(this::toDTO);
     }
@@ -143,7 +146,7 @@ public class AuditQueryService {
     ) {
         log.debug("Finding audit events for entity: {} with id: {}", entityType, entityId);
 
-        return projectionRepository.findByTargetEntityTypeAndTargetEntityIdOrderByTimestampDesc(
+        return auditEventQueryPort.findByTargetEntityTypeAndTargetEntityIdOrderByTimestampDesc(
                 entityType, entityId, pageable)
             .map(this::toDTO);
     }
@@ -161,27 +164,27 @@ public class AuditQueryService {
         AuditStatisticsDTO.AuditStatisticsDTOBuilder stats = AuditStatisticsDTO.builder();
 
         // Basic counts
-        stats.totalEvents(projectionRepository.count());
-        stats.successfulEvents(projectionRepository.countBySuccess(true));
-        stats.failedEvents(projectionRepository.countBySuccess(false));
+        stats.totalEvents(auditEventQueryPort.count());
+        stats.successfulEvents(auditEventQueryPort.countBySuccess(true));
+        stats.failedEvents(auditEventQueryPort.countBySuccess(false));
 
         // Events by type
         Map<String, Long> eventsByType = new HashMap<>();
-        projectionRepository.countByEventTypeGrouped().forEach(result -> {
+        auditEventQueryPort.countByEventTypeGrouped().forEach(result -> {
             eventsByType.put(result[0].toString(), (Long) result[1]);
         });
         stats.eventsByType(eventsByType);
 
         // Events by category
         Map<String, Long> eventsByCategory = new HashMap<>();
-        projectionRepository.countByCategoryGrouped().forEach(result -> {
+        auditEventQueryPort.countByCategoryGrouped().forEach(result -> {
             eventsByCategory.put((String) result[0], (Long) result[1]);
         });
         stats.eventsByCategory(eventsByCategory);
 
         // Top users
         Map<String, Long> topUsers = new HashMap<>();
-        projectionRepository.findTopUsersByEventCount(PageRequest.of(0, 10))
+        auditEventQueryPort.findTopUsersByEventCount(PageRequest.of(0, 10))
             .forEach(result -> {
                 topUsers.put((String) result[0], (Long) result[1]);
             });
@@ -189,7 +192,7 @@ public class AuditQueryService {
 
         // Top target entities
         Map<String, Long> topEntities = new HashMap<>();
-        projectionRepository.findTopTargetEntitiesByEventCount(PageRequest.of(0, 10))
+        auditEventQueryPort.findTopTargetEntitiesByEventCount(PageRequest.of(0, 10))
             .forEach(result -> {
                 topEntities.put((String) result[0], (Long) result[1]);
             });
@@ -210,12 +213,12 @@ public class AuditQueryService {
         AuditStatisticsDTO.AuditStatisticsDTOBuilder stats = AuditStatisticsDTO.builder();
 
         // Count in date range
-        long totalInRange = projectionRepository.countByTimestampBetween(fromDate, toDate);
+        long totalInRange = auditEventQueryPort.countByTimestampBetween(fromDate, toDate);
         stats.totalEvents(totalInRange);
 
         // Events by date
         Map<String, Long> eventsByDate = new HashMap<>();
-        projectionRepository.countByDateRange(fromDate, toDate).forEach(result -> {
+        auditEventQueryPort.countByDateRange(fromDate, toDate).forEach(result -> {
             eventsByDate.put(result[0].toString(), (Long) result[1]);
         });
         stats.eventsByDate(eventsByDate);
@@ -232,7 +235,7 @@ public class AuditQueryService {
         Map<String, Long> hourlyStats = new HashMap<>();
         Date sqlDate = Date.valueOf(date);
 
-        projectionRepository.countByHourForDate(sqlDate).forEach(result -> {
+        auditEventQueryPort.countByHourForDate(sqlDate).forEach(result -> {
             Integer hour = (Integer) result[0];
             Long count = (Long) result[1];
             hourlyStats.put(hour.toString(), count);

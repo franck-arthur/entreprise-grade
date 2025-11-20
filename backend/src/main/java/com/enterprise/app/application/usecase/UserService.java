@@ -8,8 +8,8 @@ import com.enterprise.app.domain.exception.DuplicateResourceException;
 import com.enterprise.app.domain.exception.ResourceNotFoundException;
 import com.enterprise.app.domain.model.Role;
 import com.enterprise.app.domain.model.User;
+import com.enterprise.app.domain.port.ExternalUserManagementPort;
 import com.enterprise.app.domain.repository.UserRepository;
-import com.enterprise.app.infrastructure.keycloak.KeycloakUserAdapter;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
@@ -32,6 +32,9 @@ import java.util.UUID;
  * Orchestrates business logic for user management.
  * Uses Resilience4j for circuit breaker, retry, and rate limiting.
  * Implements caching with Redis.
+ *
+ * Follows hexagonal architecture by depending on ports (interfaces)
+ * instead of concrete implementations.
  */
 @Service
 @RequiredArgsConstructor
@@ -40,7 +43,7 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final KeycloakUserAdapter keycloakAdapter;
+    private final ExternalUserManagementPort externalUserManagement;
     private final UserMapper userMapper;
 
     /**
@@ -147,7 +150,7 @@ public class UserService {
         log.debug("User saved to database: {}", user.getId());
 
         // Create in Keycloak
-        String keycloakId = keycloakAdapter.createUser(user, request.getPassword());
+        String keycloakId = externalUserManagement.createUser(user, request.getPassword());
         user.setKeycloakId(keycloakId);
 
         // Update with Keycloak ID
@@ -201,7 +204,7 @@ public class UserService {
 
         // Update in Keycloak if exists
         if (user.getKeycloakId() != null) {
-            keycloakAdapter.updateUser(user.getKeycloakId(), user);
+            externalUserManagement.updateUser(user.getKeycloakId(), user);
         }
 
         log.info("User updated successfully: {}", id);
@@ -223,7 +226,7 @@ public class UserService {
 
         // Delete from Keycloak first
         if (user.getKeycloakId() != null) {
-            keycloakAdapter.deleteUser(user.getKeycloakId());
+            externalUserManagement.deleteUser(user.getKeycloakId());
         }
 
         // Delete from database
@@ -249,7 +252,7 @@ public class UserService {
 
         // Update in Keycloak
         if (user.getKeycloakId() != null) {
-            keycloakAdapter.setUserEnabled(user.getKeycloakId(), true);
+            externalUserManagement.setUserEnabled(user.getKeycloakId(), true);
         }
 
         log.info("User activated: {}", id);
@@ -274,7 +277,7 @@ public class UserService {
 
         // Update in Keycloak
         if (user.getKeycloakId() != null) {
-            keycloakAdapter.setUserEnabled(user.getKeycloakId(), false);
+            externalUserManagement.setUserEnabled(user.getKeycloakId(), false);
         }
 
         log.info("User deactivated: {}", id);

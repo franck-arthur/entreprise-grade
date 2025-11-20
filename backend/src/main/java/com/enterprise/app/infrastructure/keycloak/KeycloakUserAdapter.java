@@ -2,6 +2,7 @@ package com.enterprise.app.infrastructure.keycloak;
 
 import com.enterprise.app.domain.model.Role;
 import com.enterprise.app.domain.model.User;
+import com.enterprise.app.domain.port.ExternalUserManagementPort;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,11 +26,13 @@ import java.util.stream.Collectors;
  *
  * This adapter handles all interactions with Keycloak Admin API
  * for creating, updating, and managing users.
+ *
+ * Implements ExternalUserManagementPort following hexagonal architecture.
  */
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class KeycloakUserAdapter {
+public class KeycloakUserAdapter implements ExternalUserManagementPort {
 
     private final Keycloak keycloak;
 

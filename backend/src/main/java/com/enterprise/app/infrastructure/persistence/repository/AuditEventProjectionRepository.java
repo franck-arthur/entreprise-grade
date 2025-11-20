@@ -2,6 +2,7 @@ package com.enterprise.app.infrastructure.persistence.repository;
 
 import com.enterprise.app.domain.model.AuditEventProjection;
 import com.enterprise.app.domain.model.AuditEventType;
+import com.enterprise.app.domain.port.AuditEventQueryPort;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,9 +19,11 @@ import java.util.UUID;
  * CQRS Query Repository - Read side.
  * Optimized for complex queries, filtering, and aggregations.
  * Uses indexes defined in AuditEventProjection for fast reads.
+ *
+ * Implements AuditEventQueryPort following hexagonal architecture.
  */
 @Repository
-public interface AuditEventProjectionRepository extends JpaRepository<AuditEventProjection, UUID> {
+public interface AuditEventProjectionRepository extends JpaRepository<AuditEventProjection, UUID>, AuditEventQueryPort {
 
     /**
      * Find events by user with pagination.

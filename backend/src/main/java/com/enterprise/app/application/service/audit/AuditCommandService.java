@@ -3,8 +3,8 @@ package com.enterprise.app.application.service.audit;
 import com.enterprise.app.application.dto.audit.CreateAuditEventCommand;
 import com.enterprise.app.domain.model.AuditEventCommand;
 import com.enterprise.app.domain.model.AuditEventProjection;
-import com.enterprise.app.infrastructure.persistence.repository.AuditEventCommandRepository;
-import com.enterprise.app.infrastructure.persistence.repository.AuditEventProjectionRepository;
+import com.enterprise.app.domain.port.AuditEventCommandPort;
+import com.enterprise.app.domain.port.AuditEventQueryPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -23,14 +23,17 @@ import org.springframework.transaction.annotation.Transactional;
  * 1. Write operations go to command model first (fast inserts)
  * 2. Projection to query model happens asynchronously
  * 3. Separate models optimized for their specific use cases
+ *
+ * Follows hexagonal architecture by depending on ports (interfaces)
+ * instead of concrete implementations.
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AuditCommandService {
 
-    private final AuditEventCommandRepository commandRepository;
-    private final AuditEventProjectionRepository projectionRepository;
+    private final AuditEventCommandPort auditEventCommandPort;
+    private final AuditEventQueryPort auditEventQueryPort;
 
     /**
      * Record audit event (COMMAND).
@@ -61,7 +64,7 @@ public class AuditCommandService {
             .build();
 
         // Save to command model
-        AuditEventCommand savedEvent = commandRepository.save(auditEvent);
+        AuditEventCommand savedEvent = auditEventCommandPort.save(auditEvent);
 
         // Project to query model asynchronously (eventual consistency)
         projectEventAsync(savedEvent, command.getTargetEntityName());
@@ -98,7 +101,7 @@ public class AuditCommandService {
             }
 
             // Save to projection (query model)
-            projectionRepository.save(projection);
+            auditEventQueryPort.save(projection);
 
             log.debug("Audit event projected successfully: {}", commandEvent.getId());
 
@@ -124,7 +127,7 @@ public class AuditCommandService {
             projection.setTargetEntityNameFromEntity(targetEntityName);
         }
 
-        projectionRepository.save(projection);
+        auditEventQueryPort.save(projection);
     }
 
     /**
@@ -136,14 +139,14 @@ public class AuditCommandService {
         log.info("Rebuilding all audit event projections");
 
         // Clear existing projections
-        projectionRepository.deleteAll();
+        auditEventQueryPort.deleteAll();
 
         // Rebuild from command model
-        commandRepository.findAll().forEach(command -> {
+        auditEventCommandPort.findAll().forEach(command -> {
             AuditEventProjection projection = AuditEventProjection.fromCommand(command);
-            projectionRepository.save(projection);
+            auditEventQueryPort.save(projection);
         });
 
-        log.info("Rebuilt {} audit event projections", projectionRepository.count());
+        log.info("Rebuilt {} audit event projections", auditEventQueryPort.count());
     }
 }
