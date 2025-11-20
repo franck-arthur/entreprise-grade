@@ -46,7 +46,6 @@ class BatchImportServiceTest {
     @Mock
     private Executor csvProcessorExecutor;
 
-    @InjectMocks
     private BatchImportService batchImportService;
 
     private User testUser;
@@ -58,6 +57,14 @@ class BatchImportServiceTest {
     void setUp() {
         batchImportId = UUID.randomUUID();
         pageable = PageRequest.of(0, 20);
+
+        // Create a spy to prevent async method execution in tests
+        batchImportService = spy(new BatchImportService(
+            batchImportPort, userRepository, messageSource, csvProcessorExecutor
+        ));
+
+        // Stub the async method to do nothing (prevent actual async execution)
+        doNothing().when(batchImportService).processFileAsync(any(UUID.class), any());
 
         testUser = User.builder()
             .id(UUID.randomUUID())
@@ -94,8 +101,6 @@ class BatchImportServiceTest {
         );
 
         when(batchImportPort.save(any(BatchImport.class))).thenReturn(testBatchImport);
-        // Mock findById for async processing
-        when(batchImportPort.findById(any(UUID.class))).thenReturn(Optional.of(testBatchImport));
 
         // When
         BatchImport result = batchImportService.createBatchImport(file, testUser);
@@ -364,17 +369,6 @@ class BatchImportServiceTest {
             BatchImport saved = invocation.getArgument(0);
             saved.setId(batchImportId);
             return saved;
-        });
-        // Mock findById for async processing
-        when(batchImportPort.findById(any(UUID.class))).thenAnswer(invocation -> {
-            BatchImport bi = BatchImport.builder()
-                .id(batchImportId)
-                .fileName(fileName)
-                .fileSize((long) content.length)
-                .status(BatchImportStatus.PENDING)
-                .initiatedBy(testUser)
-                .build();
-            return Optional.of(bi);
         });
 
         // When
