@@ -37,6 +37,8 @@
     "@ngrx/store": "^17.0.1",
     "@ngrx/store-devtools": "^17.0.1",
     "@gouvfr/dsfr": "^1.11.0",
+    "@ngx-translate/core": "^15.0.0",
+    "@ngx-translate/http-loader": "^8.0.0",
     "rxjs": "^7.8.1",
     "tslib": "^2.6.2",
     "zone.js": "^0.14.3"

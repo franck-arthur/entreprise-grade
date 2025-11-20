@@ -1,0 +1,102 @@
+{
+  "common": {
+    "welcome": "Bienvenue",
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "yes": "Oui",
+    "no": "Non",
+    "close": "Fermer"
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "users": "Utilisateurs",
+    "settings": "Paramètres",
+    "logout": "Déconnexion"
+  },
+  "auth": {
+    "login": "Connexion",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "remember_me": "Se souvenir de moi",
+    "forgot_password": "Mot de passe oublié ?",
+    "sign_in": "Se connecter",
+    "signing_in": "Connexion en cours...",
+    "invalid_credentials": "Identifiants invalides",
+    "logout_success": "Déconnexion réussie",
+    "unauthorized_title": "Accès refusé",
+    "unauthorized_message": "Vous n'avez pas les permissions nécessaires pour accéder à cette page.",
+    "return_dashboard": "Retour au tableau de bord"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "welcome_message": "Bienvenue, {{username}} !",
+    "users_management": "Gestion des utilisateurs",
+    "users_management_desc": "Créer, modifier et gérer les utilisateurs de l'application.",
+    "statistics": "Statistiques",
+    "statistics_desc": "Visualiser les statistiques et métriques de l'application.",
+    "settings": "Paramètres",
+    "settings_desc": "Configurer les paramètres de l'application."
+  },
+  "users": {
+    "title": "Gestion des utilisateurs",
+    "create_user": "Créer un utilisateur",
+    "list": "Liste des utilisateurs",
+    "username": "Nom d'utilisateur",
+    "email": "Email",
+    "first_name": "Prénom",
+    "last_name": "Nom",
+    "full_name": "Nom complet",
+    "roles": "Rôles",
+    "status": "Statut",
+    "actions": "Actions",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "view": "Voir",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "confirm_delete": "Êtes-vous sûr de vouloir supprimer cet utilisateur ?",
+    "phone_number": "Numéro de téléphone",
+    "created_at": "Créé le",
+    "updated_at": "Mis à jour le",
+    "last_login": "Dernière connexion"
+  },
+  "pagination": {
+    "previous_page": "Page précédente",
+    "next_page": "Page suivante",
+    "page": "Page {{current}} / {{total}}"
+  },
+  "errors": {
+    "not_found": "Page introuvable",
+    "not_found_message": "La page que vous recherchez n'existe pas.",
+    "return_home": "Retour à l'accueil",
+    "unauthorized": "Accès non autorisé",
+    "forbidden": "Accès refusé",
+    "internal_server": "Erreur interne du serveur",
+    "network_error": "Erreur réseau. Veuillez réessayer plus tard.",
+    "validation_error": "Erreur de validation",
+    "required_field": "Ce champ est requis",
+    "invalid_email": "Adresse email invalide",
+    "min_length": "Minimum {{min}} caractères requis",
+    "max_length": "Maximum {{max}} caractères autorisés"
+  },
+  "success": {
+    "user_created": "Utilisateur créé avec succès",
+    "user_updated": "Utilisateur mis à jour avec succès",
+    "user_deleted": "Utilisateur supprimé avec succès",
+    "operation_successful": "Opération terminée avec succès"
+  },
+  "language": {
+    "select": "Choisir la langue",
+    "en": "English",
+    "fr": "Français"
+  }
+}

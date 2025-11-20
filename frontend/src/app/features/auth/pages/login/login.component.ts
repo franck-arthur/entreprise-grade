@@ -2,27 +2,30 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '@app/core/services/auth.service';
 
 /**
  * Login component.
  *
- * Simple login page using DSFR design system.
+ * Simple login page using DSFR design system with internationalization.
  */
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   template: `
     <div class="fr-container">
       <div class="fr-grid-row fr-grid-row--center">
         <div class="fr-col-12 fr-col-md-6 fr-col-lg-4">
           <div class="fr-mt-6w">
-            <h1 class="fr-h3">Connexion</h1>
+            <h1 class="fr-h3">{{ 'auth.login' | translate }}</h1>
 
             <form (ngSubmit)="onSubmit()" class="fr-mt-4w">
               <div class="fr-input-group">
-                <label class="fr-label" for="username"> Nom d'utilisateur </label>
+                <label class="fr-label" for="username">
+                  {{ 'auth.username' | translate }}
+                </label>
                 <input
                   class="fr-input"
                   type="text"
@@ -35,7 +38,9 @@ import { AuthService } from '@app/core/services/auth.service';
               </div>
 
               <div class="fr-input-group fr-mt-2w">
-                <label class="fr-label" for="password"> Mot de passe </label>
+                <label class="fr-label" for="password">
+                  {{ 'auth.password' | translate }}
+                </label>
                 <input
                   class="fr-input"
                   type="password"
@@ -49,7 +54,7 @@ import { AuthService } from '@app/core/services/auth.service';
 
               <div class="fr-mt-4w">
                 <button class="fr-btn" type="submit" [disabled]="loading">
-                  {{ loading ? 'Connexion...' : 'Se connecter' }}
+                  {{ (loading ? 'auth.signing_in' : 'auth.sign_in') | translate }}
                 </button>
               </div>
 
@@ -88,7 +93,8 @@ export class LoginComponent {
       },
       error: err => {
         this.loading = false;
-        this.error = 'Identifiants invalides';
+        // Error message comes from backend (already internationalized)
+        this.error = err.message || 'auth.invalid_credentials';
         console.error('Login error:', err);
       },
     });

@@ -3,7 +3,10 @@ package com.enterprise.app.presentation.exception;
 import com.enterprise.app.domain.exception.BusinessException;
 import com.enterprise.app.domain.exception.DuplicateResourceException;
 import com.enterprise.app.domain.exception.ResourceNotFoundException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -16,16 +19,20 @@ import org.springframework.web.context.request.WebRequest;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
  * Global exception handler for REST controllers.
  *
- * Centralizes exception handling and provides consistent error responses.
+ * Centralizes exception handling and provides consistent internationalized error responses.
  */
 @RestControllerAdvice
+@RequiredArgsConstructor
 @Slf4j
 public class GlobalExceptionHandler {
+
+    private final MessageSource messageSource;
 
     /**
      * Handle ResourceNotFoundException.
@@ -99,6 +106,7 @@ public class GlobalExceptionHandler {
         WebRequest request
     ) {
         log.error("Validation error: {}", ex.getMessage());
+        Locale locale = LocaleContextHolder.getLocale();
 
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach(error -> {
@@ -107,11 +115,13 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
 
+        String message = messageSource.getMessage("common.validation.error", null, locale);
+
         ErrorResponse errorResponse = ErrorResponse.builder()
             .timestamp(LocalDateTime.now())
             .status(HttpStatus.BAD_REQUEST.value())
             .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
-            .message("Validation failed")
+            .message(message)
             .path(request.getDescription(false).replace("uri=", ""))
             .validationErrors(errors)
             .build();
@@ -128,12 +138,15 @@ public class GlobalExceptionHandler {
         WebRequest request
     ) {
         log.error("Authentication failed: {}", ex.getMessage());
+        Locale locale = LocaleContextHolder.getLocale();
+
+        String message = messageSource.getMessage("error.unauthorized", null, locale);
 
         ErrorResponse errorResponse = ErrorResponse.builder()
             .timestamp(LocalDateTime.now())
             .status(HttpStatus.UNAUTHORIZED.value())
             .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
-            .message("Authentication failed")
+            .message(message)
             .path(request.getDescription(false).replace("uri=", ""))
             .build();
 
@@ -149,12 +162,15 @@ public class GlobalExceptionHandler {
         WebRequest request
     ) {
         log.error("Access denied: {}", ex.getMessage());
+        Locale locale = LocaleContextHolder.getLocale();
+
+        String message = messageSource.getMessage("error.forbidden", null, locale);
 
         ErrorResponse errorResponse = ErrorResponse.builder()
             .timestamp(LocalDateTime.now())
             .status(HttpStatus.FORBIDDEN.value())
             .error(HttpStatus.FORBIDDEN.getReasonPhrase())
-            .message("Access denied")
+            .message(message)
             .path(request.getDescription(false).replace("uri=", ""))
             .build();
 
@@ -170,15 +186,26 @@ public class GlobalExceptionHandler {
         WebRequest request
     ) {
         log.error("Unexpected error occurred", ex);
+        Locale locale = LocaleContextHolder.getLocale();
+
+        String message = messageSource.getMessage("error.internal", null, locale);
 
         ErrorResponse errorResponse = ErrorResponse.builder()
             .timestamp(LocalDateTime.now())
             .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
             .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
-            .message("An unexpected error occurred")
+            .message(message)
             .path(request.getDescription(false).replace("uri=", ""))
             .build();
 
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    /**
+     * Get localized message with parameters.
+     */
+    private String getMessage(String key, Object[] args) {
+        Locale locale = LocaleContextHolder.getLocale();
+        return messageSource.getMessage(key, args, locale);
     }
 }
