@@ -4,6 +4,9 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
+# Disable Husky git hooks during Docker build
+ENV HUSKY=0
+
 # Copy package files and install dependencies (cached layer)
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps
