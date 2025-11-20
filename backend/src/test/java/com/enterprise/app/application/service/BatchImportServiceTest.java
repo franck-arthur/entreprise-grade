@@ -64,7 +64,8 @@ class BatchImportServiceTest {
         ));
 
         // Stub the async method to do nothing (prevent actual async execution)
-        doNothing().when(batchImportService).processFileAsync(any(UUID.class), any());
+        // Use lenient() to avoid UnnecessaryStubbingException for tests that don't call createBatchImport
+        lenient().doNothing().when(batchImportService).processFileAsync(any(UUID.class), any());
 
         testUser = User.builder()
             .id(UUID.randomUUID())
