@@ -25,7 +25,7 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:23.0
     container_name: enterprise-keycloak
-    command: start-dev
+    command: start-dev --import-realm
     environment:
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
@@ -37,6 +37,8 @@ services:
       KC_METRICS_ENABLED: "true"
     ports:
       - "8180:8080"
+    volumes:
+      - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -47,6 +49,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+      start_period: 90s
 
   # Redis cache
   redis:
