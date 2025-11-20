@@ -1,0 +1,122 @@
+# Production environment configuration
+
+spring:
+  # PostgreSQL datasource (externalized via environment variables)
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      pool-name: HikariPool-Prod
+      leak-detection-threshold: 60000
+
+  # JPA
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        generate_statistics: false
+    hibernate:
+      ddl-auto: validate
+
+  # Redis
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+      ssl:
+        enabled: true
+      timeout: 60000ms
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+          max-wait: -1ms
+
+  # Elasticsearch
+  elasticsearch:
+    uris: ${ELASTICSEARCH_URIS}
+    username: ${ELASTICSEARCH_USERNAME}
+    password: ${ELASTICSEARCH_PASSWORD}
+    connection-timeout: 5s
+    socket-timeout: 30s
+
+  # Security OAuth2 Resource Server (Keycloak)
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI}
+
+# Keycloak Admin Client
+keycloak:
+  auth-server-url: ${KEYCLOAK_AUTH_SERVER_URL}
+  realm: ${KEYCLOAK_REALM:enterprise-realm}
+  resource: ${KEYCLOAK_RESOURCE:backend-client}
+  credentials:
+    secret: ${KEYCLOAK_CLIENT_SECRET}
+  admin:
+    username: ${KEYCLOAK_ADMIN_USERNAME}
+    password: ${KEYCLOAK_ADMIN_PASSWORD}
+    client-id: admin-cli
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.enterprise.app: INFO
+    org.springframework.web: WARN
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+  pattern:
+    console: '{"timestamp":"%d{yyyy-MM-dd HH:mm:ss.SSS}","level":"%level","thread":"%thread","logger":"%logger{36}","message":"%msg"}%n'
+
+# Server
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-stacktrace: never
+    include-message: never
+    include-binding-errors: never
+  shutdown: graceful
+  compression:
+    enabled: true
+  http2:
+    enabled: true
+
+# Actuator - reduced exposure in production
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# SpringDoc - disabled in production (use external API docs)
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: true
+    path: /api-docs
+
+# Production-specific application properties
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
