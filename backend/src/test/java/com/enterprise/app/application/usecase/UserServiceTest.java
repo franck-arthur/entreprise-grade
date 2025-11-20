@@ -8,8 +8,8 @@ import com.enterprise.app.domain.exception.DuplicateResourceException;
 import com.enterprise.app.domain.exception.ResourceNotFoundException;
 import com.enterprise.app.domain.model.Role;
 import com.enterprise.app.domain.model.User;
+import com.enterprise.app.domain.port.ExternalUserManagementPort;
 import com.enterprise.app.domain.repository.UserRepository;
-import com.enterprise.app.infrastructure.keycloak.KeycloakUserAdapter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ class UserServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private KeycloakUserAdapter keycloakAdapter;
+    private ExternalUserManagementPort externalUserManagement;
 
     @Mock
     private UserMapper userMapper;
@@ -129,7 +129,7 @@ class UserServiceTest {
         when(userRepository.existsByUsername(createRequest.getUsername())).thenReturn(false);
         when(userMapper.toEntity(createRequest)).thenReturn(testUser);
         when(userRepository.save(any(User.class))).thenReturn(testUser);
-        when(keycloakAdapter.createUser(any(User.class), anyString())).thenReturn("keycloak-123");
+        when(externalUserManagement.createUser(any(User.class), anyString())).thenReturn("keycloak-123");
         when(userMapper.toDTO(testUser)).thenReturn(testUserDTO);
 
         // When
@@ -141,7 +141,7 @@ class UserServiceTest {
 
         verify(userRepository).existsByEmail(createRequest.getEmail());
         verify(userRepository).existsByUsername(createRequest.getUsername());
-        verify(keycloakAdapter).createUser(any(User.class), eq(createRequest.getPassword()));
+        verify(externalUserManagement).createUser(any(User.class), eq(createRequest.getPassword()));
         verify(userRepository, times(2)).save(any(User.class));
     }
 
@@ -158,7 +158,7 @@ class UserServiceTest {
 
         verify(userRepository).existsByEmail(createRequest.getEmail());
         verify(userRepository, never()).save(any());
-        verifyNoInteractions(keycloakAdapter);
+        verifyNoInteractions(externalUserManagement);
     }
 
     @Test
@@ -174,7 +174,7 @@ class UserServiceTest {
         when(userRepository.save(any(User.class))).thenReturn(testUser);
         when(userMapper.toDTO(testUser)).thenReturn(testUserDTO);
         doNothing().when(userMapper).updateEntityFromDTO(updateRequest, testUser);
-        doNothing().when(keycloakAdapter).updateUser(anyString(), any(User.class));
+        doNothing().when(externalUserManagement).updateUser(anyString(), any(User.class));
 
         // When
         UserDTO result = userService.updateUser(testUserId, updateRequest);
@@ -185,7 +185,7 @@ class UserServiceTest {
         verify(userRepository).findById(testUserId);
         verify(userMapper).updateEntityFromDTO(updateRequest, testUser);
         verify(userRepository).save(testUser);
-        verify(keycloakAdapter).updateUser(eq("keycloak-123"), any(User.class));
+        verify(externalUserManagement).updateUser(eq("keycloak-123"), any(User.class));
     }
 
     @Test
@@ -193,7 +193,7 @@ class UserServiceTest {
     void shouldDeleteUser() {
         // Given
         when(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser));
-        doNothing().when(keycloakAdapter).deleteUser(anyString());
+        doNothing().when(externalUserManagement).deleteUser(anyString());
         doNothing().when(userRepository).deleteById(testUserId);
 
         // When
@@ -201,7 +201,7 @@ class UserServiceTest {
 
         // Then
         verify(userRepository).findById(testUserId);
-        verify(keycloakAdapter).deleteUser("keycloak-123");
+        verify(externalUserManagement).deleteUser("keycloak-123");
         verify(userRepository).deleteById(testUserId);
     }
 
@@ -213,7 +213,7 @@ class UserServiceTest {
         when(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser));
         when(userRepository.save(any(User.class))).thenReturn(testUser);
         when(userMapper.toDTO(testUser)).thenReturn(testUserDTO);
-        doNothing().when(keycloakAdapter).setUserEnabled(anyString(), eq(true));
+        doNothing().when(externalUserManagement).setUserEnabled(anyString(), eq(true));
 
         // When
         UserDTO result = userService.activateUser(testUserId);
@@ -223,7 +223,7 @@ class UserServiceTest {
 
         verify(userRepository).findById(testUserId);
         verify(userRepository).save(testUser);
-        verify(keycloakAdapter).setUserEnabled("keycloak-123", true);
+        verify(externalUserManagement).setUserEnabled("keycloak-123", true);
     }
 
     @Test
@@ -233,7 +233,7 @@ class UserServiceTest {
         when(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser));
         when(userRepository.save(any(User.class))).thenReturn(testUser);
         when(userMapper.toDTO(testUser)).thenReturn(testUserDTO);
-        doNothing().when(keycloakAdapter).setUserEnabled(anyString(), eq(false));
+        doNothing().when(externalUserManagement).setUserEnabled(anyString(), eq(false));
 
         // When
         UserDTO result = userService.deactivateUser(testUserId);
@@ -243,6 +243,6 @@ class UserServiceTest {
 
         verify(userRepository).findById(testUserId);
         verify(userRepository).save(testUser);
-        verify(keycloakAdapter).setUserEnabled("keycloak-123", false);
+        verify(externalUserManagement).setUserEnabled("keycloak-123", false);
     }
 }
