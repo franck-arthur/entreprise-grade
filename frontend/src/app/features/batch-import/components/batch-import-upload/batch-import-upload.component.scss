@@ -1,0 +1,19 @@
+.fr-upload-group--drag-over {
+  border: 2px dashed var(--blue-france-main-525);
+  background-color: var(--blue-france-975);
+  border-radius: 0.25rem;
+}
+
+.fr-code {
+  background-color: var(--grey-975);
+  padding: 1rem;
+  border-radius: 0.25rem;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.fr-upload__hint {
+  margin-top: 0.5rem;
+  color: var(--text-mention-grey);
+}

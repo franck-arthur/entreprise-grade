@@ -82,6 +82,16 @@ public class UserService {
     }
 
     /**
+     * Get user entity by username (for internal use).
+     */
+    public User getUserEntityByUsername(String username) {
+        log.debug("Fetching user entity by username: {}", username);
+
+        return userRepository.findByUsername(username)
+            .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
+    }
+
+    /**
      * Get user by email.
      */
     @Cacheable(value = "user", key = "#email")

@@ -1,0 +1,151 @@
+<div class="fr-container fr-my-4w">
+  <div class="fr-grid-row">
+    <div class="fr-col-12">
+      <h2 class="fr-h3">{{ 'batchImport.list.title' | translate }}</h2>
+      <p class="fr-text--sm fr-mb-4w">
+        {{ 'batchImport.list.description' | translate }}
+      </p>
+
+      <!-- Loading State -->
+      <div *ngIf="loading$ | async" class="fr-mb-3w">
+        <div class="fr-alert fr-alert--info">
+          <p>{{ 'common.loading' | translate }}</p>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="(imports$ | async)?.length === 0 && !(loading$ | async)" class="fr-mb-3w">
+        <div class="fr-alert fr-alert--info">
+          <p>{{ 'batchImport.list.noImports' | translate }}</p>
+        </div>
+      </div>
+
+      <!-- Imports List -->
+      <div *ngIf="(imports$ | async)?.length ?? 0 > 0" class="batch-import-list">
+        <div
+          *ngFor="let import of imports$ | async"
+          class="batch-import-card fr-card fr-mb-3w"
+          (click)="viewDetails(import.id)"
+        >
+          <div class="fr-card__body">
+            <div class="fr-card__content">
+              <!-- Header -->
+              <div class="batch-import-header">
+                <div>
+                  <h3 class="fr-card__title">{{ import.fileName }}</h3>
+                  <p class="fr-card__desc">
+                    {{ 'batchImport.list.uploadedBy' | translate }}: {{ import.initiatedByUsername }}
+                    • {{ formatDate(import.createdAt) }}
+                    • {{ getFileSize(import.fileSize) }}
+                  </p>
+                </div>
+                <div>
+                  <span
+                    class="fr-badge"
+                    [ngClass]="getStatusBadgeClass(import.status)"
+                  >
+                    {{ 'batchImport.status.' + import.status | translate }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Progress Bar -->
+              <div class="fr-mt-2w">
+                <div class="progress-container">
+                  <div
+                    class="progress-bar"
+                    [ngClass]="getProgressBarClass(import)"
+                    [style.width.%]="import.progressPercentage"
+                  ></div>
+                </div>
+                <p class="fr-text--xs fr-mt-1w">
+                  {{ 'batchImport.list.progress' | translate }}:
+                  {{ import.processedLines }} / {{ import.totalLines }}
+                  ({{ import.progressPercentage | number: '1.0-1' }}%)
+                </p>
+              </div>
+
+              <!-- Stats -->
+              <div class="fr-grid-row fr-grid-row--gutters fr-mt-2w">
+                <div class="fr-col-4">
+                  <div class="stat-card stat-card--success">
+                    <p class="stat-label">{{ 'batchImport.list.success' | translate }}</p>
+                    <p class="stat-value">{{ import.successLines }}</p>
+                  </div>
+                </div>
+                <div class="fr-col-4">
+                  <div class="stat-card stat-card--error">
+                    <p class="stat-label">{{ 'batchImport.list.failed' | translate }}</p>
+                    <p class="stat-value">{{ import.failedLines }}</p>
+                  </div>
+                </div>
+                <div class="fr-col-4">
+                  <div class="stat-card">
+                    <p class="stat-label">{{ 'batchImport.list.total' | translate }}</p>
+                    <p class="stat-value">{{ import.totalLines }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Error Message -->
+              <div *ngIf="import.errorMessage" class="fr-mt-2w">
+                <div class="fr-alert fr-alert--error fr-alert--sm">
+                  <p>{{ import.errorMessage }}</p>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="fr-card__footer fr-mt-3w">
+                <button
+                  class="fr-btn fr-btn--secondary fr-btn--sm"
+                  (click)="viewDetails(import.id)"
+                >
+                  {{ 'batchImport.list.viewDetails' | translate }}
+                </button>
+
+                <button
+                  *ngIf="canBeCancelled(import.status)"
+                  class="fr-btn fr-btn--tertiary fr-btn--sm fr-ml-2w"
+                  (click)="cancelImport(import.id, $event)"
+                >
+                  {{ 'batchImport.list.cancel' | translate }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div *ngIf="(pagination$ | async) as pagination" class="fr-mt-4w">
+        <nav role="navigation" class="fr-pagination" aria-label="Pagination">
+          <ul class="fr-pagination__list">
+            <li *ngIf="pagination.currentPage > 0">
+              <button
+                class="fr-pagination__link fr-pagination__link--prev"
+                (click)="onPageChange(pagination.currentPage - 1)"
+              >
+                {{ 'common.previous' | translate }}
+              </button>
+            </li>
+
+            <li>
+              <span class="fr-pagination__link">
+                {{ 'common.page' | translate }} {{ pagination.currentPage + 1 }} / {{ pagination.totalPages }}
+              </span>
+            </li>
+
+            <li *ngIf="pagination.currentPage < pagination.totalPages - 1">
+              <button
+                class="fr-pagination__link fr-pagination__link--next"
+                (click)="onPageChange(pagination.currentPage + 1)"
+              >
+                {{ 'common.next' | translate }}
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>

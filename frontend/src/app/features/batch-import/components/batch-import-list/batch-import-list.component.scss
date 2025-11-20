@@ -1,0 +1,79 @@
+.batch-import-card {
+  cursor: pointer;
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.batch-import-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.progress-container {
+  width: 100%;
+  height: 1rem;
+  background-color: var(--grey-950);
+  border-radius: 0.25rem;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  transition: width 0.3s ease;
+  border-radius: 0.25rem;
+
+  &--info {
+    background-color: var(--blue-france-main-525);
+  }
+
+  &--success {
+    background-color: var(--success-425);
+  }
+
+  &--warning {
+    background-color: var(--warning-425);
+  }
+
+  &--error {
+    background-color: var(--error-425);
+  }
+}
+
+.stat-card {
+  background-color: var(--grey-975);
+  padding: 0.75rem;
+  border-radius: 0.25rem;
+  text-align: center;
+  border-left: 3px solid var(--border-default-grey);
+
+  &--success {
+    border-left-color: var(--success-425);
+  }
+
+  &--error {
+    border-left-color: var(--error-425);
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-mention-grey);
+    margin: 0 0 0.25rem 0;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+  }
+}
+
+.fr-card__footer {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}

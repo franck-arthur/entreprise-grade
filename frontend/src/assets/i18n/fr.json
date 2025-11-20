@@ -14,7 +14,10 @@
     "previous": "Précédent",
     "yes": "Oui",
     "no": "Non",
-    "close": "Fermer"
+    "close": "Fermer",
+    "required": "Requis",
+    "optional": "Optionnel",
+    "page": "Page"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -98,5 +101,50 @@
     "select": "Choisir la langue",
     "en": "English",
     "fr": "Français"
+  },
+  "batchImport": {
+    "upload": {
+      "title": "Import batch - Téléverser un fichier CSV",
+      "description": "Téléversez un fichier CSV pour importer plusieurs utilisateurs en une seule fois. L'import est traité avec du multithreading pour une performance optimale.",
+      "selectFile": "Sélectionner un fichier CSV",
+      "fileFormat": "Format : .csv, maximum 10 Mo",
+      "dragAndDrop": "Glissez-déposez un fichier ici ou cliquez pour sélectionner",
+      "maxSize": "Taille maximale du fichier : 10 Mo",
+      "uploading": "Téléversement en cours...",
+      "pleaseWait": "Veuillez patienter pendant le téléversement du fichier",
+      "error": "Erreur de téléversement",
+      "csvFormat": "Format du fichier CSV",
+      "csvFormatDesc": "Le fichier CSV doit contenir les colonnes suivantes dans cet ordre :",
+      "column": "Colonne",
+      "required": "Requis",
+      "description": "Description",
+      "usernameDesc": "Nom d'utilisateur unique (3-50 caractères)",
+      "emailDesc": "Adresse email valide",
+      "firstNameDesc": "Prénom de l'utilisateur",
+      "lastNameDesc": "Nom de l'utilisateur",
+      "phoneDesc": "Numéro de téléphone",
+      "rolesDesc": "Rôles séparés par des virgules (ex: USER,ADMIN)",
+      "example": "Exemple"
+    },
+    "list": {
+      "title": "Imports batch",
+      "description": "Visualisez toutes les opérations d'import batch et leur progression",
+      "noImports": "Aucun import batch trouvé",
+      "uploadedBy": "Téléversé par",
+      "progress": "Progression",
+      "success": "Succès",
+      "failed": "Échecs",
+      "total": "Total",
+      "viewDetails": "Voir les détails",
+      "cancel": "Annuler"
+    },
+    "status": {
+      "PENDING": "En attente",
+      "PROCESSING": "En cours",
+      "COMPLETED": "Terminé",
+      "COMPLETED_WITH_ERRORS": "Terminé avec des erreurs",
+      "FAILED": "Échoué",
+      "CANCELLED": "Annulé"
+    }
   }
 }

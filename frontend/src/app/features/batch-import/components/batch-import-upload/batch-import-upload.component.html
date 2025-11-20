@@ -1,0 +1,122 @@
+<div class="fr-container fr-my-4w">
+  <div class="fr-grid-row">
+    <div class="fr-col-12">
+      <h2 class="fr-h3">{{ 'batchImport.upload.title' | translate }}</h2>
+      <p class="fr-text--sm fr-mb-2w">
+        {{ 'batchImport.upload.description' | translate }}
+      </p>
+
+      <!-- File Upload Area -->
+      <div
+        class="fr-upload-group"
+        [class.fr-upload-group--drag-over]="dragOver"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        (drop)="onDrop($event)"
+      >
+        <label class="fr-label" for="file-upload">
+          {{ 'batchImport.upload.selectFile' | translate }}
+          <span class="fr-hint-text">
+            {{ 'batchImport.upload.fileFormat' | translate }}
+          </span>
+        </label>
+
+        <input
+          class="fr-upload"
+          type="file"
+          id="file-upload"
+          accept=".csv"
+          (change)="onFileSelected($event)"
+          [disabled]="(uploadingFile$ | async) === true"
+        />
+
+        <div class="fr-upload__hint">
+          <p class="fr-text--xs">
+            {{ 'batchImport.upload.dragAndDrop' | translate }}
+          </p>
+          <p class="fr-text--xs">
+            {{ 'batchImport.upload.maxSize' | translate }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="uploadingFile$ | async" class="fr-mt-2w">
+        <div class="fr-alert fr-alert--info">
+          <p class="fr-alert__title">
+            {{ 'batchImport.upload.uploading' | translate }}
+          </p>
+          <p>{{ 'batchImport.upload.pleaseWait' | translate }}</p>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="error$ | async as error" class="fr-mt-2w">
+        <div class="fr-alert fr-alert--error">
+          <p class="fr-alert__title">
+            {{ 'batchImport.upload.error' | translate }}
+          </p>
+          <p>{{ error }}</p>
+        </div>
+      </div>
+
+      <!-- CSV Format Guide -->
+      <div class="fr-mt-4w">
+        <h3 class="fr-h5">{{ 'batchImport.upload.csvFormat' | translate }}</h3>
+        <p class="fr-text--sm">{{ 'batchImport.upload.csvFormatDesc' | translate }}</p>
+
+        <div class="fr-table fr-mt-2w">
+          <table>
+            <thead>
+              <tr>
+                <th>{{ 'batchImport.upload.column' | translate }}</th>
+                <th>{{ 'batchImport.upload.required' | translate }}</th>
+                <th>{{ 'batchImport.upload.description' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>username</td>
+                <td><span class="fr-badge fr-badge--error">{{ 'common.required' | translate }}</span></td>
+                <td>{{ 'batchImport.upload.usernameDesc' | translate }}</td>
+              </tr>
+              <tr>
+                <td>email</td>
+                <td><span class="fr-badge fr-badge--error">{{ 'common.required' | translate }}</span></td>
+                <td>{{ 'batchImport.upload.emailDesc' | translate }}</td>
+              </tr>
+              <tr>
+                <td>firstName</td>
+                <td><span class="fr-badge fr-badge--info">{{ 'common.optional' | translate }}</span></td>
+                <td>{{ 'batchImport.upload.firstNameDesc' | translate }}</td>
+              </tr>
+              <tr>
+                <td>lastName</td>
+                <td><span class="fr-badge fr-badge--info">{{ 'common.optional' | translate }}</span></td>
+                <td>{{ 'batchImport.upload.lastNameDesc' | translate }}</td>
+              </tr>
+              <tr>
+                <td>phoneNumber</td>
+                <td><span class="fr-badge fr-badge--info">{{ 'common.optional' | translate }}</span></td>
+                <td>{{ 'batchImport.upload.phoneDesc' | translate }}</td>
+              </tr>
+              <tr>
+                <td>roles</td>
+                <td><span class="fr-badge fr-badge--info">{{ 'common.optional' | translate }}</span></td>
+                <td>{{ 'batchImport.upload.rolesDesc' | translate }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Example -->
+        <div class="fr-mt-2w">
+          <h4 class="fr-h6">{{ 'batchImport.upload.example' | translate }}</h4>
+          <pre class="fr-code"><code>username,email,firstName,lastName,phoneNumber,roles
+jdoe,john.doe@example.com,John,Doe,+33612345678,USER
+asmith,alice.smith@example.com,Alice,Smith,,ADMIN,USER</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

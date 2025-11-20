@@ -14,7 +14,10 @@
     "previous": "Previous",
     "yes": "Yes",
     "no": "No",
-    "close": "Close"
+    "close": "Close",
+    "required": "Required",
+    "optional": "Optional",
+    "page": "Page"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -98,5 +101,50 @@
     "select": "Select Language",
     "en": "English",
     "fr": "Français"
+  },
+  "batchImport": {
+    "upload": {
+      "title": "Batch Import - Upload CSV File",
+      "description": "Upload a CSV file to import multiple users at once. The import is processed with multithreading for optimal performance.",
+      "selectFile": "Select CSV file",
+      "fileFormat": "Format: .csv, maximum 10 MB",
+      "dragAndDrop": "Drag and drop a file here or click to select",
+      "maxSize": "Maximum file size: 10 MB",
+      "uploading": "Uploading file...",
+      "pleaseWait": "Please wait while the file is being uploaded",
+      "error": "Upload error",
+      "csvFormat": "CSV File Format",
+      "csvFormatDesc": "The CSV file must contain the following columns in this order:",
+      "column": "Column",
+      "required": "Required",
+      "description": "Description",
+      "usernameDesc": "Unique username (3-50 characters)",
+      "emailDesc": "Valid email address",
+      "firstNameDesc": "User's first name",
+      "lastNameDesc": "User's last name",
+      "phoneDesc": "Phone number",
+      "rolesDesc": "Comma-separated roles (e.g., USER,ADMIN)",
+      "example": "Example"
+    },
+    "list": {
+      "title": "Batch Imports",
+      "description": "View all batch import operations and their progress",
+      "noImports": "No batch imports found",
+      "uploadedBy": "Uploaded by",
+      "progress": "Progress",
+      "success": "Success",
+      "failed": "Failed",
+      "total": "Total",
+      "viewDetails": "View Details",
+      "cancel": "Cancel"
+    },
+    "status": {
+      "PENDING": "Pending",
+      "PROCESSING": "Processing",
+      "COMPLETED": "Completed",
+      "COMPLETED_WITH_ERRORS": "Completed with errors",
+      "FAILED": "Failed",
+      "CANCELLED": "Cancelled"
+    }
   }
 }
