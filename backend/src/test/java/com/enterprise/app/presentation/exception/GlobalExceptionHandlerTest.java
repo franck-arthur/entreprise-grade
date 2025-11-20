@@ -122,7 +122,7 @@ class GlobalExceptionHandlerTest {
 
     @Test
     @DisplayName("Should handle MethodArgumentNotValidException")
-    void shouldHandleMethodArgumentNotValidException() {
+    void shouldHandleMethodArgumentNotValidException() throws NoSuchMethodException {
         // Given
         FieldError fieldError1 = new FieldError("user", "email", "must be a valid email");
         FieldError fieldError2 = new FieldError("user", "firstName", "must not be blank");
@@ -130,7 +130,9 @@ class GlobalExceptionHandlerTest {
         BindingResult bindingResult = mock(BindingResult.class);
         when(bindingResult.getAllErrors()).thenReturn(List.of(fieldError1, fieldError2));
 
-        MethodParameter methodParameter = mock(MethodParameter.class);
+        // Create a real MethodParameter from a real method to avoid NullPointerException
+        MethodParameter methodParameter = new MethodParameter(
+            this.getClass().getDeclaredMethod("dummyMethod", String.class), 0);
         MethodArgumentNotValidException exception = new MethodArgumentNotValidException(
             methodParameter, bindingResult);
 
@@ -275,12 +277,14 @@ class GlobalExceptionHandlerTest {
 
     @Test
     @DisplayName("Should handle validation errors with empty field list")
-    void shouldHandleValidationWithEmptyFields() {
+    void shouldHandleValidationWithEmptyFields() throws NoSuchMethodException {
         // Given
         BindingResult bindingResult = mock(BindingResult.class);
         when(bindingResult.getAllErrors()).thenReturn(List.of());
 
-        MethodParameter methodParameter = mock(MethodParameter.class);
+        // Create a real MethodParameter from a real method to avoid NullPointerException
+        MethodParameter methodParameter = new MethodParameter(
+            this.getClass().getDeclaredMethod("dummyMethod", String.class), 0);
         MethodArgumentNotValidException exception = new MethodArgumentNotValidException(
             methodParameter, bindingResult);
 
@@ -301,7 +305,7 @@ class GlobalExceptionHandlerTest {
 
     @Test
     @DisplayName("Should handle multiple validation errors for same field")
-    void shouldHandleMultipleValidationErrorsForSameField() {
+    void shouldHandleMultipleValidationErrorsForSameField() throws NoSuchMethodException {
         // Given
         FieldError fieldError1 = new FieldError("user", "email", "must be a valid email");
         FieldError fieldError2 = new FieldError("user", "email", "must not be blank");
@@ -309,7 +313,9 @@ class GlobalExceptionHandlerTest {
         BindingResult bindingResult = mock(BindingResult.class);
         when(bindingResult.getAllErrors()).thenReturn(List.of(fieldError1, fieldError2));
 
-        MethodParameter methodParameter = mock(MethodParameter.class);
+        // Create a real MethodParameter from a real method to avoid NullPointerException
+        MethodParameter methodParameter = new MethodParameter(
+            this.getClass().getDeclaredMethod("dummyMethod", String.class), 0);
         MethodArgumentNotValidException exception = new MethodArgumentNotValidException(
             methodParameter, bindingResult);
 
@@ -350,5 +356,14 @@ class GlobalExceptionHandlerTest {
 
         // Reset locale
         LocaleContextHolder.setLocale(Locale.ENGLISH);
+    }
+
+    /**
+     * Dummy method used to create a real MethodParameter for testing.
+     * This avoids NullPointerException when creating MethodArgumentNotValidException.
+     */
+    @SuppressWarnings("unused")
+    private void dummyMethod(String param) {
+        // This method is only used for reflection in tests
     }
 }

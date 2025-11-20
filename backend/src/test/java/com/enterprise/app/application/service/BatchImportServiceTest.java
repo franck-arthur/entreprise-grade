@@ -94,6 +94,8 @@ class BatchImportServiceTest {
         );
 
         when(batchImportPort.save(any(BatchImport.class))).thenReturn(testBatchImport);
+        // Mock findById for async processing
+        when(batchImportPort.findById(any(UUID.class))).thenReturn(Optional.of(testBatchImport));
 
         // When
         BatchImport result = batchImportService.createBatchImport(file, testUser);
@@ -362,6 +364,17 @@ class BatchImportServiceTest {
             BatchImport saved = invocation.getArgument(0);
             saved.setId(batchImportId);
             return saved;
+        });
+        // Mock findById for async processing
+        when(batchImportPort.findById(any(UUID.class))).thenAnswer(invocation -> {
+            BatchImport bi = BatchImport.builder()
+                .id(batchImportId)
+                .fileName(fileName)
+                .fileSize((long) content.length)
+                .status(BatchImportStatus.PENDING)
+                .initiatedBy(testUser)
+                .build();
+            return Optional.of(bi);
         });
 
         // When

@@ -118,9 +118,10 @@ class BatchImportControllerTest {
             .status(BatchImportStatus.PENDING)
             .build();
 
-        // Setup authentication mock
-        when(authentication.getPrincipal()).thenReturn(jwt);
-        when(jwt.getClaimAsString("preferred_username")).thenReturn("testuser");
+        // Setup authentication mock with lenient() to avoid UnnecessaryStubbingException
+        // when tests don't use authentication
+        lenient().when(authentication.getPrincipal()).thenReturn(jwt);
+        lenient().when(jwt.getClaimAsString("preferred_username")).thenReturn("testuser");
     }
 
     @Test
