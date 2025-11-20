@@ -19,7 +19,7 @@
     "format": "prettier --write \"src/**/*.{ts,html,css,scss}\"",
     "format:check": "prettier --check \"src/**/*.{ts,html,css,scss}\"",
     "analyze": "ng build --stats-json && webpack-bundle-analyzer dist/enterprise-app-frontend/stats.json",
-    "prepare": "husky install"
+    "prepare": "husky install 2>/dev/null || true"
   },
   "private": true,
   "dependencies": {
