@@ -2,6 +2,7 @@ package com.enterprise.app.domain.port;
 
 import com.enterprise.app.domain.model.AuditEventCommand;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,4 +31,12 @@ public interface AuditEventCommandPort {
      * @return The audit event if found
      */
     Optional<AuditEventCommand> findById(UUID id);
+
+    /**
+     * Find all audit event commands.
+     * Use with caution - typically for data migration or rebuild operations.
+     *
+     * @return List of all audit event commands
+     */
+    List<AuditEventCommand> findAll();
 }

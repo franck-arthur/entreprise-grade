@@ -225,4 +225,10 @@ public interface AuditEventQueryPort {
      * @return List of [entityType, count] pairs
      */
     List<Object[]> findTopTargetEntitiesByEventCount(Pageable pageable);
+
+    /**
+     * Delete all audit event projections.
+     * Use with caution - typically for data migration or rebuild operations.
+     */
+    void deleteAll();
 }
