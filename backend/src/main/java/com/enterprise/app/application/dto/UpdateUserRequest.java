@@ -19,16 +19,16 @@ import java.util.Set;
 @Builder
 public class UpdateUserRequest {
 
-    @Email(message = "Email must be valid")
+    @Email(message = "{validation.user.email.invalid}")
     private String email;
 
-    @Size(max = 50, message = "First name must not exceed 50 characters")
+    @Size(max = 50, message = "{validation.user.firstname.size}")
     private String firstName;
 
-    @Size(max = 50, message = "Last name must not exceed 50 characters")
+    @Size(max = 50, message = "{validation.user.lastname.size}")
     private String lastName;
 
-    @Size(max = 20, message = "Phone number must not exceed 20 characters")
+    @Size(max = 20, message = "{validation.user.phone.size}")
     private String phoneNumber;
 
     private Boolean active;
