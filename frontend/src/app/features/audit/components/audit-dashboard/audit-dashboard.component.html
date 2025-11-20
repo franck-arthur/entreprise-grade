@@ -1,0 +1,174 @@
+<div class="fr-container fr-my-4w">
+  <div class="fr-grid-row">
+    <div class="fr-col-12">
+      <h1 class="fr-h2">{{ 'audit.dashboard.title' | translate }}</h1>
+      <p class="fr-text--sm fr-mb-4w">
+        {{ 'audit.dashboard.description' | translate }}
+      </p>
+
+      <!-- Loading State -->
+      <div *ngIf="loading$ | async" class="fr-mb-3w">
+        <div class="fr-alert fr-alert--info">
+          <p>{{ 'common.loading' | translate }}</p>
+        </div>
+      </div>
+
+      <!-- Statistics -->
+      <div *ngIf="(statistics$ | async) as stats" class="statistics-container">
+        <!-- Key Metrics Cards -->
+        <div class="fr-grid-row fr-grid-row--gutters fr-mb-4w">
+          <!-- Total Events -->
+          <div class="fr-col-12 fr-col-md-3">
+            <div class="fr-card metric-card">
+              <div class="fr-card__body">
+                <div class="metric-value">{{ stats.totalEvents }}</div>
+                <div class="metric-label">{{ 'audit.dashboard.metrics.totalEvents' | translate }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Successful Events -->
+          <div class="fr-col-12 fr-col-md-3">
+            <div class="fr-card metric-card metric-card--success">
+              <div class="fr-card__body">
+                <div class="metric-value">{{ stats.successfulEvents }}</div>
+                <div class="metric-label">{{ 'audit.dashboard.metrics.successful' | translate }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Failed Events -->
+          <div class="fr-col-12 fr-col-md-3">
+            <div class="fr-card metric-card metric-card--error">
+              <div class="fr-card__body">
+                <div class="metric-value">{{ stats.failedEvents }}</div>
+                <div class="metric-label">{{ 'audit.dashboard.metrics.failed' | translate }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Success Rate -->
+          <div class="fr-col-12 fr-col-md-3">
+            <div class="fr-card metric-card metric-card--info">
+              <div class="fr-card__body">
+                <div class="metric-value">{{ calculateSuccessRate(stats) | number: '1.1-1' }}%</div>
+                <div class="metric-label">{{ 'audit.dashboard.metrics.successRate' | translate }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="fr-grid-row fr-grid-row--gutters">
+          <!-- Events by Category -->
+          <div class="fr-col-12 fr-col-md-6 fr-mb-3w">
+            <div class="fr-card">
+              <div class="fr-card__body">
+                <h2 class="fr-h5">{{ 'audit.dashboard.charts.byCategory' | translate }}</h2>
+                <div class="chart-container">
+                  <div
+                    *ngFor="let entry of getTopEntries(stats.eventsByCategory)"
+                    class="chart-bar"
+                  >
+                    <div class="chart-bar-label">
+                      {{ 'audit.category.' + entry.key | translate }}
+                    </div>
+                    <div class="chart-bar-container">
+                      <div
+                        class="chart-bar-fill"
+                        [ngClass]="getCategoryColorClass(entry.key)"
+                        [style.width.%]="calculatePercentage(entry.value, stats.totalEvents)"
+                      ></div>
+                    </div>
+                    <div class="chart-bar-value">{{ entry.value }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Events by Type -->
+          <div class="fr-col-12 fr-col-md-6 fr-mb-3w">
+            <div class="fr-card">
+              <div class="fr-card__body">
+                <h2 class="fr-h5">{{ 'audit.dashboard.charts.byType' | translate }}</h2>
+                <div class="chart-container">
+                  <div
+                    *ngFor="let entry of getTopEntries(stats.eventsByType, 10)"
+                    class="chart-bar"
+                  >
+                    <div class="chart-bar-label">
+                      {{ 'audit.eventType.' + entry.key | translate }}
+                    </div>
+                    <div class="chart-bar-container">
+                      <div
+                        class="chart-bar-fill stat-bar--default"
+                        [style.width.%]="calculatePercentage(entry.value, stats.totalEvents)"
+                      ></div>
+                    </div>
+                    <div class="chart-bar-value">{{ entry.value }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Users -->
+          <div class="fr-col-12 fr-col-md-6 fr-mb-3w">
+            <div class="fr-card">
+              <div class="fr-card__body">
+                <h2 class="fr-h5">{{ 'audit.dashboard.charts.topUsers' | translate }}</h2>
+                <div class="chart-container">
+                  <div
+                    *ngFor="let entry of getTopEntries(stats.topUsers)"
+                    class="chart-bar"
+                  >
+                    <div class="chart-bar-label">{{ entry.key }}</div>
+                    <div class="chart-bar-container">
+                      <div
+                        class="chart-bar-fill stat-bar--blue"
+                        [style.width.%]="calculatePercentage(entry.value, stats.totalEvents)"
+                      ></div>
+                    </div>
+                    <div class="chart-bar-value">{{ entry.value }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Target Entities -->
+          <div class="fr-col-12 fr-col-md-6 fr-mb-3w">
+            <div class="fr-card">
+              <div class="fr-card__body">
+                <h2 class="fr-h5">{{ 'audit.dashboard.charts.topEntities' | translate }}</h2>
+                <div class="chart-container">
+                  <div
+                    *ngFor="let entry of getTopEntries(stats.topTargetEntities)"
+                    class="chart-bar"
+                  >
+                    <div class="chart-bar-label">{{ entry.key }}</div>
+                    <div class="chart-bar-container">
+                      <div
+                        class="chart-bar-fill stat-bar--purple"
+                        [style.width.%]="calculatePercentage(entry.value, stats.totalEvents)"
+                      ></div>
+                    </div>
+                    <div class="chart-bar-value">{{ entry.value }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Refresh Button -->
+        <div class="fr-mt-3w">
+          <button class="fr-btn fr-btn--secondary" (click)="loadStatistics()">
+            {{ 'audit.dashboard.refresh' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

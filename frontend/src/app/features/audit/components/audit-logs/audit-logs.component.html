@@ -1,0 +1,231 @@
+<div class="fr-container fr-my-4w">
+  <div class="fr-grid-row">
+    <div class="fr-col-12">
+      <h1 class="fr-h2">{{ 'audit.logs.title' | translate }}</h1>
+      <p class="fr-text--sm fr-mb-4w">
+        {{ 'audit.logs.description' | translate }}
+      </p>
+
+      <!-- Filters -->
+      <div class="fr-card fr-mb-3w">
+        <div class="fr-card__body">
+          <h2 class="fr-h5">{{ 'audit.logs.filters.title' | translate }}</h2>
+
+          <div class="fr-grid-row fr-grid-row--gutters">
+            <!-- Event Category -->
+            <div class="fr-col-12 fr-col-md-6">
+              <div class="fr-select-group">
+                <label class="fr-label">{{ 'audit.logs.filters.category' | translate }}</label>
+                <select class="fr-select" [(ngModel)]="filterForm.eventCategory">
+                  <option [value]="''">{{ 'common.all' | translate }}</option>
+                  <option *ngFor="let category of eventCategoryOptions.slice(1)" [value]="category">
+                    {{ 'audit.category.' + category | translate }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Username -->
+            <div class="fr-col-12 fr-col-md-6">
+              <div class="fr-input-group">
+                <label class="fr-label">{{ 'audit.logs.filters.username' | translate }}</label>
+                <input
+                  class="fr-input"
+                  type="text"
+                  [(ngModel)]="filterForm.username"
+                  [placeholder]="'audit.logs.filters.usernamePlaceholder' | translate"
+                />
+              </div>
+            </div>
+
+            <!-- Entity Type -->
+            <div class="fr-col-12 fr-col-md-6">
+              <div class="fr-input-group">
+                <label class="fr-label">{{ 'audit.logs.filters.entityType' | translate }}</label>
+                <input
+                  class="fr-input"
+                  type="text"
+                  [(ngModel)]="filterForm.targetEntityType"
+                  [placeholder]="'audit.logs.filters.entityTypePlaceholder' | translate"
+                />
+              </div>
+            </div>
+
+            <!-- Success Filter -->
+            <div class="fr-col-12 fr-col-md-6">
+              <div class="fr-select-group">
+                <label class="fr-label">{{ 'audit.logs.filters.status' | translate }}</label>
+                <select class="fr-select" [(ngModel)]="filterForm.success">
+                  <option [ngValue]="null">{{ 'common.all' | translate }}</option>
+                  <option [ngValue]="true">{{ 'audit.status.success' | translate }}</option>
+                  <option [ngValue]="false">{{ 'audit.status.failed' | translate }}</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- From Date -->
+            <div class="fr-col-12 fr-col-md-6">
+              <div class="fr-input-group">
+                <label class="fr-label">{{ 'audit.logs.filters.fromDate' | translate }}</label>
+                <input
+                  class="fr-input"
+                  type="datetime-local"
+                  [(ngModel)]="filterForm.fromDate"
+                />
+              </div>
+            </div>
+
+            <!-- To Date -->
+            <div class="fr-col-12 fr-col-md-6">
+              <div class="fr-input-group">
+                <label class="fr-label">{{ 'audit.logs.filters.toDate' | translate }}</label>
+                <input
+                  class="fr-input"
+                  type="datetime-local"
+                  [(ngModel)]="filterForm.toDate"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="fr-btns-group fr-mt-3w">
+            <button
+              class="fr-btn"
+              (click)="applyFilters()"
+            >
+              {{ 'audit.logs.filters.apply' | translate }}
+            </button>
+            <button
+              class="fr-btn fr-btn--secondary"
+              (click)="clearFilters()"
+            >
+              {{ 'audit.logs.filters.clear' | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="loading$ | async" class="fr-mb-3w">
+        <div class="fr-alert fr-alert--info">
+          <p>{{ 'common.loading' | translate }}</p>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="(events$ | async)?.length === 0 && !(loading$ | async)" class="fr-mb-3w">
+        <div class="fr-alert fr-alert--info">
+          <p>{{ 'audit.logs.noEvents' | translate }}</p>
+        </div>
+      </div>
+
+      <!-- Events Table -->
+      <div *ngIf="(events$ | async)?.length ?? 0 > 0" class="fr-table fr-mb-3w">
+        <table>
+          <thead>
+            <tr>
+              <th>{{ 'audit.logs.table.timestamp' | translate }}</th>
+              <th>{{ 'audit.logs.table.eventType' | translate }}</th>
+              <th>{{ 'audit.logs.table.username' | translate }}</th>
+              <th>{{ 'audit.logs.table.targetEntity' | translate }}</th>
+              <th>{{ 'audit.logs.table.status' | translate }}</th>
+              <th>{{ 'audit.logs.table.details' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let event of events$ | async" class="audit-event-row">
+              <td>{{ formatDate(event.timestamp) }}</td>
+              <td>
+                <span
+                  class="fr-badge fr-badge--sm"
+                  [ngClass]="getEventTypeBadgeClass(event.eventType)"
+                >
+                  {{ 'audit.eventType.' + event.eventType | translate }}
+                </span>
+              </td>
+              <td>
+                <a
+                  *ngIf="event.userId"
+                  href="javascript:void(0)"
+                  (click)="viewUserDetails(event.userId)"
+                  class="fr-link"
+                >
+                  {{ event.username }}
+                </a>
+                <span *ngIf="!event.userId">{{ event.username || '-' }}</span>
+              </td>
+              <td>
+                <div *ngIf="event.targetEntityType">
+                  <span class="fr-text--sm">{{ event.targetEntityType }}</span>
+                  <a
+                    *ngIf="event.targetEntityId"
+                    href="javascript:void(0)"
+                    (click)="viewEntityDetails(event)"
+                    class="fr-link fr-ml-1w"
+                  >
+                    {{ event.targetEntityName || event.targetEntityId }}
+                  </a>
+                </div>
+                <span *ngIf="!event.targetEntityType">-</span>
+              </td>
+              <td>
+                <span
+                  class="fr-badge fr-badge--sm"
+                  [ngClass]="getSuccessBadgeClass(event.success)"
+                >
+                  {{ event.success ? ('audit.status.success' | translate) : ('audit.status.failed' | translate) }}
+                </span>
+              </td>
+              <td>
+                <div class="event-details">
+                  <p class="fr-text--sm fr-mb-0" *ngIf="event.details">
+                    {{ event.details }}
+                  </p>
+                  <p class="fr-text--xs fr-text-mention--grey fr-mb-0" *ngIf="event.ipAddress">
+                    IP: {{ event.ipAddress }}
+                  </p>
+                  <p class="fr-text--xs fr-error-text fr-mb-0" *ngIf="event.errorMessage">
+                    {{ event.errorMessage }}
+                  </p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div *ngIf="(pagination$ | async) as pagination" class="fr-mt-4w">
+        <nav role="navigation" class="fr-pagination" aria-label="Pagination">
+          <ul class="fr-pagination__list">
+            <li *ngIf="pagination.currentPage > 0">
+              <button
+                class="fr-pagination__link fr-pagination__link--prev"
+                (click)="onPageChange(pagination.currentPage - 1)"
+              >
+                {{ 'common.previous' | translate }}
+              </button>
+            </li>
+
+            <li>
+              <span class="fr-pagination__link">
+                {{ 'common.page' | translate }} {{ pagination.currentPage + 1 }} / {{ pagination.totalPages }}
+                ({{ pagination.totalElements }} {{ 'audit.logs.table.total' | translate }})
+              </span>
+            </li>
+
+            <li *ngIf="pagination.currentPage < pagination.totalPages - 1">
+              <button
+                class="fr-pagination__link fr-pagination__link--next"
+                (click)="onPageChange(pagination.currentPage + 1)"
+              >
+                {{ 'common.next' | translate }}
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>

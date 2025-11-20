@@ -1,0 +1,109 @@
+.metric-card {
+  text-align: center;
+  border-left: 4px solid var(--border-default-grey);
+
+  &--success {
+    border-left-color: var(--success-425);
+  }
+
+  &--error {
+    border-left-color: var(--error-425);
+  }
+
+  &--info {
+    border-left-color: var(--blue-france-main-525);
+  }
+
+  .metric-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-title-grey);
+    margin-bottom: 0.5rem;
+  }
+
+  .metric-label {
+    font-size: 0.875rem;
+    color: var(--text-mention-grey);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
+
+.chart-container {
+  margin-top: 1rem;
+}
+
+.chart-bar {
+  display: grid;
+  grid-template-columns: 150px 1fr 60px;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+
+  .chart-bar-label {
+    font-size: 0.875rem;
+    color: var(--text-default-grey);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .chart-bar-container {
+    height: 24px;
+    background-color: var(--grey-950);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .chart-bar-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+    border-radius: 4px;
+
+    &.stat-bar--blue {
+      background-color: var(--blue-france-main-525);
+    }
+
+    &.stat-bar--green {
+      background-color: var(--success-425);
+    }
+
+    &.stat-bar--purple {
+      background-color: #6a11cb;
+    }
+
+    &.stat-bar--red {
+      background-color: var(--error-425);
+    }
+
+    &.stat-bar--grey {
+      background-color: var(--grey-625);
+    }
+
+    &.stat-bar--default {
+      background-color: var(--blue-france-sun-113);
+    }
+  }
+
+  .chart-bar-value {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-default-grey);
+    text-align: right;
+  }
+}
+
+@media (max-width: 768px) {
+  .chart-bar {
+    grid-template-columns: 100px 1fr 50px;
+    gap: 0.5rem;
+
+    .chart-bar-label {
+      font-size: 0.75rem;
+    }
+  }
+
+  .metric-card .metric-value {
+    font-size: 2rem;
+  }
+}

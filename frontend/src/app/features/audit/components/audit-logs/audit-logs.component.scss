@@ -1,0 +1,26 @@
+.audit-event-row {
+  &:hover {
+    background-color: var(--grey-975);
+  }
+}
+
+.event-details {
+  max-width: 400px;
+
+  p {
+    word-wrap: break-word;
+  }
+}
+
+.fr-error-text {
+  color: var(--error-425);
+}
+
+.fr-link {
+  color: var(--blue-france-main-525);
+  text-decoration: underline;
+
+  &:hover {
+    color: var(--blue-france-sun-113);
+  }
+}

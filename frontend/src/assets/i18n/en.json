@@ -17,7 +17,8 @@
     "close": "Close",
     "required": "Required",
     "optional": "Optional",
-    "page": "Page"
+    "page": "Page",
+    "all": "All"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -145,6 +146,81 @@
       "COMPLETED_WITH_ERRORS": "Completed with errors",
       "FAILED": "Failed",
       "CANCELLED": "Cancelled"
+    }
+  },
+  "audit": {
+    "logs": {
+      "title": "Audit Logs",
+      "description": "View and search audit events with advanced filtering",
+      "noEvents": "No audit events found",
+      "filters": {
+        "title": "Filters",
+        "category": "Event Category",
+        "username": "Username",
+        "usernamePlaceholder": "Filter by username",
+        "entityType": "Entity Type",
+        "entityTypePlaceholder": "Filter by entity type (e.g., User)",
+        "status": "Status",
+        "fromDate": "From Date",
+        "toDate": "To Date",
+        "apply": "Apply Filters",
+        "clear": "Clear Filters"
+      },
+      "table": {
+        "timestamp": "Timestamp",
+        "eventType": "Event Type",
+        "username": "Username",
+        "targetEntity": "Target Entity",
+        "status": "Status",
+        "details": "Details",
+        "total": "events"
+      }
+    },
+    "dashboard": {
+      "title": "Audit Dashboard",
+      "description": "View audit statistics and aggregations (CQRS Query Side)",
+      "refresh": "Refresh Statistics",
+      "metrics": {
+        "totalEvents": "Total Events",
+        "successful": "Successful",
+        "failed": "Failed",
+        "successRate": "Success Rate"
+      },
+      "charts": {
+        "byCategory": "Events by Category",
+        "byType": "Top Event Types",
+        "topUsers": "Top Users by Activity",
+        "topEntities": "Top Target Entities"
+      }
+    },
+    "category": {
+      "USER": "User Management",
+      "AUTH": "Authentication",
+      "BATCH": "Batch Operations",
+      "SECURITY": "Security",
+      "SYSTEM": "System"
+    },
+    "eventType": {
+      "USER_CREATED": "User Created",
+      "USER_UPDATED": "User Updated",
+      "USER_DELETED": "User Deleted",
+      "USER_ACTIVATED": "User Activated",
+      "USER_DEACTIVATED": "User Deactivated",
+      "LOGIN_SUCCESS": "Login Success",
+      "LOGIN_FAILED": "Login Failed",
+      "LOGOUT": "Logout",
+      "PASSWORD_CHANGED": "Password Changed",
+      "BATCH_IMPORT_STARTED": "Batch Import Started",
+      "BATCH_IMPORT_COMPLETED": "Batch Import Completed",
+      "BATCH_IMPORT_FAILED": "Batch Import Failed",
+      "UNAUTHORIZED_ACCESS": "Unauthorized Access",
+      "FORBIDDEN_ACCESS": "Forbidden Access",
+      "SYSTEM_ERROR": "System Error",
+      "CONFIGURATION_CHANGED": "Configuration Changed"
+    },
+    "status": {
+      "success": "Success",
+      "failed": "Failed"
     }
   }
 }

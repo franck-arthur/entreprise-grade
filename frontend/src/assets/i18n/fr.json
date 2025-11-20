@@ -17,7 +17,8 @@
     "close": "Fermer",
     "required": "Requis",
     "optional": "Optionnel",
-    "page": "Page"
+    "page": "Page",
+    "all": "Tous"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -145,6 +146,81 @@
       "COMPLETED_WITH_ERRORS": "Terminé avec des erreurs",
       "FAILED": "Échoué",
       "CANCELLED": "Annulé"
+    }
+  },
+  "audit": {
+    "logs": {
+      "title": "Logs d'audit",
+      "description": "Visualisez et recherchez les événements d'audit avec filtres avancés",
+      "noEvents": "Aucun événement d'audit trouvé",
+      "filters": {
+        "title": "Filtres",
+        "category": "Catégorie d'événement",
+        "username": "Nom d'utilisateur",
+        "usernamePlaceholder": "Filtrer par nom d'utilisateur",
+        "entityType": "Type d'entité",
+        "entityTypePlaceholder": "Filtrer par type d'entité (ex: User)",
+        "status": "Statut",
+        "fromDate": "Date de début",
+        "toDate": "Date de fin",
+        "apply": "Appliquer les filtres",
+        "clear": "Effacer les filtres"
+      },
+      "table": {
+        "timestamp": "Horodatage",
+        "eventType": "Type d'événement",
+        "username": "Nom d'utilisateur",
+        "targetEntity": "Entité cible",
+        "status": "Statut",
+        "details": "Détails",
+        "total": "événements"
+      }
+    },
+    "dashboard": {
+      "title": "Tableau de bord d'audit",
+      "description": "Visualisez les statistiques et agrégations d'audit (CQRS Query Side)",
+      "refresh": "Actualiser les statistiques",
+      "metrics": {
+        "totalEvents": "Événements totaux",
+        "successful": "Réussis",
+        "failed": "Échecs",
+        "successRate": "Taux de réussite"
+      },
+      "charts": {
+        "byCategory": "Événements par catégorie",
+        "byType": "Types d'événements principaux",
+        "topUsers": "Utilisateurs les plus actifs",
+        "topEntities": "Entités cibles principales"
+      }
+    },
+    "category": {
+      "USER": "Gestion des utilisateurs",
+      "AUTH": "Authentification",
+      "BATCH": "Opérations en batch",
+      "SECURITY": "Sécurité",
+      "SYSTEM": "Système"
+    },
+    "eventType": {
+      "USER_CREATED": "Utilisateur créé",
+      "USER_UPDATED": "Utilisateur mis à jour",
+      "USER_DELETED": "Utilisateur supprimé",
+      "USER_ACTIVATED": "Utilisateur activé",
+      "USER_DEACTIVATED": "Utilisateur désactivé",
+      "LOGIN_SUCCESS": "Connexion réussie",
+      "LOGIN_FAILED": "Échec de connexion",
+      "LOGOUT": "Déconnexion",
+      "PASSWORD_CHANGED": "Mot de passe modifié",
+      "BATCH_IMPORT_STARTED": "Import batch démarré",
+      "BATCH_IMPORT_COMPLETED": "Import batch terminé",
+      "BATCH_IMPORT_FAILED": "Import batch échoué",
+      "UNAUTHORIZED_ACCESS": "Accès non autorisé",
+      "FORBIDDEN_ACCESS": "Accès interdit",
+      "SYSTEM_ERROR": "Erreur système",
+      "CONFIGURATION_CHANGED": "Configuration modifiée"
+    },
+    "status": {
+      "success": "Succès",
+      "failed": "Échec"
     }
   }
 }
