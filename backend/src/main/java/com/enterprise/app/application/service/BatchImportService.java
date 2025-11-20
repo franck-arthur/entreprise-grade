@@ -3,8 +3,8 @@ package com.enterprise.app.application.service;
 import com.enterprise.app.application.dto.CsvUserLine;
 import com.enterprise.app.domain.model.*;
 import com.enterprise.app.domain.port.BatchImportPort;
-import com.enterprise.app.domain.port.UserPort;
-import com.enterprise.app.presentation.exception.ResourceNotFoundException;
+import com.enterprise.app.domain.repository.UserRepository;
+import com.enterprise.app.domain.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 public class BatchImportService {
 
     private final BatchImportPort batchImportPort;
-    private final UserPort userPort;
+    private final UserRepository userRepository;
     private final MessageSource messageSource;
     private final Executor csvProcessorExecutor;
 
@@ -175,14 +175,14 @@ public class BatchImportService {
                 validateCsvLine(csvLine);
 
                 // Check if user already exists
-                if (userPort.findByUsername(csvLine.getUsername()).isPresent()) {
+                if (userRepository.findByUsername(csvLine.getUsername()).isPresent()) {
                     throw new IllegalArgumentException(
                         getMessage("error.batch.user.already.exists",
                             new Object[]{csvLine.getUsername()})
                     );
                 }
 
-                if (userPort.findByEmail(csvLine.getEmail()).isPresent()) {
+                if (userRepository.findByEmail(csvLine.getEmail()).isPresent()) {
                     throw new IllegalArgumentException(
                         getMessage("error.batch.email.already.exists",
                             new Object[]{csvLine.getEmail()})
@@ -204,7 +204,7 @@ public class BatchImportService {
                     .emailVerified(false)
                     .build();
 
-                User savedUser = userPort.save(user);
+                User savedUser = userRepository.save(user);
                 importLine.markAsSuccess(savedUser);
 
                 log.debug("Successfully processed line {} - User: {}",
