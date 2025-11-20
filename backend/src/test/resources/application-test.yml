@@ -1,0 +1,103 @@
+# Test environment configuration
+
+spring:
+  # In-memory H2 database for unit tests
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  # JPA
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: false
+        generate_statistics: false
+
+  # Flyway disabled for tests (using ddl-auto: create-drop)
+  flyway:
+    enabled: false
+
+  # Cache disabled for tests
+  cache:
+    type: none
+
+  # Redis disabled for tests
+  data:
+    redis:
+      repositories:
+        enabled: false
+
+  # Elasticsearch disabled for tests
+  elasticsearch:
+    uris: http://localhost:9200
+
+  # Security OAuth2 - Mock configuration for tests
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/test-realm
+          jwk-set-uri: http://localhost:8180/realms/test-realm/protocol/openid-connect/certs
+
+# Keycloak - Mock configuration for tests
+keycloak:
+  auth-server-url: http://localhost:8180
+  realm: test-realm
+  resource: test-client
+  credentials:
+    secret: test-secret
+  admin:
+    username: admin
+    password: admin
+    client-id: admin-cli
+
+# Logging
+logging:
+  level:
+    root: WARN
+    com.enterprise.app: INFO
+    org.springframework: WARN
+    org.hibernate: WARN
+
+# Server
+server:
+  port: 0  # Random port for tests
+
+# Application properties for tests
+app:
+  cors:
+    allowed-origins: http://localhost:4200,http://localhost:3000
+    allowed-methods: GET,POST,PUT,DELETE,PATCH,OPTIONS
+    allowed-headers: Authorization,Content-Type,Accept,Origin,X-Requested-With
+    allow-credentials: true
+    max-age: 3600
+
+# Resilience4j disabled for tests
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: false
+    instances:
+      keycloakService:
+        registerHealthIndicator: false
+  retry:
+    configs:
+      default:
+        registerHealthIndicator: false
+    instances:
+      keycloakService:
+        registerHealthIndicator: false
+  ratelimiter:
+    configs:
+      default:
+        registerHealthIndicator: false
+    instances:
+      userService:
+        registerHealthIndicator: false
