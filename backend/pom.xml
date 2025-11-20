@@ -349,6 +349,8 @@
                         <include>**/*Test.java</include>
                         <include>**/*Tests.java</include>
                     </includes>
+                    <!-- Enable Byte Buddy experimental mode for Java 23 support -->
+                    <argLine>-Dnet.bytebuddy.experimental=true @{argLine}</argLine>
                 </configuration>
             </plugin>
 
@@ -361,6 +363,8 @@
                         <include>**/*IT.java</include>
                         <include>**/*IntegrationTest.java</include>
                     </includes>
+                    <!-- Enable Byte Buddy experimental mode for Java 23 support -->
+                    <argLine>-Dnet.bytebuddy.experimental=true @{argLine}</argLine>
                 </configuration>
                 <executions>
                     <execution>
