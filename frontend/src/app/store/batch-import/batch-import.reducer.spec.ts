@@ -35,11 +35,11 @@ describe('BatchImport Reducer', () => {
         successLines: 0,
         failedLines: 0,
         errorMessage: undefined,
-        initiatedBy: { id: 'user-1', username: 'admin', email: 'admin@test.com' },
+        initiatedByUserId: 'user-1', initiatedByUsername: 'admin',
         createdAt: '2024-01-01T10:00:00',
         updatedAt: '2024-01-01T10:00:00',
         startedAt: undefined,
-        completedAt: null
+        completedAt: undefined
       };
       const uploadingState: BatchImportState = { ...initialState, uploadingFile: true };
       const action = BatchImportActions.uploadCsvFileSuccess({ batchImport });
@@ -62,7 +62,7 @@ describe('BatchImport Reducer', () => {
         successLines: 5,
         failedLines: 0,
         errorMessage: undefined,
-        initiatedBy: { id: 'user-1', username: 'admin', email: 'admin@test.com' },
+        initiatedByUserId: 'user-1', initiatedByUsername: 'admin',
         createdAt: '2024-01-01T09:00:00',
         updatedAt: '2024-01-01T09:10:00',
         startedAt: '2024-01-01T09:01:00',
@@ -78,11 +78,11 @@ describe('BatchImport Reducer', () => {
         successLines: 0,
         failedLines: 0,
         errorMessage: undefined,
-        initiatedBy: { id: 'user-1', username: 'admin', email: 'admin@test.com' },
+        initiatedByUserId: 'user-1', initiatedByUsername: 'admin',
         createdAt: '2024-01-01T10:00:00',
         updatedAt: '2024-01-01T10:00:00',
         startedAt: undefined,
-        completedAt: null
+        completedAt: undefined
       };
       const stateWithImports: BatchImportState = { ...initialState, imports: [existingImport] };
       const action = BatchImportActions.uploadCsvFileSuccess({ batchImport: newImport });
@@ -129,7 +129,7 @@ describe('BatchImport Reducer', () => {
         successLines: 10,
         failedLines: 0,
         errorMessage: undefined,
-        initiatedBy: { id: 'user-1', username: 'admin', email: 'admin@test.com' },
+        initiatedByUserId: 'user-1', initiatedByUsername: 'admin',
         createdAt: '2024-01-01T10:00:00',
         updatedAt: '2024-01-01T10:10:00',
         startedAt: '2024-01-01T10:01:00',
@@ -184,12 +184,12 @@ describe('BatchImport Reducer', () => {
         successLines: 2,
         failedLines: 0,
         errorMessage: undefined,
-        initiatedBy: { id: 'user-1', username: 'admin', email: 'admin@test.com' },
+        initiatedByUserId: 'user-1', initiatedByUsername: 'admin',
         lines: [
           {
             id: 'line-1',
             lineNumber: 1,
-            username: 'user1',
+            createdUsername: 'user1',
             email: 'user1@test.com',
             firstName: 'User',
             lastName: 'One',
@@ -227,11 +227,11 @@ describe('BatchImport Reducer', () => {
         successLines: 48,
         failedLines: 2,
         errorMessage: undefined,
-        initiatedBy: { id: 'user-1', username: 'admin', email: 'admin@test.com' },
+        initiatedByUserId: 'user-1', initiatedByUsername: 'admin',
         createdAt: '2024-01-01T10:00:00',
         updatedAt: '2024-01-01T10:05:00',
         startedAt: '2024-01-01T10:01:00',
-        completedAt: null
+        completedAt: undefined
       };
       const stateWithImport: BatchImportState = { ...initialState, imports: [originalImport] };
 
@@ -262,12 +262,12 @@ describe('BatchImport Reducer', () => {
         successLines: 48,
         failedLines: 2,
         errorMessage: undefined,
-        initiatedBy: { id: 'user-1', username: 'admin', email: 'admin@test.com' },
+        initiatedByUserId: 'user-1', initiatedByUsername: 'admin',
         lines: [],
         createdAt: '2024-01-01T10:00:00',
         updatedAt: '2024-01-01T10:05:00',
         startedAt: '2024-01-01T10:01:00',
-        completedAt: null
+        completedAt: undefined
       };
       const stateWithSelected: BatchImportState = { ...initialState, selectedImport: originalImport };
 
@@ -281,7 +281,7 @@ describe('BatchImport Reducer', () => {
         successLines: 95,
         failedLines: 5,
         errorMessage: undefined,
-        initiatedBy: { id: 'user-1', username: 'admin', email: 'admin@test.com' },
+        initiatedByUserId: 'user-1', initiatedByUsername: 'admin',
         createdAt: '2024-01-01T10:00:00',
         updatedAt: '2024-01-01T10:10:00',
         startedAt: '2024-01-01T10:01:00',
@@ -305,12 +305,12 @@ describe('BatchImport Reducer', () => {
         successLines: 48,
         failedLines: 2,
         errorMessage: undefined,
-        initiatedBy: { id: 'user-1', username: 'admin', email: 'admin@test.com' },
+        initiatedByUserId: 'user-1', initiatedByUsername: 'admin',
         lines: [],
         createdAt: '2024-01-01T10:00:00',
         updatedAt: '2024-01-01T10:05:00',
         startedAt: '2024-01-01T10:01:00',
-        completedAt: null
+        completedAt: undefined
       };
       const stateWithSelected: BatchImportState = { ...initialState, selectedImport };
 
@@ -324,7 +324,7 @@ describe('BatchImport Reducer', () => {
         successLines: 10,
         failedLines: 0,
         errorMessage: undefined,
-        initiatedBy: { id: 'user-2', username: 'user', email: 'user@test.com' },
+        initiatedByUserId: 'user-1', initiatedByUsername: 'user',
         createdAt: '2024-01-01T11:00:00',
         updatedAt: '2024-01-01T11:05:00',
         startedAt: '2024-01-01T11:01:00',
@@ -359,11 +359,11 @@ describe('BatchImport Reducer', () => {
         successLines: 48,
         failedLines: 2,
         errorMessage: undefined,
-        initiatedBy: { id: 'user-1', username: 'admin', email: 'admin@test.com' },
+        initiatedByUserId: 'user-1', initiatedByUsername: 'admin',
         createdAt: '2024-01-01T10:00:00',
         updatedAt: '2024-01-01T10:05:00',
         startedAt: '2024-01-01T10:01:00',
-        completedAt: null
+        completedAt: undefined
       };
       const stateWithImport: BatchImportState = { ...initialState, imports: [originalImport] };
 

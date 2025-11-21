@@ -26,7 +26,7 @@ describe('AuditEffects', () => {
     targetEntityType: 'USER',
     targetEntityId: 'entity-1',
     targetEntityName: 'Test User',
-    description: 'User created',
+    details: 'User created',
     ipAddress: '192.168.1.1',
     userAgent: 'Mozilla/5.0',
     success: true,

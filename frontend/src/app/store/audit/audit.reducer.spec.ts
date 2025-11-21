@@ -1,6 +1,6 @@
 import { auditReducer, initialState, AuditState } from './audit.reducer';
 import * as AuditActions from './audit.actions';
-import { AuditEvent, AuditEventType, AuditEventCategory, AuditStatistics } from '../../core/models/audit.model';
+import { AuditEvent, AuditEventType, AuditEventCategory, AuditStatistics, AuditEventQuery } from '../../core/models/audit.model';
 
 describe('Audit Reducer', () => {
   describe('unknown action', () => {
@@ -34,7 +34,7 @@ describe('Audit Reducer', () => {
         targetEntityType: 'USER',
         targetEntityId: 'entity-1',
         targetEntityName: 'Test',
-        description: 'Test',
+        details: 'Test',
         ipAddress: '127.0.0.1',
         userAgent: 'test',
         success: true,
@@ -65,7 +65,7 @@ describe('Audit Reducer', () => {
           targetEntityType: 'USER',
           targetEntityId: 'user-1',
           targetEntityName: 'Test User',
-          description: 'Login successful',
+          details: 'Login successful',
           ipAddress: '192.168.1.1',
           userAgent: 'Mozilla/5.0',
           success: true,
@@ -137,7 +137,7 @@ describe('Audit Reducer', () => {
         targetEntityType: 'USER',
         targetEntityId: 'user-123',
         targetEntityName: 'Test User',
-        description: 'User updated',
+        details: 'User updated',
         ipAddress: '192.168.1.1',
         userAgent: 'Mozilla/5.0',
         success: true,
@@ -248,7 +248,7 @@ describe('Audit Reducer', () => {
 
   describe('setAuditFilter', () => {
     it('should update current query', () => {
-      const query = {
+      const query: AuditEventQuery = {
         eventTypes: [AuditEventType.LOGIN_FAILED],
         eventCategory: 'SECURITY',
         success: false
@@ -271,7 +271,7 @@ describe('Audit Reducer', () => {
           targetEntityType: 'USER',
           targetEntityId: 'entity-1',
           targetEntityName: 'Test',
-          description: 'Test',
+          details: 'Test',
           ipAddress: '127.0.0.1',
           userAgent: 'test',
           success: true,
@@ -340,7 +340,7 @@ describe('Audit Reducer', () => {
         targetEntityType: 'USER',
         targetEntityId: 'entity-1',
         targetEntityName: 'Test',
-        description: 'Test',
+        details: 'Test',
         ipAddress: '127.0.0.1',
         userAgent: 'test',
         success: true,
@@ -380,7 +380,7 @@ describe('Audit Reducer', () => {
         targetEntityType: 'USER',
         targetEntityId: 'entity-1',
         targetEntityName: 'Test',
-        description: 'Test',
+        details: 'Test',
         ipAddress: '127.0.0.1',
         userAgent: 'test',
         success: true,

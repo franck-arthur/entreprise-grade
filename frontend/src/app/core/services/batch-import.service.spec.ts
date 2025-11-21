@@ -50,7 +50,7 @@ describe('BatchImportService', () => {
         createdAt: '2024-01-01T10:00:00',
         updatedAt: '2024-01-01T10:00:00',
         startedAt: undefined,
-        completedAt: null
+        completedAt: undefined
       };
 
       service.uploadCsvFile(mockFile).subscribe(response => {
@@ -103,7 +103,7 @@ describe('BatchImportService', () => {
           {
             id: 'line-1',
             lineNumber: 1,
-            username: 'user1',
+            createdUsername: 'user1',
             email: 'user1@test.com',
             firstName: 'User',
             lastName: 'One',
@@ -169,7 +169,7 @@ describe('BatchImportService', () => {
         createdAt: '2024-01-01T10:00:00',
         updatedAt: '2024-01-01T10:05:00',
         startedAt: '2024-01-01T10:01:00',
-        completedAt: null
+        completedAt: undefined
       };
 
       service.getBatchImportStatus(batchId).subscribe(response => {
@@ -198,7 +198,7 @@ describe('BatchImportService', () => {
             successLines: 10,
             failedLines: 0,
             errorMessage: undefined,
-            initiatedBy: { id: 'user-1', username: 'admin', email: 'admin@test.com' },
+            initiatedByUserId: 'user-1', initiatedByUsername: 'admin',
             createdAt: '2024-01-01T10:00:00',
             updatedAt: '2024-01-01T10:10:00',
             startedAt: '2024-01-01T10:01:00',
@@ -263,11 +263,11 @@ describe('BatchImportService', () => {
             successLines: 3,
             failedLines: 0,
             errorMessage: undefined,
-            initiatedBy: { id: 'current-user', username: 'me', email: 'me@test.com' },
+            initiatedByUserId: 'user-1', initiatedByUsername: 'me',
             createdAt: '2024-01-01T11:00:00',
             updatedAt: '2024-01-01T11:05:00',
             startedAt: '2024-01-01T11:01:00',
-            completedAt: null
+            completedAt: undefined
           }
         ],
         totalElements: 1,
@@ -302,7 +302,7 @@ describe('BatchImportService', () => {
         successLines: 18,
         failedLines: 2,
         errorMessage: undefined,
-        initiatedBy: { id: 'user-1', username: 'admin', email: 'admin@test.com' },
+        initiatedByUserId: 'user-1', initiatedByUsername: 'admin',
         createdAt: '2024-01-01T10:00:00',
         updatedAt: '2024-01-01T10:05:00',
         startedAt: '2024-01-01T10:01:00',
@@ -351,11 +351,11 @@ describe('BatchImportService', () => {
         successLines: 0,
         failedLines: 0,
         errorMessage: undefined,
-        initiatedBy: { id: 'user-1', username: 'admin', email: 'admin@test.com' },
+        initiatedByUserId: 'user-1', initiatedByUsername: 'admin',
         createdAt: '2024-01-01T10:00:00',
         updatedAt: '2024-01-01T10:00:00',
         startedAt: undefined,
-        completedAt: null
+        completedAt: undefined
       };
 
       service.uploadCsvFile(mockFile).subscribe(upload => {
