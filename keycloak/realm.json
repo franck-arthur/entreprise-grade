@@ -95,8 +95,8 @@
         "http://localhost:4200",
         "http://localhost"
       ],
-      "defaultClientScopes": [],
-      "optionalClientScopes": []
+      "defaultClientScopes": ["openid", "profile", "email", "roles"],
+      "optionalClientScopes": ["offline_access"]
     },
     {
       "clientId": "enterprise-frontend",
@@ -128,8 +128,8 @@
         "http://localhost:80",
         "+"
       ],
-      "defaultClientScopes": [],
-      "optionalClientScopes": []
+      "defaultClientScopes": ["openid", "profile", "email", "roles"],
+      "optionalClientScopes": ["offline_access"]
     }
   ],
   "users": [
