@@ -38,7 +38,8 @@
     "logout_success": "Déconnexion réussie",
     "unauthorized_title": "Accès refusé",
     "unauthorized_message": "Vous n'avez pas les permissions nécessaires pour accéder à cette page.",
-    "return_dashboard": "Retour au tableau de bord"
+    "return_dashboard": "Retour au tableau de bord",
+    "redirect_message": "Cliquez sur le bouton ci-dessous pour vous authentifier avec Keycloak."
   },
   "dashboard": {
     "title": "Tableau de bord",

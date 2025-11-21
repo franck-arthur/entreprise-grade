@@ -1,4 +1,4 @@
-import { ApplicationConfig, importProvidersFrom, isDevMode } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom, isDevMode, APP_INITIALIZER } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors, HttpClient } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -8,12 +8,14 @@ import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { provideRouterStore } from '@ngrx/router-store';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { KeycloakService, KeycloakAngularModule } from 'keycloak-angular';
 
 import { routes } from './app.routes';
 import { reducers, metaReducers } from './core/state';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { languageInterceptor } from './core/interceptors/language.interceptor';
+import { initializeKeycloak } from './core/auth/keycloak-init';
 
 /**
  * HTTP loader factory for ngx-translate.
@@ -54,7 +56,15 @@ export const appConfig: ApplicationConfig = {
           useFactory: HttpLoaderFactory,
           deps: [HttpClient],
         },
-      })
+      }),
+      KeycloakAngularModule
     ),
+    KeycloakService,
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeKeycloak,
+      multi: true,
+      deps: [KeycloakService],
+    },
   ],
 };

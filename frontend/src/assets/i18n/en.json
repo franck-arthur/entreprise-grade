@@ -38,7 +38,8 @@
     "logout_success": "Logged out successfully",
     "unauthorized_title": "Access Denied",
     "unauthorized_message": "You don't have the necessary permissions to access this page.",
-    "return_dashboard": "Return to Dashboard"
+    "return_dashboard": "Return to Dashboard",
+    "redirect_message": "Click the button below to authenticate with Keycloak."
   },
   "dashboard": {
     "title": "Dashboard",
