@@ -38,44 +38,34 @@ export class AuthService {
 
   private async loadUserProfile(): Promise<void> {
     try {
-      // Try to load full profile first
-      const profile = await this.keycloak.loadUserProfile();
       const roles = this.keycloak.getUserRoles();
+      const tokenParsed = this.keycloak.getKeycloakInstance().tokenParsed;
 
+      console.log('Token parsed content:', tokenParsed);
+
+      // Try to load profile from Keycloak API
+      let profile: any = null;
+      try {
+        profile = await this.keycloak.loadUserProfile();
+        console.log('Keycloak profile loaded:', profile);
+      } catch (e) {
+        console.warn('Could not load user profile from Keycloak API (401 is normal):', e);
+      }
+
+      // Build user profile - prefer API data, fallback to token claims
       const user: UserProfile = {
-        id: profile.id || '',
-        username: profile.username || '',
-        email: profile.email || '',
-        firstName: profile.firstName,
-        lastName: profile.lastName,
+        id: profile?.id || tokenParsed?.['sub'] || '',
+        username: profile?.username || tokenParsed?.['preferred_username'] || tokenParsed?.['name'] || 'user',
+        email: profile?.email || tokenParsed?.['email'] || '',
+        firstName: profile?.firstName || tokenParsed?.['given_name'],
+        lastName: profile?.lastName || tokenParsed?.['family_name'],
         roles: roles
       };
 
+      console.log('Final user profile:', user);
       this.currentUserSubject.next(user);
     } catch (e) {
-      console.warn('Could not load full user profile, using token claims instead:', e);
-
-      // Fallback: extract user info from JWT token claims
-      try {
-        const tokenParsed = this.keycloak.getKeycloakInstance().tokenParsed;
-        const roles = this.keycloak.getUserRoles();
-
-        if (tokenParsed) {
-          const user: UserProfile = {
-            id: tokenParsed['sub'] || '',
-            username: tokenParsed['preferred_username'] || tokenParsed['name'] || '',
-            email: tokenParsed['email'] || '',
-            firstName: tokenParsed['given_name'],
-            lastName: tokenParsed['family_name'],
-            roles: roles
-          };
-
-          this.currentUserSubject.next(user);
-          console.log('User profile loaded from token claims:', user);
-        }
-      } catch (fallbackError) {
-        console.error('Failed to extract user info from token:', fallbackError);
-      }
+      console.error('Critical error loading user profile:', e);
     }
   }
 

@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { Subject, takeUntil } from 'rxjs';
 import { LanguageSelectorComponent } from '../language-selector/language-selector.component';
 import { AuthService } from '@app/core/services/auth.service';
 import { UserRole } from '@app/core/models/user.model';
@@ -128,35 +129,54 @@ import { UserRole } from '@app/core/models/user.model';
     `,
   ],
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  currentUser: any = null;
+
   constructor(private authService: AuthService) {}
+
+  ngOnInit(): void {
+    // Subscribe to current user changes
+    this.authService.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => {
+        this.currentUser = user;
+        console.log('Header: User profile updated', user);
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   isAuthenticated(): boolean {
     return this.authService.isAuthenticated();
   }
 
   getCurrentUser() {
-    return this.authService.getCurrentUser();
+    return this.currentUser || this.authService.getCurrentUser();
   }
 
   isAdmin(): boolean {
     const user = this.getCurrentUser();
-    console.log('Current user:', user);
+    console.log('isAdmin() check - Current user:', user);
     console.log('User roles:', user?.roles);
     console.log('Looking for role:', UserRole.ADMIN);
     console.log('Has ADMIN role:', user?.roles?.includes(UserRole.ADMIN));
-    console.log('Has lowercase admin:', user?.roles?.includes('admin'));
-    console.log('Has ROLE_ADMIN:', user?.roles?.includes('ROLE_ADMIN'));
 
     // Check for multiple possible role formats
     if (!user?.roles) return false;
 
-    return user.roles.some(role =>
+    const isAdmin = user.roles.some((role: string) =>
       role === UserRole.ADMIN ||
       role === 'admin' ||
       role === 'ROLE_ADMIN' ||
       role.toUpperCase() === 'ADMIN'
     );
+
+    console.log('isAdmin() result:', isAdmin);
+    return isAdmin;
   }
 
   logout(): void {
