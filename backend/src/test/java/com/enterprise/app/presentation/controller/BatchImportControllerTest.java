@@ -167,9 +167,7 @@ class BatchImportControllerTest {
             new byte[0]
         );
 
-        when(userService.getUserEntityByUsername("testuser")).thenReturn(testUser);
-
-        // When & Then
+        // When & Then - validation happens before user lookup, so no stubbing needed
         assertThatThrownBy(() ->
             batchImportController.uploadCsvFile(emptyFile, authentication)
         ).isInstanceOf(IllegalArgumentException.class)
@@ -189,9 +187,7 @@ class BatchImportControllerTest {
             "content".getBytes()
         );
 
-        when(userService.getUserEntityByUsername("testuser")).thenReturn(testUser);
-
-        // When & Then
+        // When & Then - validation happens before user lookup, so no stubbing needed
         assertThatThrownBy(() ->
             batchImportController.uploadCsvFile(invalidFile, authentication)
         ).isInstanceOf(IllegalArgumentException.class)
