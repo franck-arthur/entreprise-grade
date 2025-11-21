@@ -83,11 +83,22 @@ export class AuthService {
    */
   private isTokenExpired(token: string): boolean {
     try {
-      // Parse JWT (this is a simplified version)
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const expiry = payload.exp;
-      const now = Math.floor(Date.now() / 1000);
+      // Check if token has valid JWT structure (three parts separated by dots)
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        return true;
+      }
 
+      // Parse JWT payload
+      const payload = JSON.parse(atob(parts[1]));
+      const expiry = payload.exp;
+
+      // If no expiry claim, consider token valid
+      if (!expiry) {
+        return false;
+      }
+
+      const now = Math.floor(Date.now() / 1000);
       return expiry < now;
     } catch (error) {
       console.error('Error checking token expiration:', error);
@@ -122,13 +133,21 @@ export class AuthService {
     // Mock implementation
     // In production: return this.http.post('/auth/login', { username, password });
 
-    const mockToken = 'mock-jwt-token';
     const mockUser = {
       id: '123',
       username: username,
       email: `${username}@example.com`,
       roles: ['USER', 'ADMIN'],
     };
+
+    // Create a mock JWT token with valid structure (header.payload.signature)
+    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+    const payload = btoa(JSON.stringify({
+      sub: mockUser.id,
+      username: mockUser.username,
+      exp: Math.floor(Date.now() / 1000) + 3600 // 1 hour from now
+    }));
+    const mockToken = `${header}.${payload}.mock-signature`;
 
     this.setToken(mockToken);
     this.setCurrentUser(mockUser);
