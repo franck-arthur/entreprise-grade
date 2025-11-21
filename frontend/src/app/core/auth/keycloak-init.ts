@@ -10,8 +10,8 @@ export function initializeKeycloak(keycloak: KeycloakService): () => Promise<boo
       },
       initOptions: {
         onLoad: 'check-sso',
-        silentCheckSsoRedirectUri: window.location.origin + '/assets/silent-check-sso.html',
-        checkLoginIframe: false
+        checkLoginIframe: false,
+        silentCheckSsoFallback: false
       },
       enableBearerInterceptor: true,
       bearerPrefix: 'Bearer',
