@@ -68,10 +68,9 @@
     </appender>
 
     <!-- Development profile -->
-    <springProfile name="dev">
+    <springProfile name="dev,docker">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
-            <appender-ref ref="ASYNC_FILE"/>
         </root>
 
         <logger name="com.enterprise.app" level="DEBUG"/>
