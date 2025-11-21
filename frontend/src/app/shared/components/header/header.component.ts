@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageSelectorComponent } from '../language-selector/language-selector.component';
 import { AuthService } from '@app/core/services/auth.service';
+import { UserRole } from '@app/core/models/user.model';
 
 /**
  * Header component with navigation and language selector.
@@ -98,6 +99,16 @@ import { AuthService } from '@app/core/services/auth.service';
                   {{ 'nav.users' | translate }}
                 </a>
               </li>
+              <li class="fr-nav__item" *ngIf="isAdmin()">
+                <a class="fr-nav__link" routerLink="/batch-import" routerLinkActive="fr-nav__link--active">
+                  {{ 'nav.batch_import' | translate }}
+                </a>
+              </li>
+              <li class="fr-nav__item" *ngIf="isAdmin()">
+                <a class="fr-nav__link" routerLink="/audit" routerLinkActive="fr-nav__link--active">
+                  {{ 'nav.audit' | translate }}
+                </a>
+              </li>
               <li class="fr-nav__item">
                 <a class="fr-nav__link" routerLink="/settings" routerLinkActive="fr-nav__link--active">
                   {{ 'nav.settings' | translate }}
@@ -126,6 +137,11 @@ export class HeaderComponent {
 
   getCurrentUser() {
     return this.authService.getCurrentUser();
+  }
+
+  isAdmin(): boolean {
+    const user = this.getCurrentUser();
+    return user?.roles?.includes(UserRole.ADMIN) || false;
   }
 
   logout(): void {

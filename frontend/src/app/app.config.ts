@@ -16,6 +16,8 @@ import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { languageInterceptor } from './core/interceptors/language.interceptor';
 import { initializeKeycloak } from './core/auth/keycloak-init';
+import { BatchImportEffects } from './store/batch-import/batch-import.effects';
+import { AuditEffects } from './store/audit/audit.effects';
 
 /**
  * HTTP loader factory for ngx-translate.
@@ -40,7 +42,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([authInterceptor, languageInterceptor, errorInterceptor])),
     provideAnimations(),
     provideStore(reducers, { metaReducers }),
-    provideEffects([]),
+    provideEffects([BatchImportEffects, AuditEffects]),
     provideRouterStore(),
     provideStoreDevtools({
       maxAge: 25,
