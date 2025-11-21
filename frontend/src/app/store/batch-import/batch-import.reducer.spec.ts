@@ -195,7 +195,6 @@ describe('BatchImport Reducer', () => {
             id: 'line-1',
             lineNumber: 1,
             createdUsername: 'user1',
-            status: 'SUCCESS',
             errorMessage: undefined,
             createdUserId: 'created-1',
             processedAt: '2024-01-01T10:05:00'
