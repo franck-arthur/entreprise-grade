@@ -38,6 +38,7 @@ export class AuthService {
 
   private async loadUserProfile(): Promise<void> {
     try {
+      // Try to load full profile first
       const profile = await this.keycloak.loadUserProfile();
       const roles = this.keycloak.getUserRoles();
 
@@ -52,7 +53,29 @@ export class AuthService {
 
       this.currentUserSubject.next(user);
     } catch (e) {
-      console.error('Load profile error:', e);
+      console.warn('Could not load full user profile, using token claims instead:', e);
+
+      // Fallback: extract user info from JWT token claims
+      try {
+        const tokenParsed = this.keycloak.getKeycloakInstance().tokenParsed;
+        const roles = this.keycloak.getUserRoles();
+
+        if (tokenParsed) {
+          const user: UserProfile = {
+            id: tokenParsed['sub'] || '',
+            username: tokenParsed['preferred_username'] || tokenParsed['name'] || '',
+            email: tokenParsed['email'] || '',
+            firstName: tokenParsed['given_name'],
+            lastName: tokenParsed['family_name'],
+            roles: roles
+          };
+
+          this.currentUserSubject.next(user);
+          console.log('User profile loaded from token claims:', user);
+        }
+      } catch (fallbackError) {
+        console.error('Failed to extract user info from token:', fallbackError);
+      }
     }
   }
 
