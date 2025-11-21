@@ -41,12 +41,10 @@ describe('BatchImportService', () => {
         processedLines: 0,
         successLines: 0,
         failedLines: 0,
+        progressPercentage: 0,
         errorMessage: undefined,
-        initiatedBy: {
-          id: 'user-1',
-          username: 'admin',
-          email: 'admin@test.com'
-        },
+        initiatedByUserId: 'user-1',
+        initiatedByUsername: 'admin',
         createdAt: '2024-01-01T10:00:00',
         updatedAt: '2024-01-01T10:00:00',
         startedAt: undefined,
@@ -94,17 +92,13 @@ describe('BatchImportService', () => {
         successLines: 8,
         failedLines: 2,
         errorMessage: undefined,
-        initiatedBy: {
-          id: 'user-1',
-          username: 'admin',
-          email: 'admin@test.com'
-        },
+        initiatedByUserId: 'user-1',
+        initiatedByUsername: 'admin',
         lines: [
           {
             id: 'line-1',
             lineNumber: 1,
             createdUsername: 'user1',
-            email: 'user1@test.com',
             firstName: 'User',
             lastName: 'One',
             phoneNumber: undefined,
@@ -161,11 +155,8 @@ describe('BatchImportService', () => {
         successLines: 48,
         failedLines: 2,
         errorMessage: undefined,
-        initiatedBy: {
-          id: 'user-1',
-          username: 'admin',
-          email: 'admin@test.com'
-        },
+        initiatedByUserId: 'user-1',
+        initiatedByUsername: 'admin',
         createdAt: '2024-01-01T10:00:00',
         updatedAt: '2024-01-01T10:05:00',
         startedAt: '2024-01-01T10:01:00',
@@ -197,6 +188,7 @@ describe('BatchImportService', () => {
             processedLines: 10,
             successLines: 10,
             failedLines: 0,
+        progressPercentage: 0,
             errorMessage: undefined,
             initiatedByUserId: 'user-1', initiatedByUsername: 'admin',
             createdAt: '2024-01-01T10:00:00',
@@ -262,6 +254,7 @@ describe('BatchImportService', () => {
             processedLines: 3,
             successLines: 3,
             failedLines: 0,
+        progressPercentage: 0,
             errorMessage: undefined,
             initiatedByUserId: 'user-1', initiatedByUsername: 'me',
             createdAt: '2024-01-01T11:00:00',
@@ -350,6 +343,7 @@ describe('BatchImportService', () => {
         processedLines: 0,
         successLines: 0,
         failedLines: 0,
+        progressPercentage: 0,
         errorMessage: undefined,
         initiatedByUserId: 'user-1', initiatedByUsername: 'admin',
         createdAt: '2024-01-01T10:00:00',

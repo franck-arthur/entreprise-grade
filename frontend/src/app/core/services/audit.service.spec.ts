@@ -53,7 +53,6 @@ describe('AuditService', () => {
             userAgent: 'Mozilla/5.0',
             success: true,
             errorMessage: undefined,
-            metadata: {},
             timestamp: '2024-01-01T10:00:00',
             eventDate: '2024-01-01',
             eventHour: 10
