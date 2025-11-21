@@ -18,7 +18,6 @@ describe('Audit Selectors', () => {
     success: true,
     errorMessage: undefined,
     timestamp: '2024-01-01T10:00:00',
-    eventDate: '2024-01-01',
     eventHour: 10
   };
 

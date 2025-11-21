@@ -40,7 +40,6 @@ describe('Audit Reducer', () => {
         success: true,
         errorMessage: undefined,
         timestamp: '2024-01-01T10:00:00',
-        eventDate: '2024-01-01',
         eventHour: 10
       }];
       const stateWithEvents: AuditState = { ...initialState, events: existingEvents };
@@ -70,7 +69,6 @@ describe('Audit Reducer', () => {
           success: true,
           errorMessage: undefined,
           timestamp: '2024-01-01T10:00:00',
-          eventDate: '2024-01-01',
           eventHour: 10
         }
       ];
@@ -141,7 +139,6 @@ describe('Audit Reducer', () => {
         success: true,
         errorMessage: undefined,
         timestamp: '2024-01-01T10:00:00',
-        eventDate: '2024-01-01',
         eventHour: 10
       }];
       const action = AuditActions.loadAuditEventsByUserSuccess({
@@ -274,7 +271,6 @@ describe('Audit Reducer', () => {
           success: true,
           errorMessage: undefined,
           timestamp: '2024-01-01T10:00:00',
-          eventDate: '2024-01-01',
           eventHour: 10
         }],
         totalElements: 1
@@ -342,7 +338,6 @@ describe('Audit Reducer', () => {
         success: true,
         errorMessage: undefined,
         timestamp: '2024-01-01T10:00:00',
-        eventDate: '2024-01-01',
         eventHour: 10
       }];
       const action = AuditActions.loadAuditEventsSuccess({
@@ -381,7 +376,6 @@ describe('Audit Reducer', () => {
         success: true,
         errorMessage: undefined,
         timestamp: '2024-01-01T10:00:00',
-        eventDate: '2024-01-01',
         eventHour: 10
       }];
       state = auditReducer(state, AuditActions.loadAuditEventsSuccess({
