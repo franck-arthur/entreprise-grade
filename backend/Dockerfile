@@ -19,7 +19,8 @@ WORKDIR /app
 # Install curl for health check and create non-root user
 RUN apt-get update && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/* \
-    && groupadd -r spring && useradd -r -g spring spring
+    && groupadd -r spring && useradd -r -g spring spring \
+    && mkdir -p /app/logs && chown -R spring:spring /app
 USER spring:spring
 
 # Copy JAR from build stage
