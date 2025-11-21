@@ -1,0 +1,79 @@
+# Application Configuration
+spring:
+  application:
+    name: cqrs-ecommerce
+
+  # Database (H2 pour développement)
+  datasource:
+    url: jdbc:h2:mem:ecommerce;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  # H2 Console (développement)
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+# Server Configuration
+server:
+  port: 8080
+
+# Axon Framework Configuration
+axon:
+  # Utiliser l'Event Store embarqué (sans Axon Server)
+  axonserver:
+    enabled: false
+
+  # Serialization
+  serializer:
+    general: jackson
+    events: jackson
+    messages: jackson
+
+# Logging
+logging:
+  level:
+    com.ecommerce: DEBUG
+    org.axonframework: INFO
+
+---
+# Production Profile
+spring:
+  config:
+    activate:
+      on-profile: production
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ecommerce
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+  h2:
+    console:
+      enabled: false
+
+axon:
+  axonserver:
+    enabled: true
+    servers: ${AXON_SERVER_HOST:localhost}:${AXON_SERVER_PORT:8124}
+
+logging:
+  level:
+    com.ecommerce: INFO
