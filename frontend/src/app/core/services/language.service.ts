@@ -21,7 +21,7 @@ export class LanguageService {
   constructor(private translate: TranslateService) {
     // Initialize with stored language or default
     const storedLanguage = this.getStoredLanguage();
-    const initialLanguage = this.isLanguageSupported(storedLanguage)
+    const initialLanguage: string = storedLanguage && this.isLanguageSupported(storedLanguage)
       ? storedLanguage
       : this.DEFAULT_LANGUAGE;
 
