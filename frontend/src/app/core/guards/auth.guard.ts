@@ -1,21 +1,20 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { AuthService } from '../services/auth.service';
+import { KeycloakService } from 'keycloak-angular';
 
 /**
  * Auth guard to protect routes that require authentication.
- *
- * This is a functional guard (Angular 17+ style).
- * It checks if the user is authenticated and has the required roles.
+ * Uses KeycloakService for proper async authentication check.
  */
-export const authGuard: CanActivateFn = (route, state) => {
-  const authService = inject(AuthService);
+export const authGuard: CanActivateFn = async (route, state) => {
+  const keycloak = inject(KeycloakService);
   const router = inject(Router);
 
-  // Check if user is authenticated
-  if (!authService.isAuthenticated()) {
-    router.navigate(['/login'], {
-      queryParams: { returnUrl: state.url },
+  const isLoggedIn = await keycloak.isLoggedIn();
+
+  if (!isLoggedIn) {
+    await keycloak.login({
+      redirectUri: window.location.origin + state.url,
     });
     return false;
   }
@@ -24,7 +23,10 @@ export const authGuard: CanActivateFn = (route, state) => {
   const requiredRoles = route.data['roles'] as string[] | undefined;
 
   if (requiredRoles && requiredRoles.length > 0) {
-    if (!authService.hasAnyRole(requiredRoles)) {
+    const userRoles = keycloak.getUserRoles();
+    const hasRole = requiredRoles.some(role => userRoles.includes(role));
+
+    if (!hasRole) {
       router.navigate(['/unauthorized']);
       return false;
     }

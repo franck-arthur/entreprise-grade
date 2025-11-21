@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { KeycloakService } from 'keycloak-angular';
-import { BehaviorSubject, Observable, from } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs';
 
 export interface UserProfile {
   id: string;
@@ -18,13 +17,27 @@ export interface UserProfile {
 export class AuthService {
   private currentUserSubject = new BehaviorSubject<UserProfile | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
+  private _isLoggedIn = false;
+  private _token: string | null = null;
 
   constructor(private keycloak: KeycloakService) {
-    this.loadUserProfile();
+    this.initAuth();
+  }
+
+  private async initAuth(): Promise<void> {
+    try {
+      this._isLoggedIn = await this.keycloak.isLoggedIn();
+      if (this._isLoggedIn) {
+        this._token = await this.keycloak.getToken();
+        await this.loadUserProfile();
+      }
+    } catch (e) {
+      console.error('Auth init error:', e);
+    }
   }
 
   private async loadUserProfile(): Promise<void> {
-    if (await this.keycloak.isLoggedIn()) {
+    try {
       const profile = await this.keycloak.loadUserProfile();
       const roles = this.keycloak.getUserRoles();
 
@@ -38,11 +51,13 @@ export class AuthService {
       };
 
       this.currentUserSubject.next(user);
+    } catch (e) {
+      console.error('Load profile error:', e);
     }
   }
 
   isAuthenticated(): boolean {
-    return this.keycloak.isLoggedIn() as unknown as boolean;
+    return this._isLoggedIn;
   }
 
   async isAuthenticatedAsync(): Promise<boolean> {
@@ -50,11 +65,23 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return this.keycloak.getToken() as unknown as string | null;
+    return this._token;
   }
 
   async getTokenAsync(): Promise<string> {
     return this.keycloak.getToken();
+  }
+
+  async updateToken(minValidity: number = 5): Promise<boolean> {
+    try {
+      const refreshed = await this.keycloak.updateToken(minValidity);
+      if (refreshed) {
+        this._token = await this.keycloak.getToken();
+      }
+      return refreshed;
+    } catch {
+      return false;
+    }
   }
 
   getCurrentUser(): UserProfile | null {
@@ -74,7 +101,10 @@ export class AuthService {
   }
 
   logout(): void {
-    this.keycloak.logout(window.location.origin);
+    this._isLoggedIn = false;
+    this._token = null;
+    this.currentUserSubject.next(null);
+    this.keycloak.logout(window.location.origin + '/login');
   }
 
   register(): void {

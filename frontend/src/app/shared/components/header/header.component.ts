@@ -52,6 +52,9 @@ import { AuthService } from '@app/core/services/auth.service';
                   <li>
                     <app-language-selector></app-language-selector>
                   </li>
+                  <li *ngIf="isAuthenticated() && getCurrentUser()">
+                    <span class="fr-text--sm fr-mr-2w">{{ getCurrentUser()?.username }}</span>
+                  </li>
                   <li *ngIf="isAuthenticated()">
                     <button class="fr-btn fr-icon-logout-box-r-line" (click)="logout()">
                       {{ 'nav.logout' | translate }}
@@ -121,8 +124,11 @@ export class HeaderComponent {
     return this.authService.isAuthenticated();
   }
 
+  getCurrentUser() {
+    return this.authService.getCurrentUser();
+  }
+
   logout(): void {
     this.authService.logout();
-    window.location.href = '/login';
   }
 }
