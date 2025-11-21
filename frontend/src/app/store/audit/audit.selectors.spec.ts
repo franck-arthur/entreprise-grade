@@ -18,7 +18,6 @@ describe('Audit Selectors', () => {
     success: true,
     errorMessage: undefined,
     timestamp: '2024-01-01T10:00:00',
-    eventHour: 10
   };
 
   const mockStatistics: AuditStatistics = {
