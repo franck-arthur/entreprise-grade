@@ -11,7 +11,7 @@ import { User, CreateUserRequest, UpdateUserRequest, PagedResponse } from '../mo
   providedIn: 'root'
 })
 export class UserService {
-  private readonly apiUrl = `${environment.apiUrl}/api/users`;
+  private readonly apiUrl = `${environment.apiUrl}/users`;
 
   constructor(private http: HttpClient) {}
 

@@ -141,7 +141,22 @@ export class HeaderComponent {
 
   isAdmin(): boolean {
     const user = this.getCurrentUser();
-    return user?.roles?.includes(UserRole.ADMIN) || false;
+    console.log('Current user:', user);
+    console.log('User roles:', user?.roles);
+    console.log('Looking for role:', UserRole.ADMIN);
+    console.log('Has ADMIN role:', user?.roles?.includes(UserRole.ADMIN));
+    console.log('Has lowercase admin:', user?.roles?.includes('admin'));
+    console.log('Has ROLE_ADMIN:', user?.roles?.includes('ROLE_ADMIN'));
+
+    // Check for multiple possible role formats
+    if (!user?.roles) return false;
+
+    return user.roles.some(role =>
+      role === UserRole.ADMIN ||
+      role === 'admin' ||
+      role === 'ROLE_ADMIN' ||
+      role.toUpperCase() === 'ADMIN'
+    );
   }
 
   logout(): void {
