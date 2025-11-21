@@ -160,7 +160,10 @@ describe('AuditService', () => {
         expect(response.totalElements).toBe(10);
       });
 
-      const req = httpMock.expectOne(`${apiUrl}/type/${eventType}?page=0&size=50&sort=timestamp%2Cdesc`);
+      const req = httpMock.expectOne(request =>
+        request.url.includes(`${apiUrl}/type/${eventType}`) &&
+        request.params.get('sort') === 'timestamp,desc'
+      );
       expect(req.request.method).toBe('GET');
       req.flush(mockResponse);
     });

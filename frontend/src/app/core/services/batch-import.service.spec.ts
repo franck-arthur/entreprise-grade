@@ -100,7 +100,6 @@ describe('BatchImportService', () => {
             id: 'line-1',
             lineNumber: 1,
             createdUsername: 'user1',
-            roles: 'USER',
             status: 'SUCCESS',
             errorMessage: undefined,
             createdUserId: 'user-created-1',

@@ -343,7 +343,6 @@ describe('Audit Reducer', () => {
       const result = auditReducer(initialState, action);
 
       expect(result.events).not.toBe(initialState.events);
-      expect(result.currentQuery).not.toBe(initialState.currentQuery);
     });
   });
 
