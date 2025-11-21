@@ -1,0 +1,29 @@
+# Docker environment configuration
+
+spring:
+  # JPA - use update mode for schema management in Docker
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+    hibernate:
+      ddl-auto: update
+
+# Logging - console only
+logging:
+  level:
+    root: INFO
+    com.enterprise.app: DEBUG
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+    org.hibernate.SQL: WARN
+
+# Application properties
+app:
+  cors:
+    allowed-origins: http://localhost:4200,http://localhost:3000,http://localhost:80,http://localhost
+    allowed-methods: GET,POST,PUT,DELETE,PATCH,OPTIONS
+    allowed-headers: Authorization,Content-Type,Accept,Origin,X-Requested-With
+    allow-credentials: true
+    max-age: 3600
