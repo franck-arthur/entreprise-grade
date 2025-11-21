@@ -119,11 +119,14 @@
       },
       "redirectUris": [
         "http://localhost:4200/*",
-        "http://localhost/*"
+        "http://localhost/*",
+        "http://localhost:80/*"
       ],
       "webOrigins": [
         "http://localhost:4200",
-        "http://localhost"
+        "http://localhost",
+        "http://localhost:80",
+        "+"
       ],
       "defaultClientScopes": [],
       "optionalClientScopes": []

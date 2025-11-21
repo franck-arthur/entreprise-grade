@@ -11,7 +11,7 @@ export function initializeKeycloak(keycloak: KeycloakService): () => Promise<boo
       initOptions: {
         onLoad: 'check-sso',
         checkLoginIframe: false,
-        silentCheckSsoFallback: false
+        pkceMethod: 'S256'
       },
       enableBearerInterceptor: true,
       bearerPrefix: 'Bearer',
