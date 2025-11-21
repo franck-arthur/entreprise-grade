@@ -4,6 +4,7 @@ import com.enterprise.app.domain.exception.ResourceNotFoundException;
 import com.enterprise.app.domain.model.*;
 import com.enterprise.app.domain.port.BatchImportPort;
 import com.enterprise.app.domain.repository.UserRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -88,6 +89,12 @@ class BatchImportServiceTest {
             .failedLines(0)
             .initiatedBy(testUser)
             .build();
+    }
+
+    @AfterEach
+    void tearDown() {
+        // Reset all mocks and clear any state to ensure clean JVM shutdown
+        reset(batchImportPort, userRepository, messageSource, csvProcessorExecutor);
     }
 
     @Test
