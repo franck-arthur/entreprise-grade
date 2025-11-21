@@ -115,7 +115,7 @@
       "attributes": {
         "access.token.lifespan": "300",
         "pkce.code.challenge.method": "",
-        "post.logout.redirect.uris": "http://localhost:4200/*,http://localhost/*"
+        "post.logout.redirect.uris": "http://localhost/*##http://localhost:4200/*"
       },
       "redirectUris": [
         "http://localhost:4200/*",
