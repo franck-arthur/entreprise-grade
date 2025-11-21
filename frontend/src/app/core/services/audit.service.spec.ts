@@ -33,7 +33,7 @@ describe('AuditService', () => {
     it('should retrieve audit events with filters', () => {
       const mockQuery: AuditEventQuery = {
         eventTypes: [AuditEventType.USER_CREATED, AuditEventType.LOGIN_SUCCESS],
-        eventCategory: AuditEventCategory.USER,
+        eventCategory: 'USER',
         username: 'testuser',
         success: true
       };
@@ -42,7 +42,7 @@ describe('AuditService', () => {
           {
             id: '1',
             eventType: AuditEventType.USER_CREATED,
-            eventCategory: AuditEventCategory.USER,
+            eventCategory: 'USER',
             userId: 'user-1',
             username: 'testuser',
             targetEntityType: 'USER',
@@ -52,7 +52,7 @@ describe('AuditService', () => {
             ipAddress: '192.168.1.1',
             userAgent: 'Mozilla/5.0',
             success: true,
-            errorMessage: null,
+            errorMessage: undefined,
             metadata: {},
             timestamp: '2024-01-01T10:00:00',
             eventDate: '2024-01-01',
@@ -74,7 +74,7 @@ describe('AuditService', () => {
       const req = httpMock.expectOne(request => {
         return request.url === apiUrl &&
                request.params.has('eventTypes') &&
-               request.params.get('eventCategory') === AuditEventCategory.USER &&
+               request.params.get('eventCategory') === 'USER' &&
                request.params.get('username') === 'testuser' &&
                request.params.get('success') === 'true';
       });
@@ -115,7 +115,7 @@ describe('AuditService', () => {
 
       const req = httpMock.expectOne(request => {
         const eventTypesParams = request.params.getAll('eventTypes');
-        return request.url === apiUrl && eventTypesParams.length === 3;
+        return request.url === apiUrl && eventTypesParams?.length === 3;
       });
       expect(req.request.method).toBe('GET');
       req.flush({ content: [], totalElements: 0, totalPages: 0, size: 50, number: 0 });
@@ -204,14 +204,14 @@ describe('AuditService', () => {
           [AuditEventType.LOGIN_SUCCESS]: 500
         },
         eventsByCategory: {
-          [AuditEventCategory.USER]: 200,
-          [AuditEventCategory.AUTH]: 600
+          ['USER']: 200,
+          ['AUTH']: 600
         },
         topUsers: {
           'user1': 50,
           'user2': 30
         },
-        topEntities: {
+        topTargetEntities: {
           'USER': 150,
           'BATCH': 80
         }
@@ -241,7 +241,7 @@ describe('AuditService', () => {
         eventsByType: {},
         eventsByCategory: {},
         topUsers: {},
-        topEntities: {}
+        topTargetEntities: {}
       };
 
       service.getStatisticsForDateRange(fromDate, toDate).subscribe(stats => {

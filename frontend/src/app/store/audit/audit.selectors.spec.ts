@@ -6,7 +6,7 @@ describe('Audit Selectors', () => {
   const mockEvent: AuditEvent = {
     id: '1',
     eventType: AuditEventType.USER_CREATED,
-    eventCategory: AuditEventCategory.USER,
+    eventCategory: 'USER',
     userId: 'user-1',
     username: 'testuser',
     targetEntityType: 'USER',
@@ -16,7 +16,7 @@ describe('Audit Selectors', () => {
     ipAddress: '192.168.1.1',
     userAgent: 'Mozilla/5.0',
     success: true,
-    errorMessage: null,
+    errorMessage: undefined,
     metadata: {},
     timestamp: '2024-01-01T10:00:00',
     eventDate: '2024-01-01',
@@ -32,14 +32,14 @@ describe('Audit Selectors', () => {
       [AuditEventType.LOGIN_SUCCESS]: 500
     },
     eventsByCategory: {
-      [AuditEventCategory.USER]: 300,
-      [AuditEventCategory.AUTH]: 600
+      ['USER']: 300,
+      ['AUTH']: 600
     },
     topUsers: {
       'user1': 50,
       'user2': 30
     },
-    topEntities: {
+    topTargetEntities: {
       'USER': 200,
       'BATCH': 100
     }

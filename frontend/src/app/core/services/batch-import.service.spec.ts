@@ -41,7 +41,7 @@ describe('BatchImportService', () => {
         processedLines: 0,
         successLines: 0,
         failedLines: 0,
-        errorMessage: null,
+        errorMessage: undefined,
         initiatedBy: {
           id: 'user-1',
           username: 'admin',
@@ -49,7 +49,7 @@ describe('BatchImportService', () => {
         },
         createdAt: '2024-01-01T10:00:00',
         updatedAt: '2024-01-01T10:00:00',
-        startedAt: null,
+        startedAt: undefined,
         completedAt: null
       };
 
@@ -93,7 +93,7 @@ describe('BatchImportService', () => {
         processedLines: 10,
         successLines: 8,
         failedLines: 2,
-        errorMessage: null,
+        errorMessage: undefined,
         initiatedBy: {
           id: 'user-1',
           username: 'admin',
@@ -107,10 +107,10 @@ describe('BatchImportService', () => {
             email: 'user1@test.com',
             firstName: 'User',
             lastName: 'One',
-            phoneNumber: null,
+            phoneNumber: undefined,
             roles: 'USER',
             status: 'SUCCESS',
-            errorMessage: null,
+            errorMessage: undefined,
             createdUserId: 'user-created-1',
             processedAt: '2024-01-01T10:05:00'
           }
@@ -160,7 +160,7 @@ describe('BatchImportService', () => {
         processedLines: 50,
         successLines: 48,
         failedLines: 2,
-        errorMessage: null,
+        errorMessage: undefined,
         initiatedBy: {
           id: 'user-1',
           username: 'admin',
@@ -197,7 +197,7 @@ describe('BatchImportService', () => {
             processedLines: 10,
             successLines: 10,
             failedLines: 0,
-            errorMessage: null,
+            errorMessage: undefined,
             initiatedBy: { id: 'user-1', username: 'admin', email: 'admin@test.com' },
             createdAt: '2024-01-01T10:00:00',
             updatedAt: '2024-01-01T10:10:00',
@@ -262,7 +262,7 @@ describe('BatchImportService', () => {
             processedLines: 3,
             successLines: 3,
             failedLines: 0,
-            errorMessage: null,
+            errorMessage: undefined,
             initiatedBy: { id: 'current-user', username: 'me', email: 'me@test.com' },
             createdAt: '2024-01-01T11:00:00',
             updatedAt: '2024-01-01T11:05:00',
@@ -278,7 +278,7 @@ describe('BatchImportService', () => {
 
       service.getMyBatchImports(0, 20).subscribe(response => {
         expect(response.content.length).toBe(1);
-        expect(response.content[0].initiatedBy.username).toBe('me');
+        expect(response.content[0].initiatedByUsername).toBe('me');
       });
 
       const req = httpMock.expectOne(request =>
@@ -301,7 +301,7 @@ describe('BatchImportService', () => {
         processedLines: 20,
         successLines: 18,
         failedLines: 2,
-        errorMessage: null,
+        errorMessage: undefined,
         initiatedBy: { id: 'user-1', username: 'admin', email: 'admin@test.com' },
         createdAt: '2024-01-01T10:00:00',
         updatedAt: '2024-01-01T10:05:00',
@@ -350,11 +350,11 @@ describe('BatchImportService', () => {
         processedLines: 0,
         successLines: 0,
         failedLines: 0,
-        errorMessage: null,
+        errorMessage: undefined,
         initiatedBy: { id: 'user-1', username: 'admin', email: 'admin@test.com' },
         createdAt: '2024-01-01T10:00:00',
         updatedAt: '2024-01-01T10:00:00',
-        startedAt: null,
+        startedAt: undefined,
         completedAt: null
       };
 

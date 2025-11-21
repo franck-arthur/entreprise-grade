@@ -28,7 +28,7 @@ describe('Audit Reducer', () => {
       const existingEvents: AuditEvent[] = [{
         id: '1',
         eventType: AuditEventType.USER_CREATED,
-        eventCategory: AuditEventCategory.USER,
+        eventCategory: 'USER',
         userId: 'user-1',
         username: 'test',
         targetEntityType: 'USER',
@@ -38,7 +38,7 @@ describe('Audit Reducer', () => {
         ipAddress: '127.0.0.1',
         userAgent: 'test',
         success: true,
-        errorMessage: null,
+        errorMessage: undefined,
         metadata: {},
         timestamp: '2024-01-01T10:00:00',
         eventDate: '2024-01-01',
@@ -59,7 +59,7 @@ describe('Audit Reducer', () => {
         {
           id: '1',
           eventType: AuditEventType.LOGIN_SUCCESS,
-          eventCategory: AuditEventCategory.AUTH,
+          eventCategory: 'AUTH',
           userId: 'user-1',
           username: 'testuser',
           targetEntityType: 'USER',
@@ -69,7 +69,7 @@ describe('Audit Reducer', () => {
           ipAddress: '192.168.1.1',
           userAgent: 'Mozilla/5.0',
           success: true,
-          errorMessage: null,
+          errorMessage: undefined,
           metadata: {},
           timestamp: '2024-01-01T10:00:00',
           eventDate: '2024-01-01',
@@ -131,7 +131,7 @@ describe('Audit Reducer', () => {
       const events: AuditEvent[] = [{
         id: '1',
         eventType: AuditEventType.USER_UPDATED,
-        eventCategory: AuditEventCategory.USER,
+        eventCategory: 'USER',
         userId: 'user-123',
         username: 'testuser',
         targetEntityType: 'USER',
@@ -141,7 +141,7 @@ describe('Audit Reducer', () => {
         ipAddress: '192.168.1.1',
         userAgent: 'Mozilla/5.0',
         success: true,
-        errorMessage: null,
+        errorMessage: undefined,
         metadata: {},
         timestamp: '2024-01-01T10:00:00',
         eventDate: '2024-01-01',
@@ -181,14 +181,14 @@ describe('Audit Reducer', () => {
           [AuditEventType.LOGIN_SUCCESS]: 500
         },
         eventsByCategory: {
-          [AuditEventCategory.USER]: 300,
-          [AuditEventCategory.AUTH]: 600
+          ['USER']: 300,
+          ['AUTH']: 600
         },
         topUsers: {
           'user1': 50,
           'user2': 30
         },
-        topEntities: {
+        topTargetEntities: {
           'USER': 200,
           'BATCH': 100
         }
@@ -236,7 +236,7 @@ describe('Audit Reducer', () => {
         eventsByType: {},
         eventsByCategory: {},
         topUsers: {},
-        topEntities: {}
+        topTargetEntities: {}
       };
       const action = AuditActions.loadAuditStatisticsForDateRangeSuccess({ statistics });
       const result = auditReducer(initialState, action);
@@ -250,7 +250,7 @@ describe('Audit Reducer', () => {
     it('should update current query', () => {
       const query = {
         eventTypes: [AuditEventType.LOGIN_FAILED],
-        eventCategory: AuditEventCategory.SECURITY,
+        eventCategory: 'SECURITY',
         success: false
       };
       const action = AuditActions.setAuditFilter({ query });
@@ -265,7 +265,7 @@ describe('Audit Reducer', () => {
         events: [{
           id: '1',
           eventType: AuditEventType.USER_CREATED,
-          eventCategory: AuditEventCategory.USER,
+          eventCategory: 'USER',
           userId: 'user-1',
           username: 'test',
           targetEntityType: 'USER',
@@ -275,7 +275,7 @@ describe('Audit Reducer', () => {
           ipAddress: '127.0.0.1',
           userAgent: 'test',
           success: true,
-          errorMessage: null,
+          errorMessage: undefined,
           metadata: {},
           timestamp: '2024-01-01T10:00:00',
           eventDate: '2024-01-01',
@@ -334,7 +334,7 @@ describe('Audit Reducer', () => {
       const events: AuditEvent[] = [{
         id: '1',
         eventType: AuditEventType.USER_CREATED,
-        eventCategory: AuditEventCategory.USER,
+        eventCategory: 'USER',
         userId: 'user-1',
         username: 'test',
         targetEntityType: 'USER',
@@ -344,7 +344,7 @@ describe('Audit Reducer', () => {
         ipAddress: '127.0.0.1',
         userAgent: 'test',
         success: true,
-        errorMessage: null,
+        errorMessage: undefined,
         metadata: {},
         timestamp: '2024-01-01T10:00:00',
         eventDate: '2024-01-01',
@@ -374,7 +374,7 @@ describe('Audit Reducer', () => {
       const events: AuditEvent[] = [{
         id: '1',
         eventType: AuditEventType.USER_CREATED,
-        eventCategory: AuditEventCategory.USER,
+        eventCategory: 'USER',
         userId: 'user-1',
         username: 'test',
         targetEntityType: 'USER',
@@ -384,7 +384,7 @@ describe('Audit Reducer', () => {
         ipAddress: '127.0.0.1',
         userAgent: 'test',
         success: true,
-        errorMessage: null,
+        errorMessage: undefined,
         metadata: {},
         timestamp: '2024-01-01T10:00:00',
         eventDate: '2024-01-01',
@@ -411,7 +411,7 @@ describe('Audit Reducer', () => {
         eventsByType: {},
         eventsByCategory: {},
         topUsers: {},
-        topEntities: {}
+        topTargetEntities: {}
       };
       state = auditReducer(state, AuditActions.loadAuditStatisticsSuccess({ statistics }));
       expect(state.loadingStatistics).toBe(false);

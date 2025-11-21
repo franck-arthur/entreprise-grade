@@ -20,7 +20,7 @@ describe('AuditEffects', () => {
   const mockEvent: AuditEvent = {
     id: '1',
     eventType: AuditEventType.USER_CREATED,
-    eventCategory: AuditEventCategory.USER,
+    eventCategory: 'USER',
     userId: 'user-1',
     username: 'testuser',
     targetEntityType: 'USER',
@@ -30,7 +30,7 @@ describe('AuditEffects', () => {
     ipAddress: '192.168.1.1',
     userAgent: 'Mozilla/5.0',
     success: true,
-    errorMessage: null,
+    errorMessage: undefined,
     metadata: {},
     timestamp: '2024-01-01T10:00:00',
     eventDate: '2024-01-01',
@@ -215,10 +215,10 @@ describe('AuditEffects', () => {
           [AuditEventType.USER_CREATED]: 100
         },
         eventsByCategory: {
-          [AuditEventCategory.USER]: 300
+          ['USER']: 300
         },
         topUsers: { 'user1': 50 },
-        topEntities: { 'USER': 200 }
+        topTargetEntities: { 'USER': 200 }
       };
 
       const action = AuditActions.loadAuditStatistics();
@@ -258,7 +258,7 @@ describe('AuditEffects', () => {
         eventsByType: {},
         eventsByCategory: {},
         topUsers: {},
-        topEntities: {}
+        topTargetEntities: {}
       };
 
       const action = AuditActions.loadAuditStatisticsForDateRange({
