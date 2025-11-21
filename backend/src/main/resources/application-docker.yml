@@ -1,6 +1,14 @@
 # Docker environment configuration
 
 spring:
+  # Security OAuth2 Resource Server (Keycloak)
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8080/realms/enterprise-realm
+          jwk-set-uri: http://keycloak:8080/realms/enterprise-realm/protocol/openid-connect/certs
+
   # JPA - use update mode for schema management in Docker
   jpa:
     show-sql: false
@@ -9,6 +17,18 @@ spring:
         format_sql: false
     hibernate:
       ddl-auto: update
+
+# Keycloak Admin Client
+keycloak:
+  auth-server-url: http://keycloak:8080
+  realm: enterprise-realm
+  resource: enterprise-backend
+  credentials:
+    secret: enterprise-backend-secret-key-2024
+  admin:
+    username: admin
+    password: admin
+    client-id: admin-cli
 
 # Logging - console only
 logging:
