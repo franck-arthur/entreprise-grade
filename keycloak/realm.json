@@ -114,8 +114,8 @@
       "protocol": "openid-connect",
       "attributes": {
         "access.token.lifespan": "300",
-        "pkce.code.challenge.method": "S256",
-        "post.logout.redirect.uris": "http://localhost:4200/*"
+        "pkce.code.challenge.method": "",
+        "post.logout.redirect.uris": "http://localhost:4200/*,http://localhost/*"
       },
       "redirectUris": [
         "http://localhost:4200/*",
