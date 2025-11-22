@@ -61,7 +61,7 @@ if [ -n "$1" ]; then
         "http://localhost:8080/api/v1/users" 2>/dev/null)
 
     STATUS=$(echo "$RESPONSE" | tail -n 1)
-    BODY=$(echo "$RESPONSE" | head -n -1)
+    BODY=$(echo "$RESPONSE" | sed '$d')
 
     if [ "$STATUS" = "200" ]; then
         echo -e "  ${GREEN}✅ 200 OK - Token valide !${NC}"
