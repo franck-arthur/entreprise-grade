@@ -1,19 +1,27 @@
 import { ActionReducerMap, MetaReducer } from '@ngrx/store';
 import { environment } from '@environments/environment';
+import { BatchImportState, batchImportReducer } from '../../store/batch-import/batch-import.reducer';
+import { AuditState, auditReducer } from '../../store/audit/audit.reducer';
 
 /**
  * Root state interface.
  *
  * Add feature states here as the application grows.
  */
-export interface AppState {}
+export interface AppState {
+  batchImport: BatchImportState;
+  audit: AuditState;
+}
 
 /**
  * Root reducers.
  *
  * Combines all feature reducers into a single reducer map.
  */
-export const reducers: ActionReducerMap<AppState> = {};
+export const reducers: ActionReducerMap<AppState> = {
+  batchImport: batchImportReducer,
+  audit: auditReducer
+};
 
 /**
  * Meta-reducers for cross-cutting concerns.

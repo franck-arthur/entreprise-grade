@@ -23,6 +23,8 @@
   "nav": {
     "dashboard": "Tableau de bord",
     "users": "Utilisateurs",
+    "batch_import": "Imports par lot",
+    "audit": "Audit",
     "settings": "Paramètres",
     "logout": "Déconnexion"
   },

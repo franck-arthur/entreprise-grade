@@ -54,8 +54,14 @@
         "clientRole": false
       },
       {
-        "name": "VIEWER",
-        "description": "Read-only viewer role",
+        "name": "TECH_LEAD",
+        "description": "Technical lead role with development permissions",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "SYSTEM",
+        "description": "System role for automated processes",
         "composite": false,
         "clientRole": false
       }

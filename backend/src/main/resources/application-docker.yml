@@ -6,8 +6,12 @@ spring:
     oauth2:
       resourceserver:
         jwt:
+          # CRITICAL: Frontend gets tokens with issuer "http://localhost:8180/..."
+          # Backend in Docker must validate these tokens by reaching Keycloak
+          # Use 'keycloak:8080' (Docker service name) to validate tokens
           issuer-uri: http://keycloak:8080/realms/enterprise-realm
           jwk-set-uri: http://keycloak:8080/realms/enterprise-realm/protocol/openid-connect/certs
+          # Note: This creates an issuer mismatch that needs custom validation
 
   # JPA - use update mode for schema management in Docker
   jpa:

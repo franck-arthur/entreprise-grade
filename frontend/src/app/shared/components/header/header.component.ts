@@ -1,9 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { Subject, takeUntil } from 'rxjs';
 import { LanguageSelectorComponent } from '../language-selector/language-selector.component';
 import { AuthService } from '@app/core/services/auth.service';
+import { UserRole } from '@app/core/models/user.model';
 
 /**
  * Header component with navigation and language selector.
@@ -98,6 +100,16 @@ import { AuthService } from '@app/core/services/auth.service';
                   {{ 'nav.users' | translate }}
                 </a>
               </li>
+              <li class="fr-nav__item" *ngIf="isAdmin()">
+                <a class="fr-nav__link" routerLink="/batch-import" routerLinkActive="fr-nav__link--active">
+                  {{ 'nav.batch_import' | translate }}
+                </a>
+              </li>
+              <li class="fr-nav__item" *ngIf="isAdmin()">
+                <a class="fr-nav__link" routerLink="/audit" routerLinkActive="fr-nav__link--active">
+                  {{ 'nav.audit' | translate }}
+                </a>
+              </li>
               <li class="fr-nav__item">
                 <a class="fr-nav__link" routerLink="/settings" routerLinkActive="fr-nav__link--active">
                   {{ 'nav.settings' | translate }}
@@ -117,15 +129,54 @@ import { AuthService } from '@app/core/services/auth.service';
     `,
   ],
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  currentUser: any = null;
+
   constructor(private authService: AuthService) {}
+
+  ngOnInit(): void {
+    // Subscribe to current user changes
+    this.authService.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => {
+        this.currentUser = user;
+        console.log('Header: User profile updated', user);
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   isAuthenticated(): boolean {
     return this.authService.isAuthenticated();
   }
 
   getCurrentUser() {
-    return this.authService.getCurrentUser();
+    return this.currentUser || this.authService.getCurrentUser();
+  }
+
+  isAdmin(): boolean {
+    const user = this.getCurrentUser();
+    console.log('isAdmin() check - Current user:', user);
+    console.log('User roles:', user?.roles);
+    console.log('Looking for role:', UserRole.ADMIN);
+    console.log('Has ADMIN role:', user?.roles?.includes(UserRole.ADMIN));
+
+    // Check for multiple possible role formats
+    if (!user?.roles) return false;
+
+    const isAdmin = user.roles.some((role: string) =>
+      role === UserRole.ADMIN ||
+      role === 'admin' ||
+      role === 'ROLE_ADMIN' ||
+      role.toUpperCase() === 'ADMIN'
+    );
+
+    console.log('isAdmin() result:', isAdmin);
+    return isAdmin;
   }
 
   logout(): void {

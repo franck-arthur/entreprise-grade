@@ -107,11 +107,16 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PASSWORD: password
       SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/enterprise-realm
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/enterprise-realm/protocol/openid-connect/certs
+      # CRITICAL: Use localhost:8180 to match token issuer from frontend
+      # Backend can reach Keycloak on host via extra_hosts mapping
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8180/realms/enterprise-realm
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://localhost:8180/realms/enterprise-realm/protocol/openid-connect/certs
       KEYCLOAK_AUTH_SERVER_URL: http://keycloak:8080
       KEYCLOAK_ADMIN_USERNAME: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+    extra_hosts:
+      # Map localhost to host machine IP so backend can access Keycloak on localhost:8180
+      - "localhost:host-gateway"
     ports:
       - "8080:8080"
     depends_on:

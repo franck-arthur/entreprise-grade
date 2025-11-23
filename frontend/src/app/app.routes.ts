@@ -34,6 +34,18 @@ export const routes: Routes = [
     data: { roles: ['ADMIN', 'TECH_LEAD', 'MANAGER'] },
   },
   {
+    path: 'batch-import',
+    loadChildren: () => import('./features/batch-import/batch-import.routes').then(m => m.BATCH_IMPORT_ROUTES),
+    canActivate: [authGuard],
+    title: 'Imports par lot',
+  },
+  {
+    path: 'audit',
+    loadChildren: () => import('./features/audit/audit.routes').then(m => m.AUDIT_ROUTES),
+    canActivate: [authGuard],
+    title: 'Audit',
+  },
+  {
     path: 'unauthorized',
     loadComponent: () =>
       import('./features/auth/pages/unauthorized/unauthorized.component').then(

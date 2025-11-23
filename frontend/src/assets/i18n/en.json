@@ -23,6 +23,8 @@
   "nav": {
     "dashboard": "Dashboard",
     "users": "Users",
+    "batch_import": "Batch Import",
+    "audit": "Audit",
     "settings": "Settings",
     "logout": "Logout"
   },

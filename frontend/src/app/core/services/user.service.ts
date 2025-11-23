@@ -1,0 +1,70 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '@environments/environment';
+import { User, CreateUserRequest, UpdateUserRequest, PagedResponse } from '../models/user.model';
+
+/**
+ * Service for managing users.
+ */
+@Injectable({
+  providedIn: 'root'
+})
+export class UserService {
+  private readonly apiUrl = `${environment.apiUrl}/users`;
+
+  constructor(private http: HttpClient) {}
+
+  /**
+   * Get paginated list of users.
+   */
+  getUsers(page: number = 0, size: number = 20): Observable<PagedResponse<User>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    return this.http.get<PagedResponse<User>>(this.apiUrl, { params });
+  }
+
+  /**
+   * Get user by ID.
+   */
+  getUserById(id: string): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/${id}`);
+  }
+
+  /**
+   * Create a new user.
+   */
+  createUser(request: CreateUserRequest): Observable<User> {
+    return this.http.post<User>(this.apiUrl, request);
+  }
+
+  /**
+   * Update existing user.
+   */
+  updateUser(id: string, request: UpdateUserRequest): Observable<User> {
+    return this.http.put<User>(`${this.apiUrl}/${id}`, request);
+  }
+
+  /**
+   * Delete user.
+   */
+  deleteUser(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  /**
+   * Activate user.
+   */
+  activateUser(id: string): Observable<User> {
+    return this.http.post<User>(`${this.apiUrl}/${id}/activate`, {});
+  }
+
+  /**
+   * Deactivate user.
+   */
+  deactivateUser(id: string): Observable<User> {
+    return this.http.post<User>(`${this.apiUrl}/${id}/deactivate`, {});
+  }
+}

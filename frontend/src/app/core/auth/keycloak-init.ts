@@ -13,8 +13,8 @@ export function initializeKeycloak(keycloak: KeycloakService): () => Promise<boo
         checkLoginIframe: false,
         pkceMethod: 'S256'
       },
-      enableBearerInterceptor: true,
-      bearerPrefix: 'Bearer',
-      bearerExcludedUrls: ['/assets']
+      // Disable Keycloak's built-in interceptor - we use our own custom interceptor
+      // that properly handles async token retrieval
+      enableBearerInterceptor: false
     });
 }
