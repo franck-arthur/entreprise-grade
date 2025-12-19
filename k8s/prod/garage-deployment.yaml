@@ -1,0 +1,283 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: garage-config
+  namespace: production
+data:
+  garage.toml: |
+    [metadata_dir]
+    block_size = 1048576
+
+    [consul_discovery]
+    api = "127.0.0.1:8500"
+
+    [kubernetes_discovery]
+    namespace = "production"
+    service_name = "garage-service"
+    skip_crd = false
+
+    [s3_api]
+    s3_region = "garage"
+    api_bind_addr = "[::]:3900"
+
+    [s3_web]
+    bind_addr = "[::]:3902"
+    root_domain = ".web.garage.localhost"
+    index = "index.html"
+
+    [admin]
+    api_bind_addr = "0.0.0.0:3903"
+    admin_token = "WE8bo3VL/Rf13Bu+h7vSX8P/yrbwaT3sJ6LQ2W0zrXU="
+
+  init-garage.sh: |
+    #!/bin/bash
+
+    # Script d'initialisation de Garage S3 pour Kubernetes
+    # Ce script configure le cluster, les clés d'accès et crée les buckets nécessaires
+
+    GARAGE_HOST="http://localhost:3900"
+    ADMIN_TOKEN="WE8bo3VL/Rf13Bu+h7vSX8P/yrbwaT3sJ6LQ2W0zrXU="
+    ACCESS_KEY="enterprise-app-key"
+    SECRET_KEY="enterprise-app-secret"
+    BUCKET_NAME="enterprise-storage"
+
+    echo "🚀 Initialisation de Garage S3..."
+
+    # Attendre que Garage soit prêt
+    echo "⏳ Attente de la disponibilité de Garage..."
+    until curl -s $GARAGE_HOST > /dev/null; do
+        echo "Garage n'est pas encore prêt, attente..."
+        sleep 2
+    done
+
+    echo "✅ Garage est disponible!"
+
+    # 1. Vérifier le statut du cluster
+    echo "🔍 Vérification du statut du cluster..."
+    /garage -c /etc/garage.toml status
+
+    # 2. Récupérer l'ID du nœud
+    NODE_ID=$(/garage -c /etc/garage.toml status | grep -E "(NO ROLE ASSIGNED|HEALTHY NODES)" -A 1 | tail -n 1 | awk '{print $1}')
+    echo "📋 ID du nœud: $NODE_ID"
+
+    # Vérifier si le nœud a déjà un rôle
+    HAS_ROLE=$(/garage -c /etc/garage.toml status | grep "$NODE_ID" | grep -v "NO ROLE ASSIGNED" | wc -l)
+
+    # 3. Assigner un rôle au nœud si nécessaire
+    if [ "$HAS_ROLE" -eq 0 ] && [ ! -z "$NODE_ID" ]; then
+        echo "🔧 Attribution du rôle de stockage au nœud..."
+        /garage -c /etc/garage.toml layout assign $NODE_ID -z default -c 1G
+
+        # 4. Appliquer la configuration du layout
+        echo "📐 Application de la configuration du layout..."
+        /garage -c /etc/garage.toml layout apply --version 1
+
+        # Attendre que le layout soit appliqué
+        echo "⏳ Attente de l'application du layout..."
+        sleep 15
+
+        # Vérifier que le layout est bien appliqué
+        echo "🔍 Vérification du layout..."
+        /garage -c /etc/garage.toml layout show
+    else
+        echo "ℹ️  Le nœud a déjà un rôle assigné"
+    fi
+
+    # 5. Créer une clé d'accès
+    echo "🔑 Création de la clé d'accès..."
+    /garage -c /etc/garage.toml key create enterprise-app
+
+    # 6. Récupérer l'ID de la clé créée
+    KEY_ID=$(/garage -c /etc/garage.toml key list | grep enterprise-app | awk '{print $1}')
+    echo "📋 ID de la clé: $KEY_ID"
+
+    # 7. Importer les credentials pour la clé
+    echo "🔧 Configuration des credentials..."
+    /garage -c /etc/garage.toml key import \
+        $KEY_ID \
+        $SECRET_KEY \
+        -n enterprise-app \
+        --yes
+
+    # 8. Créer un bucket
+    echo "🪣 Création du bucket '$BUCKET_NAME'..."
+    /garage -c /etc/garage.toml bucket create $BUCKET_NAME
+
+    # 9. Donner les permissions sur le bucket
+    echo "🔐 Attribution des permissions..."
+    /garage -c /etc/garage.toml bucket allow \
+        --read \
+        --write \
+        $BUCKET_NAME \
+        --key $KEY_ID
+
+    echo ""
+    echo "🎉 Configuration terminée!"
+    echo ""
+    echo "📝 Informations de connexion S3:"
+    echo "  - Endpoint: $GARAGE_HOST"
+    echo "  - Access Key: $ACCESS_KEY"
+    echo "  - Secret Key: $SECRET_KEY"
+    echo "  - Bucket: $BUCKET_NAME"
+    echo "  - Region: garage"
+    echo ""
+    echo "🌐 Interface admin disponible sur: http://localhost:3902"
+    echo "🔑 Token admin: $ADMIN_TOKEN"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: garage-secret
+  namespace: production
+type: Opaque
+data:
+  # enterprise-app-key en base64
+  access-key: ZW50ZXJwcmlzZS1hcHAta2V5
+  # enterprise-app-secret en base64
+  secret-key: ZW50ZXJwcmlzZS1hcHAtc2VjcmV0
+  # WE8bo3VL/Rf13Bu+h7vSX8P/yrbwaT3sJ6LQ2W0zrXU= en base64
+  admin-token: V0U4Ym8zVkwvUmYxM0J1K2g3dlNYOFAveXJid2FUM3NKNkxRMlcwenJYVT0=
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: garage-data
+  namespace: production
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: fast-ssd
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: garage
+  namespace: production
+  labels:
+    app: garage
+    tier: storage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: garage
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: garage
+        tier: storage
+    spec:
+      initContainers:
+      - name: garage-init
+        image: garagehq/garage:v0.9.4
+        command: ["/bin/bash", "/scripts/init-garage.sh"]
+        env:
+        - name: RUST_LOG
+          value: "info"
+        volumeMounts:
+        - name: garage-config
+          mountPath: /etc/garage.toml
+          subPath: garage.toml
+        - name: garage-config
+          mountPath: /scripts/init-garage.sh
+          subPath: init-garage.sh
+        - name: garage-data
+          mountPath: /tmp/garage/data
+        - name: garage-data
+          mountPath: /tmp/garage/meta
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+      containers:
+      - name: garage
+        image: garagehq/garage:v0.9.4
+        ports:
+        - containerPort: 3900
+          name: s3-api
+          protocol: TCP
+        - containerPort: 3902
+          name: s3-web
+          protocol: TCP
+        - containerPort: 3903
+          name: admin
+          protocol: TCP
+        env:
+        - name: RUST_LOG
+          value: "garage=info"
+        volumeMounts:
+        - name: garage-config
+          mountPath: /etc/garage.toml
+          subPath: garage.toml
+        - name: garage-data
+          mountPath: /tmp/garage/data
+        - name: garage-data
+          mountPath: /tmp/garage/meta
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3903
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3903
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+      volumes:
+      - name: garage-config
+        configMap:
+          name: garage-config
+          defaultMode: 0755
+      - name: garage-data
+        persistentVolumeClaim:
+          claimName: garage-data
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: garage-service
+  namespace: production
+  labels:
+    app: garage
+spec:
+  type: ClusterIP
+  selector:
+    app: garage
+  ports:
+  - name: s3-api
+    protocol: TCP
+    port: 3900
+    targetPort: 3900
+  - name: s3-web
+    protocol: TCP
+    port: 3902
+    targetPort: 3902
+  - name: admin
+    protocol: TCP
+    port: 3903
+    targetPort: 3903

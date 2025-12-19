@@ -137,6 +137,36 @@ services:
       retries: 5
       start_period: 60s
 
+  # Garage S3 storage
+  garage:
+    image: dxflrs/garage:v2.1.0
+    container_name: enterprise-garage
+    environment:
+      GARAGE_RPC_BIND_ADDR: 0.0.0.0:3901
+      GARAGE_RPC_PUBLIC_ADDR: 127.0.0.1:3901
+      GARAGE_RPC_SECRET: 12a92937a375113d4668ba9f4e050016ba680734a0732b297022a3fd86a01e5b
+      GARAGE_ADMIN_TOKEN: WE8bo3VL/Rf13Bu+h7vSX8P/yrbwaT3sJ6LQ2W0zrXU=
+      GARAGE_METADATA_DIR: /data/meta
+      GARAGE_DATA_DIR: /data/data
+    ports:
+      - "3900:3900"  # S3 API
+      - "3901:3901"  # RPC
+      - "3902:3902"  # Web interface (admin)
+      - "3903:3903"  # Admin API
+    volumes:
+      - garage_data:/data
+      - ./docker/garage/garage.toml:/etc/garage.toml:ro
+      - ./docker/garage/data/meta:/var/lib/garage/meta
+      - ./docker/garage/data/data:/var/lib/garage/data
+    networks:
+      - enterprise-network
+    healthcheck:
+      test: ["CMD-SHELL", "/garage -c /etc/garage.toml status >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
   # Angular frontend
   frontend:
     build:
@@ -164,3 +194,4 @@ volumes:
   postgres_data:
   redis_data:
   elasticsearch_data:
+  garage_data:

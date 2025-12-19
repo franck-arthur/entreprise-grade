@@ -34,7 +34,18 @@ public class OpenApiConfig {
             .info(new Info()
                 .title(appName)
                 .version(appVersion)
-                .description(appDescription)
+                .description(appDescription + "\n\n" +
+                    "## API Versioning\n" +
+                    "This API supports multiple versions:\n" +
+                    "- **v1**: `/api/v1/` - Current stable version (deprecated)\n" +
+                    "- **v2**: `/api/v2/` - New enhanced version with improved features\n\n" +
+                    "### Migration Guide\n" +
+                    "V2 improvements include:\n" +
+                    "- Enhanced response format with metadata\n" +
+                    "- Bulk operations support\n" +
+                    "- Better error handling\n" +
+                    "- PATCH support for partial updates\n" +
+                    "- Advanced filtering capabilities")
                 .contact(new Contact()
                     .name("Enterprise Team")
                     .email("tech@enterprise.com"))

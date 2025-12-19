@@ -57,6 +57,22 @@ spec:
               key: password
         - name: KEYCLOAK_AUTH_SERVER_URL
           value: "https://keycloak.example.com"
+        - name: S3_ENDPOINT
+          value: "http://garage-service:3900"
+        - name: S3_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: garage-secret
+              key: access-key
+        - name: S3_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: garage-secret
+              key: secret-key
+        - name: S3_BUCKET_NAME
+          value: "enterprise-storage"
+        - name: S3_REGION
+          value: "garage"
         resources:
           requests:
             memory: "512Mi"

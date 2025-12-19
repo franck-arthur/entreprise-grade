@@ -34,7 +34,7 @@ public class AuditCommandService {
 
     private final AuditEventCommandPort auditEventCommandPort;
     private final AuditEventQueryPort auditEventQueryPort;
-
+    private final AsyncAuditProcessor asyncAuditProcessor;
     /**
      * Record audit event (COMMAND).
      *
@@ -67,67 +67,10 @@ public class AuditCommandService {
         AuditEventCommand savedEvent = auditEventCommandPort.save(auditEvent);
 
         // Project to query model asynchronously (eventual consistency)
-        projectEventAsync(savedEvent, command.getTargetEntityName());
+        asyncAuditProcessor.projectEventAsync(savedEvent, command.getTargetEntityName());
 
         log.debug("Audit event recorded with ID: {}", savedEvent.getId());
         return savedEvent;
-    }
-
-    /**
-     * Project event to query model asynchronously.
-     *
-     * This implements eventual consistency:
-     * - Runs in separate thread (@Async)
-     * - Creates read-optimized projection
-     * - Adds denormalized fields for faster queries
-     *
-     * Even if projection fails, the event is recorded in command model.
-     *
-     * @param commandEvent The command model event
-     * @param targetEntityName Denormalized target entity name
-     */
-    @Async("batchImportExecutor")
-    @Transactional
-    public void projectEventAsync(AuditEventCommand commandEvent, String targetEntityName) {
-        try {
-            log.debug("Projecting audit event to query model: {}", commandEvent.getId());
-
-            // Create projection from command
-            AuditEventProjection projection = AuditEventProjection.fromCommand(commandEvent);
-
-            // Set denormalized fields
-            if (targetEntityName != null) {
-                projection.setTargetEntityNameFromEntity(targetEntityName);
-            }
-
-            // Save to projection (query model)
-            auditEventQueryPort.save(projection);
-
-            log.debug("Audit event projected successfully: {}", commandEvent.getId());
-
-        } catch (Exception e) {
-            // Log error but don't fail the command
-            // This ensures command side always succeeds
-            log.error("Failed to project audit event to query model: {}",
-                commandEvent.getId(), e);
-        }
-    }
-
-    /**
-     * Synchronously project event (for critical operations).
-     * Use sparingly - prefer async projection for better performance.
-     */
-    @Transactional
-    public void projectEventSync(AuditEventCommand commandEvent, String targetEntityName) {
-        log.debug("Synchronously projecting audit event: {}", commandEvent.getId());
-
-        AuditEventProjection projection = AuditEventProjection.fromCommand(commandEvent);
-
-        if (targetEntityName != null) {
-            projection.setTargetEntityNameFromEntity(targetEntityName);
-        }
-
-        auditEventQueryPort.save(projection);
     }
 
     /**

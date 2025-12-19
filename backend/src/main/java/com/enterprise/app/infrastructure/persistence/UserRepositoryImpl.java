@@ -1,5 +1,6 @@
 package com.enterprise.app.infrastructure.persistence;
 
+import com.enterprise.app.domain.model.Role;
 import com.enterprise.app.domain.model.User;
 import com.enterprise.app.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -80,5 +82,10 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public long countActive() {
         return jpaUserRepository.countActive();
+    }
+
+    @Override
+    public Page<User> findWithFilters(Boolean active, Set<Role> roles, String search, Pageable pageable) {
+        return jpaUserRepository.findWithFilters(active, roles, search, pageable);
     }
 }

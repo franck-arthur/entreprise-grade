@@ -1,6 +1,7 @@
 package com.enterprise.app.presentation.exception;
 
 import com.enterprise.app.domain.exception.BusinessException;
+import com.enterprise.app.domain.exception.ConcurrentUpdateException;
 import com.enterprise.app.domain.exception.DuplicateResourceException;
 import com.enterprise.app.domain.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -69,6 +70,27 @@ public class GlobalExceptionHandler {
             .timestamp(LocalDateTime.now())
             .status(HttpStatus.CONFLICT.value())
             .error(HttpStatus.CONFLICT.getReasonPhrase())
+            .message(ex.getMessage())
+            .path(request.getDescription(false).replace("uri=", ""))
+            .build();
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
+
+    /**
+     * Handle ConcurrentUpdateException (optimistic locking conflicts).
+     */
+    @ExceptionHandler(ConcurrentUpdateException.class)
+    public ResponseEntity<ErrorResponse> handleConcurrentUpdateException(
+        ConcurrentUpdateException ex,
+        WebRequest request
+    ) {
+        log.error("Concurrent update conflict: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .status(HttpStatus.CONFLICT.value())
+            .error("Conflict")
             .message(ex.getMessage())
             .path(request.getDescription(false).replace("uri=", ""))
             .build();

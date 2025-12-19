@@ -51,3 +51,10 @@ app:
     allowed-headers: Authorization,Content-Type,Accept,Origin,X-Requested-With
     allow-credentials: true
     max-age: 3600
+  storage:
+    s3:
+      endpoint: http://garage:3900
+      access-key: enterprise-app-key
+      secret-key: enterprise-app-secret
+      bucket-name: enterprise-storage
+      region: garage

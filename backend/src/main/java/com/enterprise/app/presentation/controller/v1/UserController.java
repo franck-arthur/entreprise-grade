@@ -1,4 +1,4 @@
-package com.enterprise.app.presentation.controller;
+package com.enterprise.app.presentation.controller.v1;
 
 import com.enterprise.app.application.dto.CreateUserRequest;
 import com.enterprise.app.application.dto.UpdateUserRequest;

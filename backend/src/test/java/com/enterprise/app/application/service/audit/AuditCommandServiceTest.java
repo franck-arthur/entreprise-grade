@@ -36,6 +36,8 @@ class AuditCommandServiceTest {
 
     @Mock
     private AuditEventQueryPort auditEventQueryPort;
+    @Mock
+    private AsyncAuditProcessor asyncAuditProcessor;
 
     @InjectMocks
     private AuditCommandService auditCommandService;
@@ -144,7 +146,7 @@ class AuditCommandServiceTest {
         String targetEntityName = "John Doe";
 
         // When
-        auditCommandService.projectEventAsync(savedCommandEvent, targetEntityName);
+        asyncAuditProcessor.projectEventAsync(savedCommandEvent, targetEntityName);
 
         // Then
         verify(auditEventQueryPort).save(any(AuditEventProjection.class));
@@ -156,7 +158,7 @@ class AuditCommandServiceTest {
         // Given - targetEntityName is null
 
         // When
-        auditCommandService.projectEventAsync(savedCommandEvent, null);
+        asyncAuditProcessor.projectEventAsync(savedCommandEvent, null);
 
         // Then
         verify(auditEventQueryPort).save(any(AuditEventProjection.class));
@@ -171,7 +173,7 @@ class AuditCommandServiceTest {
 
         // When & Then - should not throw exception
         assertThatCode(() ->
-            auditCommandService.projectEventAsync(savedCommandEvent, "John Doe")
+                asyncAuditProcessor.projectEventAsync(savedCommandEvent, "John Doe")
         ).doesNotThrowAnyException();
 
         verify(auditEventQueryPort).save(any(AuditEventProjection.class));
@@ -191,7 +193,7 @@ class AuditCommandServiceTest {
             .thenReturn(mockProjection);
 
         // When
-        auditCommandService.projectEventSync(savedCommandEvent, targetEntityName);
+        asyncAuditProcessor.projectEventSync(savedCommandEvent, targetEntityName);
 
         // Then
         ArgumentCaptor<AuditEventProjection> captor =
@@ -211,7 +213,7 @@ class AuditCommandServiceTest {
             .thenReturn(any(AuditEventProjection.class));
 
         // When
-        auditCommandService.projectEventSync(savedCommandEvent, null);
+        asyncAuditProcessor.projectEventSync(savedCommandEvent, null);
 
         // Then
         verify(auditEventQueryPort).save(any(AuditEventProjection.class));

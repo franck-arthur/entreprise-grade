@@ -4,6 +4,7 @@ import com.enterprise.app.application.dto.CreateUserRequest;
 import com.enterprise.app.application.dto.UpdateUserRequest;
 import com.enterprise.app.application.dto.UserDTO;
 import com.enterprise.app.application.mapper.UserMapper;
+import com.enterprise.app.application.service.audit.AuditService;
 import com.enterprise.app.domain.exception.DuplicateResourceException;
 import com.enterprise.app.domain.exception.ResourceNotFoundException;
 import com.enterprise.app.domain.model.Role;
@@ -22,9 +23,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * User service - Application layer use case.
@@ -45,6 +45,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final ExternalUserManagementPort externalUserManagement;
     private final UserMapper userMapper;
+    private final AuditService auditService;
 
     /**
      * Get all users with pagination.
@@ -155,6 +156,7 @@ public class UserService {
 
         // Update with Keycloak ID
         user = userRepository.save(user);
+        auditService.auditUserCreation(null, user, true);
 
         log.info("User created successfully: {} (Keycloak ID: {})",
             user.getUsername(), keycloakId);
@@ -200,12 +202,13 @@ public class UserService {
         userMapper.updateEntityFromDTO(request, user);
 
         // Save to database
-        user = userRepository.save(user);
+        final User userCreated = userRepository.save(user);
 
         // Update in Keycloak if exists
-        if (user.getKeycloakId() != null) {
-            externalUserManagement.updateUser(user.getKeycloakId(), user);
+        if (userCreated.getKeycloakId() != null) {
+            externalUserManagement.updateUser(userCreated.getKeycloakId(), userCreated);
         }
+        auditService.auditUserCreation(user, userCreated, true);
 
         log.info("User updated successfully: {}", id);
 
@@ -297,5 +300,132 @@ public class UserService {
      */
     public long countActiveUsers() {
         return userRepository.countActive();
+    }
+
+    /**
+     * Get all users with enhanced filtering (V2 API).
+     */
+    @Cacheable(value = "users", key = "#active + '-' + #roles + '-' + #search + '-' + #pageable.pageNumber")
+    public Page<UserDTO> getAllUsersWithFilters(Boolean active, List<String> roles, String search, Pageable pageable) {
+        log.debug("Fetching users with filters - active: {}, roles: {}, search: {}", active, roles, search);
+
+        // Convert string roles to Role enum
+        Set<Role> roleSet = null;
+        if (roles != null && !roles.isEmpty()) {
+            roleSet = roles.stream()
+                .map(Role::valueOf)
+                .collect(Collectors.toSet());
+        }
+
+        return userRepository.findWithFilters(active, roleSet, search, pageable)
+            .map(userMapper::toDTO);
+    }
+
+    /**
+     * Create multiple users in batch (V2 API).
+     */
+    @Transactional
+    @CacheEvict(value = "users", allEntries = true)
+    public Map<String, Object> createUsersInBatch(List<CreateUserRequest> requests) {
+        log.info("Creating {} users in batch", requests.size());
+
+        List<UserDTO> successfullyCreated = new ArrayList<>();
+        List<Map<String, Object>> failures = new ArrayList<>();
+
+        for (int i = 0; i < requests.size(); i++) {
+            CreateUserRequest request = requests.get(i);
+            try {
+                UserDTO createdUser = createUser(request);
+                successfullyCreated.add(createdUser);
+            } catch (Exception e) {
+                Map<String, Object> failure = Map.of(
+                    "index", i,
+                    "username", request.getUsername(),
+                    "error", e.getMessage(),
+                    "errorType", e.getClass().getSimpleName()
+                );
+                failures.add(failure);
+                log.warn("Failed to create user {} in batch: {}", request.getUsername(), e.getMessage());
+            }
+        }
+
+        return Map.of(
+            "successful", successfullyCreated,
+            "failed", failures,
+            "totalRequested", requests.size(),
+            "successCount", successfullyCreated.size(),
+            "failureCount", failures.size()
+        );
+    }
+
+    /**
+     * Partially update user (V2 API).
+     */
+    @Transactional
+    @CacheEvict(value = {"user", "users"}, allEntries = true)
+    @CircuitBreaker(name = "keycloak")
+    public UserDTO partialUpdateUser(UUID id, Map<String, Object> partialUpdate) {
+        log.info("Partially updating user: {} with fields: {}", id, partialUpdate.keySet());
+
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User", id));
+
+        // Apply partial updates
+        partialUpdate.forEach((field, value) -> {
+            switch (field) {
+                case "firstName":
+                    if (value != null) user.setFirstName(value.toString());
+                    break;
+                case "lastName":
+                    if (value != null) user.setLastName(value.toString());
+                    break;
+                case "email":
+                    if (value != null) {
+                        String newEmail = value.toString();
+                        if (!newEmail.equals(user.getEmail()) && userRepository.existsByEmail(newEmail)) {
+                            throw new DuplicateResourceException("User", "email", newEmail);
+                        }
+                        user.setEmail(newEmail);
+                    }
+                    break;
+                case "phoneNumber":
+                    if (value != null) user.setPhoneNumber(value.toString());
+                    break;
+                case "roles":
+                    if (value instanceof List) {
+                        @SuppressWarnings("unchecked")
+                        List<String> roleStrings = (List<String>) value;
+                        Set<Role> newRoles = roleStrings.stream()
+                            .map(Role::valueOf)
+                            .collect(Collectors.toSet());
+                        user.setRoles(newRoles);
+                    }
+                    break;
+                case "active":
+                    if (value instanceof Boolean) {
+                        Boolean isActive = (Boolean) value;
+                        if (isActive) {
+                            user.activate();
+                        } else {
+                            user.deactivate();
+                        }
+                    }
+                    break;
+                default:
+                    log.warn("Unknown field for partial update: {}", field);
+            }
+        });
+
+        // Save to database
+        user = userRepository.save(user);
+
+        // Update in Keycloak if exists
+        if (user.getKeycloakId() != null) {
+            externalUserManagement.updateUser(user.getKeycloakId(), user);
+        }
+
+        log.info("User partially updated successfully: {}", id);
+
+        return userMapper.toDTO(user);
     }
 }

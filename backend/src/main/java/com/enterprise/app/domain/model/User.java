@@ -82,6 +82,9 @@ public class User {
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
 
+    @Column(name = "date_derniere_formation")
+    private LocalDateTime dateDerniereFormation;
+
     @Version
     private Long version;
 
@@ -156,5 +159,19 @@ public class User {
      */
     public void deactivate() {
         this.active = false;
+    }
+
+    /**
+     * Business logic: Update last formation date when user is marked as present.
+     */
+    public void updateDateDerniereFormation() {
+        this.dateDerniereFormation = LocalDateTime.now();
+    }
+
+    /**
+     * Business logic: Reset formation date when user is marked as absent.
+     */
+    public void resetDateDerniereFormation() {
+        this.dateDerniereFormation = null;
     }
 }

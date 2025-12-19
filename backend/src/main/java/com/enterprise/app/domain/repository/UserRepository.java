@@ -1,10 +1,12 @@
 package com.enterprise.app.domain.repository;
 
+import com.enterprise.app.domain.model.Role;
 import com.enterprise.app.domain.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -76,4 +78,9 @@ public interface UserRepository {
      * Count active users.
      */
     long countActive();
+
+    /**
+     * Find users with filters (for V2 API).
+     */
+    Page<User> findWithFilters(Boolean active, Set<Role> roles, String search, Pageable pageable);
 }

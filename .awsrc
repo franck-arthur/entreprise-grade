@@ -1,0 +1,8 @@
+export AWS_ACCESS_KEY_ID='GKab7008fa7f84edfb583a5462'
+export AWS_SECRET_ACCESS_KEY='70f49dd4b57c2dc862bbf12c2f7f21b105108d1b3dc2e87e07a3d52bf4bbaf02:'
+export AWS_DEFAULT_REGION='garage'
+export AWS_ENDPOINT_URL='http://localhost:3900'
+export AWS_S3_BUCKET='enterprise-storage'
+export S3_PATH_STYLE_ACCESS=true
+
+#aws --version
