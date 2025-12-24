@@ -72,7 +72,7 @@ public class UpdateFormationRequest {
         }
 
         switch (modalite) {
-            case EN_PRESENTIEL:
+            case PRESENTIEL:
                 if (ville == null || ville.trim().isEmpty()) {
                     throw new IllegalArgumentException("La ville est obligatoire pour une formation en présentiel");
                 }

@@ -32,7 +32,7 @@ public interface JpaFormationParticipationRepository extends JpaRepository<Forma
 
     int countByFormationIdAndStatutParticipation(UUID formationId, StatutParticipation statut);
 
-    @Query("SELECT COUNT(fp) FROM FormationParticipation fp WHERE fp.formation.id = :formationId AND fp.statutParticipation != 'ANNULE'")
+    @Query("SELECT COUNT(fp) FROM FormationParticipation fp WHERE fp.formation.id = :formationId")
     int countByFormationIdExcludingCancelled(@Param("formationId") UUID formationId);
 
     int countByFormationId(UUID formationId);

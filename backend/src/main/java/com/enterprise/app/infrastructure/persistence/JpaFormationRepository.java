@@ -37,11 +37,11 @@ public interface JpaFormationRepository extends JpaRepository<Formation, UUID> {
         Pageable pageable
     );
 
-    @Query("SELECT COUNT(fp) FROM FormationParticipation fp WHERE fp.formation.id = :formationId AND fp.statutParticipation != 'ANNULE'")
+    @Query("SELECT COUNT(fp) FROM FormationParticipation fp WHERE fp.formation.id = :formationId")
     int countParticipantsInscrits(@Param("formationId") UUID formationId);
 
     @Query("SELECT CASE WHEN COUNT(fp) >= f.nbParticipants THEN true ELSE false END " +
-           "FROM Formation f LEFT JOIN FormationParticipation fp ON fp.formation.id = f.id AND fp.statutParticipation != 'ANNULE' " +
+           "FROM Formation f LEFT JOIN FormationParticipation fp ON fp.formation.id = f.id " +
            "WHERE f.id = :formationId GROUP BY f.id, f.nbParticipants")
     Boolean isFormationComplete(@Param("formationId") UUID formationId);
 
@@ -52,7 +52,7 @@ public interface JpaFormationRepository extends JpaRepository<Formation, UUID> {
            "f.lieu as lieu, f.ville as ville, f.lienParticipation as lienParticipation, " +
            "f.createdAt as createdAt, f.updatedAt as updatedAt, " +
            "CAST(COUNT(fp) AS int) as nbParticipantsInscrits " +
-           "FROM Formation f LEFT JOIN FormationParticipation fp ON fp.formation.id = f.id AND fp.statutParticipation != 'ANNULE' " +
+           "FROM Formation f LEFT JOIN FormationParticipation fp ON fp.formation.id = f.id " +
            "WHERE f.id = :id GROUP BY f.id")
     Optional<FormationProjection> findProjectionById(@Param("id") UUID id);
 
@@ -62,7 +62,7 @@ public interface JpaFormationRepository extends JpaRepository<Formation, UUID> {
            "f.lieu as lieu, f.ville as ville, f.lienParticipation as lienParticipation, " +
            "f.createdAt as createdAt, f.updatedAt as updatedAt, " +
            "CAST(COUNT(fp) AS int) as nbParticipantsInscrits " +
-           "FROM Formation f LEFT JOIN FormationParticipation fp ON fp.formation.id = f.id AND fp.statutParticipation != 'ANNULE' " +
+           "FROM Formation f LEFT JOIN FormationParticipation fp ON fp.formation.id = f.id " +
            "GROUP BY f.id")
     List<FormationProjection> findAllProjections();
 
@@ -72,7 +72,7 @@ public interface JpaFormationRepository extends JpaRepository<Formation, UUID> {
            "f.lieu as lieu, f.ville as ville, f.lienParticipation as lienParticipation, " +
            "f.createdAt as createdAt, f.updatedAt as updatedAt, " +
            "CAST(COUNT(fp) AS int) as nbParticipantsInscrits " +
-           "FROM Formation f LEFT JOIN FormationParticipation fp ON fp.formation.id = f.id AND fp.statutParticipation != 'ANNULE' " +
+           "FROM Formation f LEFT JOIN FormationParticipation fp ON fp.formation.id = f.id " +
            "WHERE (:secteur IS NULL OR f.secteur = :secteur) AND " +
            "(:region IS NULL OR f.region = :region) AND " +
            "(:modalite IS NULL OR f.modalite = :modalite) " +

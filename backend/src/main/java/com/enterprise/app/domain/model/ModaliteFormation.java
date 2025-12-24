@@ -1,7 +1,7 @@
 package com.enterprise.app.domain.model;
 
 public enum ModaliteFormation {
-    EN_PRESENTIEL("En présentiel"),
+    PRESENTIEL("En présentiel"),
     EN_LIGNE("En ligne");
 
     private final String libelle;

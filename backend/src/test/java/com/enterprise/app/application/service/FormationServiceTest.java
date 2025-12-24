@@ -59,7 +59,7 @@ class FormationServiceTest {
                 .heureFin(LocalTime.of(17, 0))
                 .secteur("IT")
                 .region("Île-de-France")
-                .modalite(ModaliteFormation.EN_PRESENTIEL)
+                .modalite(ModaliteFormation.PRESENTIEL)
                 .nbParticipants(20)
                 .lieu("Paris")
                 .ville("Paris")
@@ -124,7 +124,7 @@ class FormationServiceTest {
         FormationParticipation expectedParticipation = FormationParticipation.builder()
                 .formation(formation)
                 .user(user)
-                .statutParticipation(StatutParticipation.INSCRIT)
+                .statutParticipation(StatutParticipation.ABSENT)
                 .build();
 
         when(participationRepository.save(any(FormationParticipation.class))).thenReturn(expectedParticipation);
@@ -136,7 +136,7 @@ class FormationServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getFormation()).isEqualTo(formation);
         assertThat(result.getUser()).isEqualTo(user);
-        assertThat(result.getStatutParticipation()).isEqualTo(StatutParticipation.INSCRIT);
+        assertThat(result.getStatutParticipation()).isEqualTo(StatutParticipation.ABSENT);
 
         verify(participationRepository).save(any(FormationParticipation.class));
     }
@@ -180,7 +180,7 @@ class FormationServiceTest {
                 .heureFin(LocalTime.of(23, 59)) // Formation en cours
                 .secteur("IT")
                 .region("Île-de-France")
-                .modalite(ModaliteFormation.EN_PRESENTIEL)
+                .modalite(ModaliteFormation.PRESENTIEL)
                 .nbParticipants(20)
                 .lieu("Paris")
                 .ville("Paris")
@@ -190,7 +190,7 @@ class FormationServiceTest {
                 .id(UUID.randomUUID())
                 .formation(formationEnCours)
                 .user(user)
-                .statutParticipation(StatutParticipation.INSCRIT)
+                .statutParticipation(StatutParticipation.ABSENT)
                 .build();
 
         when(participationRepository.findByFormationIdAndUserId(formationId, userId))
@@ -222,7 +222,7 @@ class FormationServiceTest {
                 .heureFin(LocalTime.of(23, 59)) // Formation en cours
                 .secteur("IT")
                 .region("Île-de-France")
-                .modalite(ModaliteFormation.EN_PRESENTIEL)
+                .modalite(ModaliteFormation.PRESENTIEL)
                 .nbParticipants(20)
                 .lieu("Paris")
                 .ville("Paris")
@@ -232,7 +232,7 @@ class FormationServiceTest {
                 .id(UUID.randomUUID())
                 .formation(formationEnCours)
                 .user(user)
-                .statutParticipation(StatutParticipation.INSCRIT)
+                .statutParticipation(StatutParticipation.ABSENT)
                 .build();
 
         when(participationRepository.findByFormationIdAndUserId(formationId, userId))
@@ -263,7 +263,7 @@ class FormationServiceTest {
                 .heureFin(LocalTime.of(17, 0))
                 .secteur("IT")
                 .region("Île-de-France")
-                .modalite(ModaliteFormation.EN_PRESENTIEL)
+                .modalite(ModaliteFormation.PRESENTIEL)
                 .nbParticipants(20)
                 .build();
 
@@ -286,7 +286,7 @@ class FormationServiceTest {
                 .heureFin(LocalTime.of(17, 0))
                 .secteur("IT")
                 .region("Île-de-France")
-                .modalite(ModaliteFormation.EN_PRESENTIEL)
+                .modalite(ModaliteFormation.PRESENTIEL)
                 .nbParticipants(20)
                 .lieu("Salle 101")
                 .ville(null) // Ville manquante
@@ -309,7 +309,7 @@ class FormationServiceTest {
                 .heureFin(LocalTime.of(17, 0))
                 .secteur("IT")
                 .region("Île-de-France")
-                .modalite(ModaliteFormation.EN_PRESENTIEL)
+                .modalite(ModaliteFormation.PRESENTIEL)
                 .nbParticipants(20)
                 .lieu(null) // Lieu manquant
                 .ville("Paris")
@@ -354,7 +354,7 @@ class FormationServiceTest {
                 .heureFin(LocalTime.of(17, 0))
                 .secteur("IT")
                 .region("Île-de-France")
-                .modalite(ModaliteFormation.EN_PRESENTIEL)
+                .modalite(ModaliteFormation.PRESENTIEL)
                 .nbParticipants(20)
                 .lieu("Salle 101")
                 .ville("Paris")
@@ -408,7 +408,7 @@ class FormationServiceTest {
                 .heureFin(LocalTime.of(17, 0))
                 .secteur("IT")
                 .region("Île-de-France")
-                .modalite(ModaliteFormation.EN_PRESENTIEL)
+                .modalite(ModaliteFormation.PRESENTIEL)
                 .nbParticipants(20)
                 .lieu("Paris")
                 .ville("Paris")
@@ -418,7 +418,7 @@ class FormationServiceTest {
                 .id(UUID.randomUUID())
                 .formation(formationAVenir)
                 .user(user)
-                .statutParticipation(StatutParticipation.INSCRIT)
+                .statutParticipation(StatutParticipation.ABSENT)
                 .build();
 
         when(participationRepository.findByFormationIdAndUserId(formationId, userId))
@@ -442,7 +442,7 @@ class FormationServiceTest {
                 .heureFin(LocalTime.of(23, 59)) // Formation en cours
                 .secteur("IT")
                 .region("Île-de-France")
-                .modalite(ModaliteFormation.EN_PRESENTIEL)
+                .modalite(ModaliteFormation.PRESENTIEL)
                 .nbParticipants(20)
                 .lieu("Paris")
                 .ville("Paris")
@@ -470,7 +470,7 @@ class FormationServiceTest {
                 .heureFin(LocalTime.of(23, 59)) // Formation en cours
                 .secteur("IT")
                 .region("Île-de-France")
-                .modalite(ModaliteFormation.EN_PRESENTIEL)
+                .modalite(ModaliteFormation.PRESENTIEL)
                 .nbParticipants(20)
                 .lieu("Paris")
                 .ville("Paris")
@@ -480,7 +480,7 @@ class FormationServiceTest {
                 .id(UUID.randomUUID())
                 .formation(formationEnCours)
                 .user(user)
-                .statutParticipation(StatutParticipation.INSCRIT)
+                .statutParticipation(StatutParticipation.ABSENT)
                 .build();
 
         when(participationRepository.findByFormationIdAndUserId(formationId, userId))

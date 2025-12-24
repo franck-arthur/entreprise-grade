@@ -126,7 +126,7 @@ public class FormationService {
         FormationParticipation participation = FormationParticipation.builder()
                 .formation(formation)
                 .user(user)
-                .statutParticipation(StatutParticipation.INSCRIT)
+                .statutParticipation(StatutParticipation.ABSENT)
                 .build();
 
         log.info("Inscription de l'utilisateur {} à la formation {}", userId, formationId);

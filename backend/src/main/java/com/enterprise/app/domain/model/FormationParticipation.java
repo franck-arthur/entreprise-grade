@@ -45,7 +45,7 @@ public class FormationParticipation {
     @Enumerated(EnumType.STRING)
     @Column(name = "statut_participation", nullable = false)
     @Builder.Default
-    private StatutParticipation statutParticipation = StatutParticipation.INSCRIT;
+    private StatutParticipation statutParticipation = StatutParticipation.ABSENT;
 
     @Column(name = "date_inscription", nullable = false)
     private LocalDateTime dateInscription;
@@ -92,13 +92,6 @@ public class FormationParticipation {
         return statutParticipation == StatutParticipation.ABSENT;
     }
 
-    public boolean isInscrit() {
-        return statutParticipation == StatutParticipation.INSCRIT;
-    }
-
-    public void annulerInscription() {
-        this.statutParticipation = StatutParticipation.ANNULE;
-    }
 
     public boolean peutEtreModifiee() {
         return formation.getStatut() == FormationStatut.A_VENIR;

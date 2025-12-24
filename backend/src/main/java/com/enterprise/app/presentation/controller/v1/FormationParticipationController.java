@@ -4,7 +4,9 @@ import com.enterprise.app.application.dto.FormationParticipationDTO;
 import com.enterprise.app.application.dto.PresenceRequest;
 import com.enterprise.app.application.mapper.FormationParticipationMapper;
 import com.enterprise.app.application.service.FormationService;
+import com.enterprise.app.application.usecase.UserService;
 import com.enterprise.app.domain.model.FormationParticipation;
+import com.enterprise.app.domain.model.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -21,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -35,78 +38,77 @@ public class FormationParticipationController {
 
     private final FormationService formationService;
     private final FormationParticipationMapper participationMapper;
+    private final UserService userService;
 
-    @PostMapping("/{formationId}/inscriptions/{userId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TECH_LEAD') or #userId.toString() == authentication.name")
+    @PostMapping("/{formationId}/inscriptions")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
-        summary = "Inscrire un utilisateur à une formation",
-        description = "Inscrire un utilisateur spécifique à une formation. Les utilisateurs peuvent s'inscrire eux-mêmes ou être inscrits par un administrateur."
+        summary = "S'inscrire à une formation",
+        description = "Inscription de l'utilisateur connecté à une formation."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Inscription créée avec succès"),
         @ApiResponse(responseCode = "400", description = "Formation complète ou inscription impossible"),
-        @ApiResponse(responseCode = "404", description = "Formation ou utilisateur non trouvé"),
+        @ApiResponse(responseCode = "404", description = "Formation non trouvée"),
         @ApiResponse(responseCode = "409", description = "Utilisateur déjà inscrit"),
-        @ApiResponse(responseCode = "401", description = "Non autorisé"),
-        @ApiResponse(responseCode = "403", description = "Interdit")
+        @ApiResponse(responseCode = "401", description = "Non autorisé")
     })
     public ResponseEntity<FormationParticipationDTO> inscrireUtilisateur(
             @Parameter(description = "ID de la formation") @PathVariable UUID formationId,
-            @Parameter(description = "ID de l'utilisateur") @PathVariable UUID userId,
             Authentication authentication) {
 
-        FormationParticipation participation = formationService.inscrireUtilisateur(formationId, userId);
+        User currentUser = getCurrentUser(authentication);
+        FormationParticipation participation = formationService.inscrireUtilisateur(formationId, currentUser.getId());
         FormationParticipationDTO participationDTO = participationMapper.toDTO(participation);
 
-        log.info("Utilisateur {} inscrit à la formation {}", userId, formationId);
+        log.info("Utilisateur {} inscrit à la formation {}", currentUser.getId(), formationId);
         return ResponseEntity.status(HttpStatus.CREATED).body(participationDTO);
     }
 
-    @DeleteMapping("/{formationId}/inscriptions/{userId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TECH_LEAD') or #userId.toString() == authentication.name")
+    @DeleteMapping("/{formationId}/inscriptions")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
-        summary = "Désinscrire un utilisateur d'une formation",
-        description = "Désinscrire un utilisateur d'une formation. Les utilisateurs peuvent se désinscrire eux-mêmes ou être désincrits par un administrateur."
+        summary = "Se désinscrire d'une formation",
+        description = "Désinscription de l'utilisateur connecté d'une formation."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Désinscription réussie"),
         @ApiResponse(responseCode = "400", description = "Désinscription impossible"),
         @ApiResponse(responseCode = "404", description = "Inscription non trouvée"),
-        @ApiResponse(responseCode = "401", description = "Non autorisé"),
-        @ApiResponse(responseCode = "403", description = "Interdit")
+        @ApiResponse(responseCode = "401", description = "Non autorisé")
     })
     public ResponseEntity<Void> desinscrireUtilisateur(
             @Parameter(description = "ID de la formation") @PathVariable UUID formationId,
-            @Parameter(description = "ID de l'utilisateur") @PathVariable UUID userId) {
+            Authentication authentication) {
 
-        formationService.desinscrireUtilisateur(formationId, userId);
-        log.info("Utilisateur {} désinscrit de la formation {}", userId, formationId);
+        User currentUser = getCurrentUser(authentication);
+        formationService.desinscrireUtilisateur(formationId, currentUser.getId());
+        log.info("Utilisateur {} désinscrit de la formation {}", currentUser.getId(), formationId);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/users/{userId}/inscriptions")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TECH_LEAD') or #userId.toString() == authentication.name")
+    @GetMapping("/mes-inscriptions")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
-        summary = "Obtenir les formations d'un utilisateur",
-        description = "Récupérer toutes les formations auxquelles un utilisateur est inscrit."
+        summary = "Obtenir mes formations",
+        description = "Récupérer toutes les formations auxquelles l'utilisateur connecté est inscrit."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Formations récupérées avec succès"),
-        @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé"),
-        @ApiResponse(responseCode = "401", description = "Non autorisé"),
-        @ApiResponse(responseCode = "403", description = "Interdit")
+        @ApiResponse(responseCode = "401", description = "Non autorisé")
     })
     public ResponseEntity<Page<FormationParticipationDTO>> getFormationsUtilisateur(
-            @Parameter(description = "ID de l'utilisateur") @PathVariable UUID userId,
-            @PageableDefault(size = 20) Pageable pageable) {
+            @PageableDefault(size = 20) Pageable pageable,
+            Authentication authentication) {
 
-        Page<FormationParticipation> participations = formationService.getFormationsUtilisateur(userId, pageable);
+        User currentUser = getCurrentUser(authentication);
+        Page<FormationParticipation> participations = formationService.getFormationsUtilisateur(currentUser.getId(), pageable);
         Page<FormationParticipationDTO> participationDTOs = participations.map(participationMapper::toDTO);
 
         return ResponseEntity.ok(participationDTOs);
     }
 
-    @PutMapping("/{formationId}/presence/{userId}")
+    @PutMapping("/{formationId}/participants/{userId}/presence")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TECH_LEAD')")
     @Operation(
         summary = "Marquer la présence d'un utilisateur",
@@ -137,5 +139,19 @@ public class FormationParticipationController {
                 userId, formationId, request.getPresent() ? "présent" : "absent");
 
         return ResponseEntity.ok(participationDTO);
+    }
+
+    /**
+     * Get current authenticated user.
+     */
+    private User getCurrentUser(Authentication authentication) {
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+        String username = jwt.getClaimAsString("preferred_username");
+
+        if (username == null) {
+            username = jwt.getSubject();
+        }
+
+        return userService.getUserEntityByUsername(username);
     }
 }
