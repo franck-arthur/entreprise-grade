@@ -1,22 +1,43 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { of } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { AuditService } from '../../core/services/audit.service';
+import { AuthService } from '../../core/services/auth.service';
 import * as AuditActions from './audit.actions';
 
 @Injectable()
 export class AuditEffects {
   constructor(
     private actions$: Actions,
-    private auditService: AuditService
+    private auditService: AuditService,
+    private authService: AuthService
   ) {}
+
+  /**
+   * Check authentication and redirect to login if not authenticated.
+   */
+  private checkAuthAndRedirect(): boolean {
+    if (!this.authService.isAuthenticated()) {
+      console.warn('User not authenticated for audit operation, redirecting to login');
+      this.authService.login();
+      return false;
+    }
+    return true;
+  }
 
   loadAuditEvents$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuditActions.loadAuditEvents),
-      switchMap(({ query, page, size }) =>
-        this.auditService.getAuditEvents(query, page, size).pipe(
+      switchMap(({ query, page, size }) => {
+        // Check authentication before making API call
+        if (!this.checkAuthAndRedirect()) {
+          return of(AuditActions.loadAuditEventsFailure({
+            error: 'Authentication required'
+          }));
+        }
+
+        return this.auditService.getAuditEvents(query, page, size).pipe(
           map((response) =>
             AuditActions.loadAuditEventsSuccess({
               events: response.content,
@@ -24,15 +45,22 @@ export class AuditEffects {
               totalPages: response.totalPages
             })
           ),
-          catchError((error) =>
-            of(
-              AuditActions.loadAuditEventsFailure({
-                error: error.error?.message || 'Failed to load audit events'
-              })
-            )
-          )
-        )
-      )
+          catchError((error) => {
+            // Handle authentication errors
+            if (error.message?.includes('401')) {
+              console.warn('Authentication failed in audit events, redirecting to login');
+              this.authService.login();
+              return of(AuditActions.loadAuditEventsFailure({
+                error: 'Authentication failed'
+              }));
+            }
+
+            return of(AuditActions.loadAuditEventsFailure({
+              error: error.error?.message || 'Failed to load audit events'
+            }));
+          })
+        );
+      })
     )
   );
 
@@ -111,20 +139,34 @@ export class AuditEffects {
   loadAuditStatistics$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuditActions.loadAuditStatistics),
-      switchMap(() =>
-        this.auditService.getStatistics().pipe(
+      switchMap(() => {
+        // Check authentication before making API call
+        if (!this.checkAuthAndRedirect()) {
+          return of(AuditActions.loadAuditStatisticsFailure({
+            error: 'Authentication required'
+          }));
+        }
+
+        return this.auditService.getStatistics().pipe(
           map((statistics) =>
             AuditActions.loadAuditStatisticsSuccess({ statistics })
           ),
-          catchError((error) =>
-            of(
-              AuditActions.loadAuditStatisticsFailure({
-                error: error.error?.message || 'Failed to load audit statistics'
-              })
-            )
-          )
-        )
-      )
+          catchError((error) => {
+            // Handle authentication errors
+            if (error.message?.includes('401')) {
+              console.warn('Authentication failed in audit statistics, redirecting to login');
+              this.authService.login();
+              return of(AuditActions.loadAuditStatisticsFailure({
+                error: 'Authentication failed'
+              }));
+            }
+
+            return of(AuditActions.loadAuditStatisticsFailure({
+              error: error.error?.message || 'Failed to load audit statistics'
+            }));
+          })
+        );
+      })
     )
   );
 

@@ -2,10 +2,12 @@ package com.enterprise.app.testing.builders;
 
 import com.enterprise.app.domain.model.Formation;
 import com.enterprise.app.domain.model.ModaliteFormation;
+import com.enterprise.app.domain.model.Secteur;
+import com.enterprise.app.domain.model.Region;
+import com.enterprise.app.testing.fixtures.FormationFixtures;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.UUID;
 
 /**
  * Builder pour créer des instances de Formation personnalisées pour les tests.
@@ -13,15 +15,15 @@ import java.util.UUID;
  */
 public class FormationTestDataBuilder {
 
-    private UUID id = UUID.randomUUID();
+    private Long id = 1L;
     private String libelle = "Formation Test";
     private String formateurs = "Formateur Test";
     private String description = "Description test pour formation";
     private LocalDate dateFormation = LocalDate.now().plusDays(7);
     private LocalTime heureDebut = LocalTime.of(9, 0);
     private LocalTime heureFin = LocalTime.of(17, 0);
-    private String secteur = "Informatique";
-    private String region = "Île-de-France";
+    private Secteur secteur = FormationFixtures.SECTEUR_MSA;
+    private Region region = FormationFixtures.REGION_IDF;
     private ModaliteFormation modalite = ModaliteFormation.PRESENTIEL;
     private Integer nbParticipants = 20;
     private String lieu = "Salle Test";
@@ -38,7 +40,7 @@ public class FormationTestDataBuilder {
     /**
      * Définit l'ID de la formation.
      */
-    public FormationTestDataBuilder withId(UUID id) {
+    public FormationTestDataBuilder withId(Long id) {
         this.id = id;
         return this;
     }
@@ -94,7 +96,7 @@ public class FormationTestDataBuilder {
     /**
      * Définit le secteur.
      */
-    public FormationTestDataBuilder withSecteur(String secteur) {
+    public FormationTestDataBuilder withSecteur(Secteur secteur) {
         this.secteur = secteur;
         return this;
     }
@@ -102,8 +104,54 @@ public class FormationTestDataBuilder {
     /**
      * Définit la région.
      */
-    public FormationTestDataBuilder withRegion(String region) {
+    public FormationTestDataBuilder withRegion(Region region) {
         this.region = region;
+        return this;
+    }
+
+    /**
+     * Définit le secteur par String (pour compatibilité).
+     * @deprecated Utiliser withSecteur(Secteur) à la place
+     */
+    @Deprecated
+    public FormationTestDataBuilder withSecteur(String secteurNom) {
+        switch (secteurNom) {
+            case "Regime général", "RG" ->
+                this.secteur = FormationFixtures.SECTEUR_RG;
+            case "MSA" ->
+                this.secteur = FormationFixtures.SECTEUR_MSA;
+            default ->
+                // Pour les cas non mappés, créer un secteur dynamique
+                this.secteur = Secteur.builder()
+                    .nom(secteurNom)
+                    .code(secteurNom.toUpperCase().substring(0, Math.min(3, secteurNom.length())))
+                    .actif(true)
+                    .build();
+        }
+        return this;
+    }
+
+    /**
+     * Définit la région par String (pour compatibilité).
+     * @deprecated Utiliser withRegion(Region) à la place
+     */
+    @Deprecated
+    public FormationTestDataBuilder withRegion(String regionNom) {
+        switch (regionNom) {
+            case "Île-de-France", "IDF" ->
+                this.region = FormationFixtures.REGION_IDF;
+            case "Auvergne-Rhône-Alpes", "AURA" ->
+                this.region = FormationFixtures.REGION_AURA;
+            case "Martinique", "MTQ" ->
+                this.region = FormationFixtures.REGION_MARTINIQUE;
+            default ->
+                // Pour les cas non mappés, créer une région dynamique
+                this.region = Region.builder()
+                    .nom(regionNom)
+                    .code(regionNom.toUpperCase().substring(0, Math.min(3, regionNom.length())))
+                    .actif(true)
+                    .build();
+        }
         return this;
     }
 
@@ -169,16 +217,6 @@ public class FormationTestDataBuilder {
     public FormationTestDataBuilder enLigne() {
         return withModalite(ModaliteFormation.EN_LIGNE)
                 .withLienParticipation("https://formation.example.com");
-    }
-
-    /**
-     * Configure une formation hybride avec lieu et lien.
-     */
-    public FormationTestDataBuilder hybride() {
-        return withModalite(ModaliteFormation.HYBRIDE)
-                .withLieu("Campus")
-                .withVille("Lyon")
-                .withLienParticipation("https://hybride.example.com");
     }
 
     /**
@@ -273,9 +311,6 @@ public class FormationTestDataBuilder {
         }
         if (modalite == ModaliteFormation.EN_LIGNE && lienParticipation == null) {
             throw new IllegalStateException("Formation en ligne doit avoir un lien de participation");
-        }
-        if (modalite == ModaliteFormation.HYBRIDE && (lieu == null || ville == null || lienParticipation == null)) {
-            throw new IllegalStateException("Formation hybride doit avoir lieu, ville et lien définis");
         }
         if (heureDebut != null && heureFin != null && heureDebut.isAfter(heureFin)) {
             throw new IllegalStateException("L'heure de début doit être antérieure à l'heure de fin");

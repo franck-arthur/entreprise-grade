@@ -26,7 +26,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/formations")
@@ -54,7 +53,7 @@ public class FormationParticipationController {
         @ApiResponse(responseCode = "401", description = "Non autorisé")
     })
     public ResponseEntity<FormationParticipationDTO> inscrireUtilisateur(
-            @Parameter(description = "ID de la formation") @PathVariable UUID formationId,
+            @Parameter(description = "ID de la formation") @PathVariable Long formationId,
             Authentication authentication) {
 
         User currentUser = getCurrentUser(authentication);
@@ -78,34 +77,13 @@ public class FormationParticipationController {
         @ApiResponse(responseCode = "401", description = "Non autorisé")
     })
     public ResponseEntity<Void> desinscrireUtilisateur(
-            @Parameter(description = "ID de la formation") @PathVariable UUID formationId,
+            @Parameter(description = "ID de la formation") @PathVariable Long formationId,
             Authentication authentication) {
 
         User currentUser = getCurrentUser(authentication);
         formationService.desinscrireUtilisateur(formationId, currentUser.getId());
         log.info("Utilisateur {} désinscrit de la formation {}", currentUser.getId(), formationId);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/mes-inscriptions")
-    @PreAuthorize("isAuthenticated()")
-    @Operation(
-        summary = "Obtenir mes formations",
-        description = "Récupérer toutes les formations auxquelles l'utilisateur connecté est inscrit."
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Formations récupérées avec succès"),
-        @ApiResponse(responseCode = "401", description = "Non autorisé")
-    })
-    public ResponseEntity<Page<FormationParticipationDTO>> getFormationsUtilisateur(
-            @PageableDefault(size = 20) Pageable pageable,
-            Authentication authentication) {
-
-        User currentUser = getCurrentUser(authentication);
-        Page<FormationParticipation> participations = formationService.getFormationsUtilisateur(currentUser.getId(), pageable);
-        Page<FormationParticipationDTO> participationDTOs = participations.map(participationMapper::toDTO);
-
-        return ResponseEntity.ok(participationDTOs);
     }
 
     @PutMapping("/{formationId}/participants/{userId}/presence")
@@ -122,8 +100,8 @@ public class FormationParticipationController {
         @ApiResponse(responseCode = "403", description = "Interdit")
     })
     public ResponseEntity<FormationParticipationDTO> marquerPresence(
-            @Parameter(description = "ID de la formation") @PathVariable UUID formationId,
-            @Parameter(description = "ID de l'utilisateur") @PathVariable UUID userId,
+            @Parameter(description = "ID de la formation") @PathVariable Long formationId,
+            @Parameter(description = "ID de l'utilisateur") @PathVariable Long userId,
             @Valid @RequestBody PresenceRequest request) {
 
         FormationParticipation participation = formationService.marquerPresence(

@@ -3,11 +3,13 @@ package com.enterprise.app.presentation.controller.v1;
 import com.enterprise.app.application.dto.CreateFormationRequest;
 import com.enterprise.app.application.dto.FormationDTO;
 import com.enterprise.app.application.dto.UpdateFormationRequest;
+import com.enterprise.app.application.dto.SecteurDTO;
+import com.enterprise.app.application.dto.RegionDTO;
 import com.enterprise.app.application.mapper.FormationMapper;
 import com.enterprise.app.application.mapper.FormationParticipationMapper;
 import com.enterprise.app.application.service.FormationService;
 import com.enterprise.app.domain.model.*;
-import com.enterprise.app.infrastructure.persistence.projection.FormationProjection;
+import com.enterprise.app.testing.fixtures.FormationFixtures;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,11 +24,10 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -55,12 +56,27 @@ class FormationControllerTest {
     private Formation formation;
     private FormationDTO formationDTO;
     private CreateFormationRequest createRequest;
-    private FormationProjection formationProjection;
-    private UUID formationId;
+    private Long formationId;
+    private Secteur secteur;
+    private Region region;
 
     @BeforeEach
     void setUp() {
-        formationId = UUID.randomUUID();
+        formationId = 1L;
+
+        secteur = Secteur.builder()
+                .id(1L)
+                .code("IT")
+                .nom("Informatique")
+                .actif(true)
+                .build();
+
+        region = Region.builder()
+                .id(1L)
+                .code("IDF")
+                .nom("Île-de-France")
+                .actif(true)
+                .build();
 
         formation = Formation.builder()
                 .id(formationId)
@@ -70,8 +86,8 @@ class FormationControllerTest {
                 .dateFormation(LocalDate.now().plusDays(7))
                 .heureDebut(LocalTime.of(9, 0))
                 .heureFin(LocalTime.of(17, 0))
-                .secteur("IT")
-                .region("Île-de-France")
+                .secteur(secteur)
+                .region(region)
                 .modalite(ModaliteFormation.PRESENTIEL)
                 .nbParticipants(20)
                 .lieu("Paris")
@@ -87,8 +103,8 @@ class FormationControllerTest {
                 .dateFormation(LocalDate.now().plusDays(7))
                 .heureDebut(LocalTime.of(9, 0))
                 .heureFin(LocalTime.of(17, 0))
-                .secteur("IT")
-                .region("Île-de-France")
+                .secteur(SecteurDTO.builder().id(1L).code("IT").nom("Informatique").build())
+                .region(RegionDTO.builder().id(1L).code("IDF").nom("Île-de-France").build())
                 .modalite(ModaliteFormation.PRESENTIEL)
                 .nbParticipants(20)
                 .lieu("Paris")
@@ -106,54 +122,50 @@ class FormationControllerTest {
                 .dateFormation(LocalDate.now().plusDays(7))
                 .heureDebut(LocalTime.of(9, 0))
                 .heureFin(LocalTime.of(17, 0))
-                .secteur("IT")
-                .region("Île-de-France")
+                .secteurId(1L)
+                .regionId(1L)
                 .modalite(ModaliteFormation.PRESENTIEL)
                 .nbParticipants(20)
                 .lieu("Paris")
                 .ville("Paris")
                 .build();
 
-        formationProjection = new TestFormationProjection();
     }
 
     @Test
     @WithMockUser
     void getAllFormations_ShouldReturnFormations() throws Exception {
         // Given
-        Page<FormationProjection> projectionPage = new PageImpl<>(Arrays.asList(formationProjection));
-        Page<FormationDTO> dtoPage = new PageImpl<>(Arrays.asList(formationDTO));
+        Page<Formation> dtoPage = new PageImpl<>(Collections.singletonList(FormationFixtures.defaultFormationPresentiel()));
 
-        when(formationService.searchFormationProjections(anyString(), anyString(), any(), any(), any(Pageable.class)))
-                .thenReturn(projectionPage);
-        when(formationMapper.toDTO(any(FormationProjection.class))).thenReturn(formationDTO);
+        when(formationService.searchFormations(any(), any(), any(), any(), any(Pageable.class)))
+                .thenReturn(dtoPage);
 
         // When & Then
         mockMvc.perform(get("/api/v1/formations")
-                .param("secteur", "IT")
-                .param("region", "Île-de-France"))
+                .param("secteurId", "1")
+                .param("regionId", "1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content[0].id").value(formationId.toString()))
+                .andExpect(jsonPath("$.content[0].id").value(formationId))
                 .andExpect(jsonPath("$.content[0].libelle").value("Formation Test"));
 
-        verify(formationService).searchFormationProjections(eq("IT"), eq("Île-de-France"), isNull(), isNull(), any(Pageable.class));
+        verify(formationService).searchFormations(eq(1L), eq(1L), isNull(), isNull(), any(Pageable.class));
     }
 
     @Test
     @WithMockUser
     void getFormationById_ShouldReturnFormation_WhenExists() throws Exception {
         // Given
-        when(formationService.getFormationProjectionById(formationId)).thenReturn(formationProjection);
-        when(formationMapper.toDTO(formationProjection)).thenReturn(formationDTO);
+        when(formationService.getFormationById(formationId)).thenReturn(formation);
 
         // When & Then
         mockMvc.perform(get("/api/v1/formations/{id}", formationId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(formationId.toString()))
+                .andExpect(jsonPath("$.id").value(formationId))
                 .andExpect(jsonPath("$.libelle").value("Formation Test"));
 
-        verify(formationService).getFormationProjectionById(formationId);
+        verify(formationService).getFormationById(formationId);
     }
 
     @Test
@@ -170,7 +182,7 @@ class FormationControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createRequest)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(formationId.toString()))
+                .andExpect(jsonPath("$.id").value(formationId))
                 .andExpect(jsonPath("$.libelle").value("Formation Test"));
 
         verify(formationService).createFormation(any(Formation.class));
@@ -200,8 +212,8 @@ class FormationControllerTest {
                 .dateFormation(LocalDate.now().plusDays(10))
                 .heureDebut(LocalTime.of(10, 0))
                 .heureFin(LocalTime.of(18, 0))
-                .secteur("IT")
-                .region("Île-de-France")
+                .secteurId(1L)
+                .regionId(1L)
                 .modalite(ModaliteFormation.PRESENTIEL)
                 .nbParticipants(25)
                 .lieu("Lyon")
@@ -247,7 +259,7 @@ class FormationControllerTest {
         // Given
         FormationParticipation participation = FormationParticipation.builder()
                 .formation(formation)
-                .user(User.builder().id(UUID.randomUUID()).username("testuser").build())
+                .user(User.builder().id(2L).username("testuser").build())
                 .statutParticipation(StatutParticipation.ABSENT)
                 .build();
 
@@ -288,46 +300,5 @@ class FormationControllerTest {
                 .andExpect(status().isBadRequest());
 
         verify(formationService, never()).createFormation(any());
-    }
-
-    private class TestFormationProjection implements FormationProjection {
-        @Override
-        public UUID getId() { return formationId; }
-        @Override
-        public String getLibelle() { return "Formation Test"; }
-        @Override
-        public String getFormateurs() { return "Formateur Test"; }
-        @Override
-        public String getDescription() { return "Description test"; }
-        @Override
-        public LocalDate getDateFormation() { return LocalDate.now().plusDays(7); }
-        @Override
-        public LocalTime getHeureDebut() { return LocalTime.of(9, 0); }
-        @Override
-        public LocalTime getHeureFin() { return LocalTime.of(17, 0); }
-        @Override
-        public String getSecteur() { return "IT"; }
-        @Override
-        public String getRegion() { return "Île-de-France"; }
-        @Override
-        public ModaliteFormation getModalite() { return ModaliteFormation.PRESENTIEL; }
-        @Override
-        public Integer getNbParticipants() { return 20; }
-        @Override
-        public String getLieu() { return "Paris"; }
-        @Override
-        public String getVille() { return "Paris"; }
-        @Override
-        public String getLienParticipation() { return "https://example.com"; }
-        @Override
-        public FormationStatut getStatut() { return FormationStatut.A_VENIR; }
-        @Override
-        public LocalDateTime getCreatedAt() { return LocalDateTime.now(); }
-        @Override
-        public LocalDateTime getUpdatedAt() { return LocalDateTime.now(); }
-        @Override
-        public Integer getNbParticipantsInscrits() { return 5; }
-        @Override
-        public boolean isComplet() { return false; }
     }
 }

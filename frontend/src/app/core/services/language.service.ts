@@ -28,7 +28,17 @@ export class LanguageService {
     this.currentLanguageSubject = new BehaviorSubject<string>(initialLanguage);
     this.currentLanguage$ = this.currentLanguageSubject.asObservable();
 
-    // Configure TranslateService
+    // Defer TranslateService configuration to avoid circular dependency
+    setTimeout(() => {
+      this.configureTranslateService(initialLanguage);
+    });
+  }
+
+  /**
+   * Configure TranslateService with language settings.
+   * This is called asynchronously to avoid circular dependency issues during app initialization.
+   */
+  private configureTranslateService(initialLanguage: string): void {
     this.translate.addLangs(this.SUPPORTED_LANGUAGES);
     this.translate.setDefaultLang(this.DEFAULT_LANGUAGE);
     this.translate.use(initialLanguage);

@@ -4,6 +4,7 @@ import com.enterprise.app.application.dto.CreateUserRequest;
 import com.enterprise.app.application.dto.UpdateUserRequest;
 import com.enterprise.app.application.dto.UserDTO;
 import com.enterprise.app.application.mapper.UserMapper;
+import com.enterprise.app.application.service.audit.AuditService;
 import com.enterprise.app.domain.exception.DuplicateResourceException;
 import com.enterprise.app.domain.exception.ResourceNotFoundException;
 import com.enterprise.app.domain.model.Role;
@@ -20,7 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
+
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -42,17 +43,20 @@ class UserServiceTest {
     @Mock
     private UserMapper userMapper;
 
+    @Mock
+    private AuditService auditService;
+
     @InjectMocks
     private UserService userService;
 
     private User testUser;
     private UserDTO testUserDTO;
     private CreateUserRequest createRequest;
-    private UUID testUserId;
+    private Long testUserId;
 
     @BeforeEach
     void setUp() {
-        testUserId = UUID.randomUUID();
+        testUserId = 1L;
 
         testUser = User.builder()
             .id(testUserId)
@@ -109,7 +113,7 @@ class UserServiceTest {
     @DisplayName("Should throw ResourceNotFoundException when user not found")
     void shouldThrowExceptionWhenUserNotFound() {
         // Given
-        UUID nonExistentId = UUID.randomUUID();
+        Long nonExistentId = 999L;
         when(userRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
         // When & Then
@@ -131,6 +135,7 @@ class UserServiceTest {
         when(userRepository.save(any(User.class))).thenReturn(testUser);
         when(externalUserManagement.createUser(any(User.class), anyString())).thenReturn("keycloak-123");
         when(userMapper.toDTO(testUser)).thenReturn(testUserDTO);
+        lenient().doNothing().when(auditService).auditUserCreation(any(User.class), any(User.class), any(Boolean.class));
 
         // When
         UserDTO result = userService.createUser(createRequest);
@@ -175,6 +180,7 @@ class UserServiceTest {
         when(userMapper.toDTO(testUser)).thenReturn(testUserDTO);
         doNothing().when(userMapper).updateEntityFromDTO(updateRequest, testUser);
         doNothing().when(externalUserManagement).updateUser(anyString(), any(User.class));
+        lenient().doNothing().when(auditService).auditUserCreation(any(User.class), any(User.class), any(Boolean.class));
 
         // When
         UserDTO result = userService.updateUser(testUserId, updateRequest);

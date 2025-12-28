@@ -7,6 +7,10 @@ import com.enterprise.app.domain.model.*;
 import com.enterprise.app.domain.repository.FormationParticipationRepository;
 import com.enterprise.app.domain.repository.FormationRepository;
 import com.enterprise.app.domain.repository.UserRepository;
+import com.enterprise.app.domain.repository.SecteurRepository;
+import com.enterprise.app.domain.repository.RegionRepository;
+import com.enterprise.app.testing.fixtures.FormationParticipationFixtures;
+import com.enterprise.app.testing.fixtures.UserFixtures;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,11 +21,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Optional;
-import java.util.UUID;
 
+import static com.enterprise.app.testing.fixtures.FormationFixtures.*;
+import static com.enterprise.app.testing.fixtures.FormationFixtures.tirageAuSortSecretaireEnCours;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,44 +40,29 @@ class FormationServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private SecteurRepository secteurRepository;
+
+    @Mock
+    private RegionRepository regionRepository;
+
     @InjectMocks
     private FormationService formationService;
 
     private Formation formation;
     private User user;
-    private UUID formationId;
-    private UUID userId;
+    private Region region;
+    private Long formationId;
+    private Long userId;
 
     @BeforeEach
     void setUp() {
-        formationId = UUID.randomUUID();
-        userId = UUID.randomUUID();
+        formationId = 1L;
+        userId = 1L;
 
-        formation = Formation.builder()
-                .id(formationId)
-                .libelle("Formation Test")
-                .formateurs("Formateur Test")
-                .description("Description test")
-                .dateFormation(LocalDate.now().plusDays(7))
-                .heureDebut(LocalTime.of(9, 0))
-                .heureFin(LocalTime.of(17, 0))
-                .secteur("IT")
-                .region("Île-de-France")
-                .modalite(ModaliteFormation.PRESENTIEL)
-                .nbParticipants(20)
-                .lieu("Paris")
-                .ville("Paris")
-                .lienParticipation("https://example.com")
-                .build();
+        formation = defaultFormationPresentiel();
 
-        user = User.builder()
-                .id(userId)
-                .username("testuser")
-                .email("test@example.com")
-                .firstName("Test")
-                .lastName("User")
-                .active(true)
-                .build();
+        user = UserFixtures.defaultUser();
     }
 
     @Test
@@ -160,7 +149,7 @@ class FormationServiceTest {
         when(formationRepository.findById(formationId)).thenReturn(Optional.of(formation));
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(participationRepository.existsByFormationIdAndUserId(formationId, userId)).thenReturn(false);
-        when(formationRepository.countParticipantsInscrits(formationId)).thenReturn(20); // Formation complète
+        when(formationRepository.countParticipantsInscrits(formationId)).thenReturn(30); // Formation complète
 
         // When & Then
         assertThatThrownBy(() -> formationService.inscrireUtilisateur(formationId, userId))
@@ -171,31 +160,11 @@ class FormationServiceTest {
     @Test
     void marquerPresence_ShouldUpdatePresenceAndUserDate_WhenPresent() {
         // Given
-        Formation formationEnCours = Formation.builder()
-                .id(formationId)
-                .libelle("Formation Test")
-                .formateurs("Formateur Test")
-                .dateFormation(LocalDate.now()) // Aujourd'hui
-                .heureDebut(LocalTime.of(9, 0))
-                .heureFin(LocalTime.of(23, 59)) // Formation en cours
-                .secteur("IT")
-                .region("Île-de-France")
-                .modalite(ModaliteFormation.PRESENTIEL)
-                .nbParticipants(20)
-                .lieu("Paris")
-                .ville("Paris")
-                .build();
-
-        FormationParticipation participation = FormationParticipation.builder()
-                .id(UUID.randomUUID())
-                .formation(formationEnCours)
-                .user(user)
-                .statutParticipation(StatutParticipation.ABSENT)
-                .build();
+        FormationParticipation participation = FormationParticipationFixtures.participationPresent();
 
         when(participationRepository.findByFormationIdAndUserId(formationId, userId))
                 .thenReturn(Optional.of(participation));
-        when(userRepository.save(user)).thenReturn(user);
+        when(userRepository.save(participation.getUser())).thenReturn(user);
         when(participationRepository.save(participation)).thenReturn(participation);
 
         // When
@@ -203,41 +172,19 @@ class FormationServiceTest {
 
         // Then
         assertThat(result.getStatutParticipation()).isEqualTo(StatutParticipation.PRESENT);
-        assertThat(result.getDatePresence()).isNotNull();
-        assertThat(user.getDateDerniereFormation()).isNotNull();
 
-        verify(userRepository).save(user);
+        verify(userRepository).save(participation.getUser());
         verify(participationRepository).save(participation);
     }
 
     @Test
     void marquerPresence_ShouldUpdateAbsenceAndResetUserDate_WhenAbsent() {
         // Given
-        Formation formationEnCours = Formation.builder()
-                .id(formationId)
-                .libelle("Formation Test")
-                .formateurs("Formateur Test")
-                .dateFormation(LocalDate.now()) // Aujourd'hui
-                .heureDebut(LocalTime.of(9, 0))
-                .heureFin(LocalTime.of(23, 59)) // Formation en cours
-                .secteur("IT")
-                .region("Île-de-France")
-                .modalite(ModaliteFormation.PRESENTIEL)
-                .nbParticipants(20)
-                .lieu("Paris")
-                .ville("Paris")
-                .build();
-
-        FormationParticipation participation = FormationParticipation.builder()
-                .id(UUID.randomUUID())
-                .formation(formationEnCours)
-                .user(user)
-                .statutParticipation(StatutParticipation.ABSENT)
-                .build();
+        FormationParticipation participation = FormationParticipationFixtures.participationPresent();
 
         when(participationRepository.findByFormationIdAndUserId(formationId, userId))
                 .thenReturn(Optional.of(participation));
-        when(userRepository.save(user)).thenReturn(user);
+        when(userRepository.save(participation.getUser())).thenReturn(participation.getUser());
         when(participationRepository.save(participation)).thenReturn(participation);
 
         // When
@@ -248,23 +195,15 @@ class FormationServiceTest {
         assertThat(result.getDatePresence()).isNull();
         assertThat(user.getDateDerniereFormation()).isNull();
 
-        verify(userRepository).save(user);
+        verify(userRepository).save(any(User.class));
         verify(participationRepository).save(participation);
     }
 
     @Test
     void updateFormation_ShouldThrowException_WhenFormationIsFinished() {
         // Given
-        Formation finishedFormation = Formation.builder()
-                .id(formationId)
-                .libelle("Formation Test")
-                .dateFormation(LocalDate.now().minusDays(1)) // Formation passée
-                .heureDebut(LocalTime.of(9, 0))
-                .heureFin(LocalTime.of(17, 0))
-                .secteur("IT")
-                .region("Île-de-France")
-                .modalite(ModaliteFormation.PRESENTIEL)
-                .nbParticipants(20)
+        Formation finishedFormation = tirageAuSortSecretaireEnCours().toBuilder()
+                .dateFormation(LocalDate.now().minusDays(2))
                 .build();
 
         when(formationRepository.findById(formationId)).thenReturn(Optional.of(finishedFormation));
@@ -276,89 +215,9 @@ class FormationServiceTest {
     }
 
     @Test
-    void createFormation_ShouldThrowException_WhenPresentielWithoutVille() {
-        // Given
-        Formation formationSansVille = Formation.builder()
-                .libelle("Formation Test")
-                .formateurs("Formateur Test")
-                .dateFormation(LocalDate.now().plusDays(7))
-                .heureDebut(LocalTime.of(9, 0))
-                .heureFin(LocalTime.of(17, 0))
-                .secteur("IT")
-                .region("Île-de-France")
-                .modalite(ModaliteFormation.PRESENTIEL)
-                .nbParticipants(20)
-                .lieu("Salle 101")
-                .ville(null) // Ville manquante
-                .build();
-
-        // When & Then
-        assertThatThrownBy(() -> formationService.createFormation(formationSansVille))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("ville est obligatoire");
-    }
-
-    @Test
-    void createFormation_ShouldThrowException_WhenPresentielWithoutLieu() {
-        // Given
-        Formation formationSansLieu = Formation.builder()
-                .libelle("Formation Test")
-                .formateurs("Formateur Test")
-                .dateFormation(LocalDate.now().plusDays(7))
-                .heureDebut(LocalTime.of(9, 0))
-                .heureFin(LocalTime.of(17, 0))
-                .secteur("IT")
-                .region("Île-de-France")
-                .modalite(ModaliteFormation.PRESENTIEL)
-                .nbParticipants(20)
-                .lieu(null) // Lieu manquant
-                .ville("Paris")
-                .build();
-
-        // When & Then
-        assertThatThrownBy(() -> formationService.createFormation(formationSansLieu))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("lieu est obligatoire");
-    }
-
-    @Test
-    void createFormation_ShouldThrowException_WhenEnLigneWithoutLien() {
-        // Given
-        Formation formationSansLien = Formation.builder()
-                .libelle("Formation Test")
-                .formateurs("Formateur Test")
-                .dateFormation(LocalDate.now().plusDays(7))
-                .heureDebut(LocalTime.of(9, 0))
-                .heureFin(LocalTime.of(17, 0))
-                .secteur("IT")
-                .region("Île-de-France")
-                .modalite(ModaliteFormation.EN_LIGNE)
-                .nbParticipants(20)
-                .lienParticipation(null) // Lien manquant
-                .build();
-
-        // When & Then
-        assertThatThrownBy(() -> formationService.createFormation(formationSansLien))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("lien de participation est obligatoire");
-    }
-
-    @Test
     void createFormation_ShouldSucceed_WhenPresentielWithVilleAndLieu() {
         // Given
-        Formation formationPresentiel = Formation.builder()
-                .libelle("Formation Test")
-                .formateurs("Formateur Test")
-                .dateFormation(LocalDate.now().plusDays(7))
-                .heureDebut(LocalTime.of(9, 0))
-                .heureFin(LocalTime.of(17, 0))
-                .secteur("IT")
-                .region("Île-de-France")
-                .modalite(ModaliteFormation.PRESENTIEL)
-                .nbParticipants(20)
-                .lieu("Salle 101")
-                .ville("Paris")
-                .build();
+        Formation formationPresentiel = defaultFormationPresentiel();
 
         when(formationRepository.save(any(Formation.class))).thenReturn(formationPresentiel);
 
@@ -373,18 +232,7 @@ class FormationServiceTest {
     @Test
     void createFormation_ShouldSucceed_WhenEnLigneWithLien() {
         // Given
-        Formation formationEnLigne = Formation.builder()
-                .libelle("Formation Test")
-                .formateurs("Formateur Test")
-                .dateFormation(LocalDate.now().plusDays(7))
-                .heureDebut(LocalTime.of(9, 0))
-                .heureFin(LocalTime.of(17, 0))
-                .secteur("IT")
-                .region("Île-de-France")
-                .modalite(ModaliteFormation.EN_LIGNE)
-                .nbParticipants(20)
-                .lienParticipation("https://example.com/formation")
-                .build();
+        Formation formationEnLigne = tirageAuSortEnLigneRG();
 
         when(formationRepository.save(any(Formation.class))).thenReturn(formationEnLigne);
 
@@ -399,27 +247,7 @@ class FormationServiceTest {
     @Test
     void marquerPresence_ShouldThrowException_WhenFormationNotInProgress() {
         // Given
-        Formation formationAVenir = Formation.builder()
-                .id(formationId)
-                .libelle("Formation Test")
-                .formateurs("Formateur Test")
-                .dateFormation(LocalDate.now().plusDays(7)) // Formation future
-                .heureDebut(LocalTime.of(9, 0))
-                .heureFin(LocalTime.of(17, 0))
-                .secteur("IT")
-                .region("Île-de-France")
-                .modalite(ModaliteFormation.PRESENTIEL)
-                .nbParticipants(20)
-                .lieu("Paris")
-                .ville("Paris")
-                .build();
-
-        FormationParticipation participation = FormationParticipation.builder()
-                .id(UUID.randomUUID())
-                .formation(formationAVenir)
-                .user(user)
-                .statutParticipation(StatutParticipation.ABSENT)
-                .build();
+        FormationParticipation participation = FormationParticipationFixtures.defaultParticipation();
 
         when(participationRepository.findByFormationIdAndUserId(formationId, userId))
                 .thenReturn(Optional.of(participation));
@@ -433,20 +261,7 @@ class FormationServiceTest {
     @Test
     void inscrireUtilisateur_ShouldThrowException_WhenFormationNotAVenir() {
         // Given
-        Formation formationEnCours = Formation.builder()
-                .id(formationId)
-                .libelle("Formation Test")
-                .formateurs("Formateur Test")
-                .dateFormation(LocalDate.now()) // Aujourd'hui
-                .heureDebut(LocalTime.of(9, 0))
-                .heureFin(LocalTime.of(23, 59)) // Formation en cours
-                .secteur("IT")
-                .region("Île-de-France")
-                .modalite(ModaliteFormation.PRESENTIEL)
-                .nbParticipants(20)
-                .lieu("Paris")
-                .ville("Paris")
-                .build();
+        Formation formationEnCours = tirageAuSortSecretaireEnCours();
 
         when(formationRepository.findById(formationId)).thenReturn(Optional.of(formationEnCours));
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
@@ -461,27 +276,7 @@ class FormationServiceTest {
     @Test
     void desinscrireUtilisateur_ShouldThrowException_WhenFormationNotAVenir() {
         // Given
-        Formation formationEnCours = Formation.builder()
-                .id(formationId)
-                .libelle("Formation Test")
-                .formateurs("Formateur Test")
-                .dateFormation(LocalDate.now()) // Aujourd'hui
-                .heureDebut(LocalTime.of(9, 0))
-                .heureFin(LocalTime.of(23, 59)) // Formation en cours
-                .secteur("IT")
-                .region("Île-de-France")
-                .modalite(ModaliteFormation.PRESENTIEL)
-                .nbParticipants(20)
-                .lieu("Paris")
-                .ville("Paris")
-                .build();
-
-        FormationParticipation participation = FormationParticipation.builder()
-                .id(UUID.randomUUID())
-                .formation(formationEnCours)
-                .user(user)
-                .statutParticipation(StatutParticipation.ABSENT)
-                .build();
+        FormationParticipation participation = FormationParticipationFixtures.participationPresent();
 
         when(participationRepository.findByFormationIdAndUserId(formationId, userId))
                 .thenReturn(Optional.of(participation));

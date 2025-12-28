@@ -7,7 +7,6 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * User repository port (interface).
@@ -22,7 +21,7 @@ public interface UserRepository {
     /**
      * Find user by ID.
      */
-    Optional<User> findById(UUID id);
+    Optional<User> findById(Long id);
 
     /**
      * Find user by username.
@@ -57,7 +56,7 @@ public interface UserRepository {
     /**
      * Delete user by ID.
      */
-    void deleteById(UUID id);
+    void deleteById(Long id);
 
     /**
      * Check if user exists by email.

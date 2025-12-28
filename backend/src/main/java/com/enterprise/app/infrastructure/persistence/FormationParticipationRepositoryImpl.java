@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -19,32 +18,27 @@ public class FormationParticipationRepositoryImpl implements FormationParticipat
     private final JpaFormationParticipationRepository jpaRepository;
 
     @Override
-    public Optional<FormationParticipation> findById(UUID id) {
+    public Optional<FormationParticipation> findById(Long id) {
         return jpaRepository.findById(id);
     }
 
     @Override
-    public Optional<FormationParticipation> findByFormationIdAndUserId(UUID formationId, UUID userId) {
+    public Optional<FormationParticipation> findByFormationIdAndUserId(Long formationId, Long userId) {
         return jpaRepository.findByFormationIdAndUserId(formationId, userId);
     }
 
     @Override
-    public List<FormationParticipation> findByFormationId(UUID formationId) {
+    public List<FormationParticipation> findByFormationId(Long formationId) {
         return jpaRepository.findByFormationId(formationId);
     }
 
     @Override
-    public List<FormationParticipation> findByFormationIdAndStatutParticipation(UUID formationId, StatutParticipation statut) {
+    public List<FormationParticipation> findByFormationIdAndStatutParticipation(Long formationId, StatutParticipation statut) {
         return jpaRepository.findByFormationIdAndStatutParticipation(formationId, statut);
     }
 
     @Override
-    public Page<FormationParticipation> findByUserId(UUID userId, Pageable pageable) {
-        return jpaRepository.findByUserId(userId, pageable);
-    }
-
-    @Override
-    public Page<FormationParticipation> findByUserIdAndStatutParticipation(UUID userId, StatutParticipation statut, Pageable pageable) {
+    public Page<FormationParticipation> findByUserIdAndStatutParticipation(Long userId, StatutParticipation statut, Pageable pageable) {
         return jpaRepository.findByUserIdAndStatutParticipation(userId, statut, pageable);
     }
 
@@ -54,27 +48,27 @@ public class FormationParticipationRepositoryImpl implements FormationParticipat
     }
 
     @Override
-    public void deleteById(UUID id) {
+    public void deleteById(Long id) {
         jpaRepository.deleteById(id);
     }
 
     @Override
-    public void deleteByFormationIdAndUserId(UUID formationId, UUID userId) {
+    public void deleteByFormationIdAndUserId(Long formationId, Long userId) {
         jpaRepository.deleteByFormationIdAndUserId(formationId, userId);
     }
 
     @Override
-    public boolean existsByFormationIdAndUserId(UUID formationId, UUID userId) {
+    public boolean existsByFormationIdAndUserId(Long formationId, Long userId) {
         return jpaRepository.existsByFormationIdAndUserId(formationId, userId);
     }
 
     @Override
-    public int countByFormationIdAndStatutParticipation(UUID formationId, StatutParticipation statut) {
+    public int countByFormationIdAndStatutParticipation(Long formationId, StatutParticipation statut) {
         return jpaRepository.countByFormationIdAndStatutParticipation(formationId, statut);
     }
 
     @Override
-    public int countByFormationId(UUID formationId) {
+    public int countByFormationId(Long formationId) {
         return jpaRepository.countByFormationIdExcludingCancelled(formationId);
     }
 

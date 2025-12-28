@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 /**
  * DTO for batch import responses.
@@ -17,7 +16,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BatchImportResponse {
-    private UUID id;
+    private Long id;
     private String fileName;
     private Long fileSize;
     private BatchImportStatus status;
@@ -27,7 +26,7 @@ public class BatchImportResponse {
     private int failedLines;
     private double progressPercentage;
     private String errorMessage;
-    private UUID initiatedByUserId;
+    private Long initiatedByUserId;
     private String initiatedByUsername;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -44,20 +45,20 @@ class AuditCommandServiceTest {
 
     private CreateAuditEventCommand createCommand;
     private AuditEventCommand savedCommandEvent;
-    private UUID testUserId;
-    private UUID testTargetEntityId;
+    private Long testUserId;
+    private Long testTargetEntityId;
 
     @BeforeEach
     void setUp() {
-        testUserId = UUID.randomUUID();
-        testTargetEntityId = UUID.randomUUID();
+        testUserId = 1L;
+        testTargetEntityId = 1L;
 
         createCommand = CreateAuditEventCommand.builder()
             .eventType(AuditEventType.USER_CREATED)
             .userId(testUserId)
             .username("testuser")
             .targetEntityType("User")
-            .targetEntityId(testTargetEntityId)
+            .targetEntityId(1L)
             .targetEntityName("John Doe")
             .ipAddress("192.168.1.100")
             .userAgent("Mozilla/5.0")
@@ -66,12 +67,12 @@ class AuditCommandServiceTest {
             .build();
 
         savedCommandEvent = AuditEventCommand.builder()
-            .id(UUID.randomUUID())
+            .id(1L)
             .eventType(AuditEventType.USER_CREATED)
             .userId(testUserId)
             .username("testuser")
             .targetEntityType("User")
-            .targetEntityId(testTargetEntityId)
+            .targetEntityId(testTargetEntityId.toString())
             .ipAddress("192.168.1.100")
             .userAgent("Mozilla/5.0")
             .details("User created successfully")
@@ -116,7 +117,7 @@ class AuditCommandServiceTest {
         createCommand.setErrorMessage("Validation failed");
 
         AuditEventCommand failedEvent = AuditEventCommand.builder()
-            .id(UUID.randomUUID())
+            .id(1L)
             .eventType(AuditEventType.USER_CREATED)
             .userId(testUserId)
             .username("testuser")
@@ -224,19 +225,19 @@ class AuditCommandServiceTest {
     void shouldRebuildProjections() {
         // Given
         AuditEventCommand command1 = AuditEventCommand.builder()
-            .id(UUID.randomUUID())
+            .id(1L)
             .eventType(AuditEventType.USER_CREATED)
             .timestamp(LocalDateTime.now())
             .build();
 
         AuditEventCommand command2 = AuditEventCommand.builder()
-            .id(UUID.randomUUID())
+            .id(2L)
             .eventType(AuditEventType.USER_UPDATED)
             .timestamp(LocalDateTime.now())
             .build();
 
         AuditEventCommand command3 = AuditEventCommand.builder()
-            .id(UUID.randomUUID())
+            .id(3L)
             .eventType(AuditEventType.LOGIN_SUCCESS)
             .timestamp(LocalDateTime.now())
             .build();
@@ -288,7 +289,7 @@ class AuditCommandServiceTest {
             .build();
 
         AuditEventCommand authEvent = AuditEventCommand.builder()
-            .id(UUID.randomUUID())
+            .id(1L)
             .eventType(AuditEventType.LOGIN_SUCCESS)
             .username("testuser")
             .ipAddress("192.168.1.100")
@@ -320,13 +321,13 @@ class AuditCommandServiceTest {
             .userId(testUserId)
             .username("admin")
             .targetEntityType("BatchImport")
-            .targetEntityId(UUID.randomUUID())
+            .targetEntityId(1L)
             .details("Started importing 1000 users")
             .success(true)
             .build();
 
         AuditEventCommand batchEvent = AuditEventCommand.builder()
-            .id(UUID.randomUUID())
+            .id(1L)
             .eventType(AuditEventType.BATCH_IMPORT_STARTED)
             .userId(testUserId)
             .username("admin")

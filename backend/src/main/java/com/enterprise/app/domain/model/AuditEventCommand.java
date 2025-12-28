@@ -6,7 +6,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 /**
  * CQRS Command Model - Write side for audit events.
@@ -19,7 +18,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(
-    name = "audit_events_command",
+    name = "audit_event_commands",
     indexes = {
         @Index(name = "idx_audit_cmd_timestamp", columnList = "timestamp")
     }
@@ -33,15 +32,15 @@ import java.util.UUID;
 public class AuditEventCommand {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
     private AuditEventType eventType;
 
     @Column(name = "user_id")
-    private UUID userId;
+    private Long userId;
 
     @Column(name = "username", length = 50)
     private String username;
@@ -50,7 +49,7 @@ public class AuditEventCommand {
     private String targetEntityType;
 
     @Column(name = "target_entity_id")
-    private UUID targetEntityId;
+    private String targetEntityId;
 
     @Column(name = "ip_address", length = 45)
     private String ipAddress;
@@ -77,9 +76,9 @@ public class AuditEventCommand {
      */
     public static AuditEventCommand forUserOperation(
         AuditEventType eventType,
-        UUID userId,
+        Long userId,
         String username,
-        UUID targetUserId,
+        String targetUserId,
         boolean success
     ) {
         return AuditEventCommand.builder()

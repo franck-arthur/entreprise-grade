@@ -63,7 +63,7 @@ public class UserService {
      * Get user by ID.
      */
     @Cacheable(value = "user", key = "#id")
-    public UserDTO getUserById(UUID id) {
+    public UserDTO getUserById(Long id) {
         log.debug("Fetching user by id: {}", id);
 
         User user = userRepository.findById(id)
@@ -185,7 +185,7 @@ public class UserService {
     @Transactional
     @CacheEvict(value = {"user", "users"}, allEntries = true)
     @CircuitBreaker(name = "keycloak")
-    public UserDTO updateUser(UUID id, UpdateUserRequest request) {
+    public UserDTO updateUser(Long id, UpdateUserRequest request) {
         log.info("Updating user: {}", id);
 
         User user = userRepository.findById(id)
@@ -221,7 +221,7 @@ public class UserService {
     @Transactional
     @CacheEvict(value = {"user", "users"}, allEntries = true)
     @CircuitBreaker(name = "keycloak")
-    public void deleteUser(UUID id) {
+    public void deleteUser(Long id) {
         log.info("Deleting user: {}", id);
 
         User user = userRepository.findById(id)
@@ -244,7 +244,7 @@ public class UserService {
     @Transactional
     @CacheEvict(value = {"user", "users"}, allEntries = true)
     @CircuitBreaker(name = "keycloak")
-    public UserDTO activateUser(UUID id) {
+    public UserDTO activateUser(Long id) {
         log.info("Activating user: {}", id);
 
         User user = userRepository.findById(id)
@@ -269,7 +269,7 @@ public class UserService {
     @Transactional
     @CacheEvict(value = {"user", "users"}, allEntries = true)
     @CircuitBreaker(name = "keycloak")
-    public UserDTO deactivateUser(UUID id) {
+    public UserDTO deactivateUser(Long id) {
         log.info("Deactivating user: {}", id);
 
         User user = userRepository.findById(id)
@@ -364,32 +364,33 @@ public class UserService {
     @Transactional
     @CacheEvict(value = {"user", "users"}, allEntries = true)
     @CircuitBreaker(name = "keycloak")
-    public UserDTO partialUpdateUser(UUID id, Map<String, Object> partialUpdate) {
+    public UserDTO partialUpdateUser(Long id, Map<String, Object> partialUpdate) {
         log.info("Partially updating user: {} with fields: {}", id, partialUpdate.keySet());
 
         User user = userRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("User", id));
 
         // Apply partial updates
+        User finalUser = user;
         partialUpdate.forEach((field, value) -> {
             switch (field) {
                 case "firstName":
-                    if (value != null) user.setFirstName(value.toString());
+                    if (value != null) finalUser.setFirstName(value.toString());
                     break;
                 case "lastName":
-                    if (value != null) user.setLastName(value.toString());
+                    if (value != null) finalUser.setLastName(value.toString());
                     break;
                 case "email":
                     if (value != null) {
                         String newEmail = value.toString();
-                        if (!newEmail.equals(user.getEmail()) && userRepository.existsByEmail(newEmail)) {
+                        if (!newEmail.equals(finalUser.getEmail()) && userRepository.existsByEmail(newEmail)) {
                             throw new DuplicateResourceException("User", "email", newEmail);
                         }
-                        user.setEmail(newEmail);
+                        finalUser.setEmail(newEmail);
                     }
                     break;
                 case "phoneNumber":
-                    if (value != null) user.setPhoneNumber(value.toString());
+                    if (value != null) finalUser.setPhoneNumber(value.toString());
                     break;
                 case "roles":
                     if (value instanceof List) {
@@ -398,16 +399,16 @@ public class UserService {
                         Set<Role> newRoles = roleStrings.stream()
                             .map(Role::valueOf)
                             .collect(Collectors.toSet());
-                        user.setRoles(newRoles);
+                        finalUser.setRoles(newRoles);
                     }
                     break;
                 case "active":
                     if (value instanceof Boolean) {
                         Boolean isActive = (Boolean) value;
                         if (isActive) {
-                            user.activate();
+                            finalUser.activate();
                         } else {
-                            user.deactivate();
+                            finalUser.deactivate();
                         }
                     }
                     break;

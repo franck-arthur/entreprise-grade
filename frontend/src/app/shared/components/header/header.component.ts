@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { LanguageSelectorComponent } from '../language-selector/language-selector.component';
 import { AuthService } from '@app/core/services/auth.service';
+import { DsfrService } from '@app/core/services/dsfr.service';
 import { UserRole } from '@app/core/models/user.model';
 
 /**
@@ -82,7 +83,21 @@ import { UserRole } from '@app/core/models/user.model';
           >
             Fermer
           </button>
-          <div class="fr-header__menu-links"></div>
+          <div class="fr-header__menu-links">
+            <ul class="fr-btns-group">
+              <li>
+                <app-language-selector></app-language-selector>
+              </li>
+              <li *ngIf="isAuthenticated() && getCurrentUser()">
+                <span class="fr-text--sm fr-mr-2w">{{ getCurrentUser()?.username }}</span>
+              </li>
+              <li *ngIf="isAuthenticated()">
+                <button class="fr-btn fr-icon-logout-box-r-line" (click)="logout()">
+                  {{ 'nav.logout' | translate }}
+                </button>
+              </li>
+            </ul>
+          </div>
           <nav
             class="fr-nav"
             id="navigation-header"
@@ -98,6 +113,11 @@ import { UserRole } from '@app/core/models/user.model';
               <li class="fr-nav__item">
                 <a class="fr-nav__link" routerLink="/users" routerLinkActive="fr-nav__link--active">
                   {{ 'nav.users' | translate }}
+                </a>
+              </li>
+              <li class="fr-nav__item">
+                <a class="fr-nav__link" routerLink="/formations" routerLinkActive="fr-nav__link--active">
+                  {{ 'nav.formations' | translate }}
                 </a>
               </li>
               <li class="fr-nav__item" *ngIf="isAdmin()">
@@ -129,11 +149,14 @@ import { UserRole } from '@app/core/models/user.model';
     `,
   ],
 })
-export class HeaderComponent implements OnInit, OnDestroy {
+export class HeaderComponent implements OnInit, OnDestroy, AfterViewInit {
   private destroy$ = new Subject<void>();
   currentUser: any = null;
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private dsfrService: DsfrService
+  ) {}
 
   ngOnInit(): void {
     // Subscribe to current user changes
@@ -143,6 +166,31 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.currentUser = user;
         console.log('Header: User profile updated', user);
       });
+  }
+
+  ngAfterViewInit(): void {
+    // Initialize DSFR components after the view is initialized
+    // This ensures all DOM elements are present before DSFR scripts run
+    setTimeout(() => {
+      // Double-check that header elements are present before initialization
+      const headerElement = document.querySelector('.fr-header');
+      const menuLinksElement = document.querySelector('.fr-header__menu-links');
+      const navElement = document.querySelector('.fr-nav');
+
+      if (headerElement) {
+        // Initialize even if some elements are conditional (like menu when not authenticated)
+        this.dsfrService.initializeDsfr();
+      } else {
+        console.warn('Header elements not ready for DSFR initialization');
+        // Retry with increased delay
+        setTimeout(() => {
+          const retryHeaderElement = document.querySelector('.fr-header');
+          if (retryHeaderElement) {
+            this.dsfrService.initializeDsfr();
+          }
+        }, 1000);
+      }
+    }, 250);
   }
 
   ngOnDestroy(): void {
@@ -177,6 +225,19 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
     console.log('isAdmin() result:', isAdmin);
     return isAdmin;
+  }
+
+  hasFormationAccess(): boolean {
+    const user = this.getCurrentUser();
+    if (!user?.roles) return false;
+
+    const allowedRoles = ['ADMIN', 'MANAGER', 'TECH_LEAD'];
+
+    return user.roles.some((role: string) =>
+      allowedRoles.includes(role) ||
+      allowedRoles.includes(role.replace('ROLE_', '')) ||
+      allowedRoles.includes(role.toUpperCase())
+    );
   }
 
   logout(): void {

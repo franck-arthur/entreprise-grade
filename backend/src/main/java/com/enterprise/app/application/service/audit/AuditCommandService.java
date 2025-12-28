@@ -55,7 +55,7 @@ public class AuditCommandService {
             .userId(command.getUserId())
             .username(command.getUsername())
             .targetEntityType(command.getTargetEntityType())
-            .targetEntityId(command.getTargetEntityId())
+            .targetEntityId(command.getTargetEntityId().toString())
             .ipAddress(command.getIpAddress())
             .userAgent(command.getUserAgent())
             .details(command.getDetails())

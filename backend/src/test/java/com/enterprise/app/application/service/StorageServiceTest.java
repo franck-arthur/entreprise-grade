@@ -115,16 +115,20 @@ class StorageServiceTest {
     @DisplayName("Should download file successfully")
     void shouldDownloadFileSuccessfully() {
         // Given
-        InputStream mockInputStream = new ByteArrayInputStream("Test content".getBytes());
+        byte[] testContent = "Test content".getBytes();
+        GetObjectResponse mockResponse = GetObjectResponse.builder().build();
+        ResponseInputStream<GetObjectResponse> mockResponseStream =
+                new ResponseInputStream<>(mockResponse, new ByteArrayInputStream(testContent));
+
         when(s3Client.getObject(any(GetObjectRequest.class)))
-                .thenReturn((ResponseInputStream<GetObjectResponse>) mockInputStream);
+                .thenReturn(mockResponseStream);
 
         // When
         InputStream result = storageService.downloadFile(testKey);
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result).isEqualTo(mockInputStream);
+        assertThat(result).isEqualTo(mockResponseStream);
 
         verify(s3Client).getObject(any(GetObjectRequest.class));
     }

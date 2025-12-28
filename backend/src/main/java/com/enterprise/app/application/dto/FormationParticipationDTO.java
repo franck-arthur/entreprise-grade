@@ -8,18 +8,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class FormationParticipationDTO {
 
-    private UUID id;
-    private UUID formationId;
+    private Long id;
+    private Long formationId;
     private String formationLibelle;
-    private UUID userId;
+    private Long userId;
     private String userFullName;
     private String userEmail;
     private StatutParticipation statutParticipation;

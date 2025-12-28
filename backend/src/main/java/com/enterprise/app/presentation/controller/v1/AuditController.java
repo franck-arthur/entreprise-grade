@@ -25,7 +25,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * REST Controller for Audit Events.
@@ -72,7 +71,7 @@ public class AuditController {
         @RequestParam(required = false) String eventCategory,
 
         @Parameter(description = "User ID filter")
-        @RequestParam(required = false) UUID userId,
+        @RequestParam(required = false) Long userId,
 
         @Parameter(description = "Username filter (partial match)")
         @RequestParam(required = false) String username,
@@ -81,7 +80,7 @@ public class AuditController {
         @RequestParam(required = false) String targetEntityType,
 
         @Parameter(description = "Target entity ID filter")
-        @RequestParam(required = false) UUID targetEntityId,
+        @RequestParam(required = false) Long targetEntityId,
 
         @Parameter(description = "Success filter")
         @RequestParam(required = false) Boolean success,
@@ -133,7 +132,7 @@ public class AuditController {
     })
     public ResponseEntity<Page<AuditEventDTO>> getAuditEventsByUser(
         @Parameter(description = "User ID", required = true)
-        @PathVariable UUID userId,
+        @PathVariable Long userId,
 
         @Parameter(description = "Pagination parameters")
         @PageableDefault(size = 50, sort = "timestamp") Pageable pageable
@@ -192,7 +191,7 @@ public class AuditController {
         @PathVariable String entityType,
 
         @Parameter(description = "Entity ID", required = true)
-        @PathVariable UUID entityId,
+        @PathVariable Long entityId,
 
         @Parameter(description = "Pagination parameters")
         @PageableDefault(size = 50, sort = "timestamp") Pageable pageable

@@ -19,7 +19,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -66,7 +69,7 @@ public class BatchImportService {
      * This method runs in a separate thread to avoid blocking the main request.
      */
     @Async("batchImportExecutor")
-    public void processFileAsync(UUID batchImportId, MultipartFile file) {
+    public void processFileAsync(Long batchImportId, MultipartFile file) {
         log.info("Starting async processing for batch import: {}", batchImportId);
 
         try {
@@ -280,7 +283,7 @@ public class BatchImportService {
      * Update batch import with processing results.
      */
     @Transactional
-    public void updateBatchImportResults(UUID batchImportId, List<BatchImportLine> lines) {
+    public void updateBatchImportResults(Long batchImportId, List<BatchImportLine> lines) {
         BatchImport batchImport = batchImportPort.findById(batchImportId)
             .orElseThrow(() -> new ResourceNotFoundException("BatchImport", batchImportId));
 
@@ -305,7 +308,7 @@ public class BatchImportService {
      * Mark batch import as failed.
      */
     @Transactional
-    public void failBatchImport(UUID batchImportId, String errorMessage) {
+    public void failBatchImport(Long batchImportId, String errorMessage) {
         BatchImport batchImport = batchImportPort.findById(batchImportId)
             .orElseThrow(() -> new ResourceNotFoundException("BatchImport", batchImportId));
 
@@ -317,7 +320,7 @@ public class BatchImportService {
      * Get batch import by ID.
      */
     @Transactional(readOnly = true)
-    public BatchImport getBatchImportById(UUID id) {
+    public BatchImport getBatchImportById(Long id) {
         return batchImportPort.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("BatchImport", id));
     }
@@ -334,7 +337,7 @@ public class BatchImportService {
      * Get batch imports for a specific user.
      */
     @Transactional(readOnly = true)
-    public Page<BatchImport> getBatchImportsByUser(UUID userId, Pageable pageable) {
+    public Page<BatchImport> getBatchImportsByUser(Long userId, Pageable pageable) {
         return batchImportPort.findByInitiatedByUserId(userId, pageable);
     }
 
@@ -342,7 +345,7 @@ public class BatchImportService {
      * Cancel a batch import.
      */
     @Transactional
-    public void cancelBatchImport(UUID id) {
+    public void cancelBatchImport(Long id) {
         BatchImport batchImport = batchImportPort.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("BatchImport", id));
 

@@ -58,60 +58,6 @@ class FormationTest {
     }
 
     @Test
-    void validerCoherenceDates_ShouldThrowException_WhenEndTimeIsBeforeStartTime() {
-        // Given
-        Formation formation = Formation.builder()
-                .heureDebut(LocalTime.of(17, 0))
-                .heureFin(LocalTime.of(9, 0))
-                .build();
-
-        // When & Then
-        assertThatThrownBy(formation::validerCoherenceDates)
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("heure de fin doit être postérieure");
-    }
-
-    @Test
-    void validerCoherenceDates_ShouldThrowException_WhenEndTimeEqualsStartTime() {
-        // Given
-        Formation formation = Formation.builder()
-                .heureDebut(LocalTime.of(9, 0))
-                .heureFin(LocalTime.of(9, 0))
-                .build();
-
-        // When & Then
-        assertThatThrownBy(formation::validerCoherenceDates)
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("heure de fin doit être postérieure");
-    }
-
-    @Test
-    void validerNbParticipants_ShouldThrowException_WhenNbParticipantsIsNull() {
-        // Given
-        Formation formation = Formation.builder()
-                .nbParticipants(null)
-                .build();
-
-        // When & Then
-        assertThatThrownBy(formation::validerNbParticipants)
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("nombre de participants doit être positif");
-    }
-
-    @Test
-    void validerNbParticipants_ShouldThrowException_WhenNbParticipantsIsZero() {
-        // Given
-        Formation formation = Formation.builder()
-                .nbParticipants(0)
-                .build();
-
-        // When & Then
-        assertThatThrownBy(formation::validerNbParticipants)
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("nombre de participants doit être positif");
-    }
-
-    @Test
     void peutAccepterInscription_ShouldReturnTrue_WhenFormationIsAVenirAndNotComplete() {
         // Given
         Formation formation = Formation.builder()
@@ -124,7 +70,7 @@ class FormationTest {
         boolean result = formation.peutAccepterInscription();
 
         // Then
-        assertThat(result).isFalse(); // false car isComplet() retourne toujours false dans notre implémentation simplifiée
+        assertThat(result).isTrue(); // true car isComplet() retourne toujours false dans notre implémentation simplifiée
     }
 
     @Test

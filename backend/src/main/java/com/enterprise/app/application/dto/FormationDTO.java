@@ -11,15 +11,15 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.UUID;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class FormationDTO {
 
-    private UUID id;
+
+    private Long id;
     private String libelle;
     private String formateurs;
     private String description;
@@ -33,8 +33,8 @@ public class FormationDTO {
     @JsonFormat(pattern = "HH:mm")
     private LocalTime heureFin;
 
-    private String secteur;
-    private String region;
+    private SecteurDTO secteur;
+    private RegionDTO region;
     private ModaliteFormation modalite;
     private Integer nbParticipants;
     private String lieu;

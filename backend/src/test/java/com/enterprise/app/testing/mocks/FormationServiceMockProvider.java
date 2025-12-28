@@ -5,7 +5,6 @@ import com.enterprise.app.domain.exception.BusinessException;
 import com.enterprise.app.domain.exception.DuplicateResourceException;
 import com.enterprise.app.domain.exception.ResourceNotFoundException;
 import com.enterprise.app.domain.model.Formation;
-import com.enterprise.app.domain.model.FormationParticipation;
 import com.enterprise.app.testing.fixtures.FormationFixtures;
 import com.enterprise.app.testing.fixtures.FormationParticipationFixtures;
 import org.springframework.data.domain.Page;
@@ -14,7 +13,6 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -32,23 +30,23 @@ public class FormationServiceMockProvider {
         FormationService mock = mock(FormationService.class);
 
         // Configuration des comportements standards
-        when(mock.getFormationById(any(UUID.class)))
+        when(mock.getFormationById(any(Long.class)))
                 .thenReturn(FormationFixtures.defaultFormationPresentiel());
 
         when(mock.createFormation(any(Formation.class)))
                 .thenAnswer(invocation -> {
                     Formation formation = invocation.getArgument(0);
-                    return formation.toBuilder().id(UUID.randomUUID()).build();
+                    return formation.toBuilder().id(1L).build();
                 });
 
-        when(mock.updateFormation(any(UUID.class), any(Formation.class)))
+        when(mock.updateFormation(any(Long.class), any(Formation.class)))
                 .thenAnswer(invocation -> invocation.getArgument(1));
 
-        doNothing().when(mock).deleteFormation(any(UUID.class));
+        doNothing().when(mock).deleteFormation(any(Long.class));
 
         // Configuration pour les recherches
-        when(mock.searchFormationProjections(anyString(), anyString(), any(), any(), any(Pageable.class)))
-                .thenReturn(createEmptyPage());
+        when(mock.searchFormations(anyLong(), anyLong(), any(), any(), any(Pageable.class)))
+                .thenReturn(createEmptyProjectionPage());
 
         return mock;
     }
@@ -59,17 +57,17 @@ public class FormationServiceMockProvider {
     public static FormationService createErrorMock() {
         FormationService mock = mock(FormationService.class);
 
-        when(mock.getFormationById(any(UUID.class)))
+        when(mock.getFormationById(any(Long.class)))
                 .thenThrow(new ResourceNotFoundException("Formation non trouvée"));
 
         when(mock.createFormation(any(Formation.class)))
                 .thenThrow(new BusinessException("Erreur lors de la création"));
 
-        when(mock.updateFormation(any(UUID.class), any(Formation.class)))
+        when(mock.updateFormation(any(Long.class), any(Formation.class)))
                 .thenThrow(new BusinessException("Erreur lors de la mise à jour"));
 
         doThrow(new BusinessException("Erreur lors de la suppression"))
-                .when(mock).deleteFormation(any(UUID.class));
+                .when(mock).deleteFormation(any(Long.class));
 
         return mock;
     }
@@ -80,16 +78,15 @@ public class FormationServiceMockProvider {
     public static FormationService createParticipationMock() {
         FormationService mock = createSuccessfulMock();
 
-        when(mock.inscrireUtilisateur(any(UUID.class), any(UUID.class)))
+        when(mock.inscrireUtilisateur(any(Long.class), any(Long.class)))
                 .thenReturn(FormationParticipationFixtures.defaultParticipation());
 
-        when(mock.desinscrireUtilisateur(any(UUID.class), any(UUID.class)))
-                .thenReturn(FormationParticipationFixtures.defaultParticipation());
+        doNothing().when(mock).desinscrireUtilisateur(any(Long.class), any(Long.class));
 
-        when(mock.marquerPresence(any(UUID.class), any(UUID.class), anyBoolean()))
+        when(mock.marquerPresence(any(Long.class), any(Long.class), anyBoolean()))
                 .thenReturn(FormationParticipationFixtures.participationPresent());
 
-        when(mock.getParticipantsFormation(any(UUID.class)))
+        when(mock.getParticipantsFormation(any(Long.class)))
                 .thenReturn(Arrays.asList(FormationParticipationFixtures.defaultParticipation()));
 
         return mock;
@@ -101,13 +98,13 @@ public class FormationServiceMockProvider {
     public static FormationService createParticipationErrorMock() {
         FormationService mock = createSuccessfulMock();
 
-        when(mock.inscrireUtilisateur(any(UUID.class), any(UUID.class)))
+        when(mock.inscrireUtilisateur(any(Long.class), any(Long.class)))
                 .thenThrow(new DuplicateResourceException("Utilisateur déjà inscrit"));
 
-        when(mock.desinscrireUtilisateur(any(UUID.class), any(UUID.class)))
-                .thenThrow(new ResourceNotFoundException("Participation non trouvée"));
+        doThrow(new ResourceNotFoundException("Participation non trouvée"))
+                .when(mock).desinscrireUtilisateur(any(Long.class), any(Long.class));
 
-        when(mock.marquerPresence(any(UUID.class), any(UUID.class), anyBoolean()))
+        when(mock.marquerPresence(any(Long.class), any(Long.class), anyBoolean()))
                 .thenThrow(new BusinessException("Impossible de marquer la présence"));
 
         return mock;
@@ -119,7 +116,7 @@ public class FormationServiceMockProvider {
     public static FormationService createFullFormationMock() {
         FormationService mock = createSuccessfulMock();
 
-        when(mock.inscrireUtilisateur(any(UUID.class), any(UUID.class)))
+        when(mock.inscrireUtilisateur(any(Long.class), any(Long.class)))
                 .thenThrow(new BusinessException("Formation complète"));
 
         return mock;
@@ -134,7 +131,7 @@ public class FormationServiceMockProvider {
         when(mock.createFormation(any(Formation.class)))
                 .thenThrow(new IllegalArgumentException("Données invalides"));
 
-        when(mock.updateFormation(any(UUID.class), any(Formation.class)))
+        when(mock.updateFormation(any(Long.class), any(Formation.class)))
                 .thenThrow(new BusinessException("Impossible de modifier une formation terminée"));
 
         return mock;
@@ -143,30 +140,31 @@ public class FormationServiceMockProvider {
     /**
      * Configure un mock existant avec des données de recherche.
      */
-    public static void configureSearchMock(FormationService mock, List<Formation> formations) {
-        when(mock.searchFormationProjections(anyString(), anyString(), any(), any(), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(formations));
+    public static void configureSearchMock(FormationService mock, List<Formation> projections) {
+        when(mock.searchFormations(anyLong(), anyLong(), any(), any(), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(projections));
     }
 
     /**
      * Configure un mock pour retourner des formations spécifiques.
      */
-    public static void configureFormationById(FormationService mock, UUID formationId, Formation formation) {
+    public static void configureFormationById(FormationService mock, Long formationId, Formation formation) {
         when(mock.getFormationById(formationId)).thenReturn(formation);
     }
 
     /**
      * Configure un mock pour les erreurs spécifiques à un ID.
      */
-    public static void configureFormationByIdError(FormationService mock, UUID formationId, String errorMessage) {
+    public static void configureFormationByIdError(FormationService mock, Long formationId, String errorMessage) {
         when(mock.getFormationById(formationId))
                 .thenThrow(new ResourceNotFoundException(errorMessage));
     }
 
+
     /**
-     * Crée une page vide pour les tests.
+     * Crée une page vide de projections pour les tests.
      */
-    private static Page createEmptyPage() {
+    private static Page<Formation> createEmptyProjectionPage() {
         return new PageImpl<>(Arrays.asList());
     }
 
@@ -180,7 +178,7 @@ public class FormationServiceMockProvider {
     /**
      * Vérifie les interactions standard de lecture.
      */
-    public static void verifyStandardReadInteractions(FormationService mock, UUID formationId) {
+    public static void verifyStandardReadInteractions(FormationService mock, Long formationId) {
         verify(mock).getFormationById(formationId);
         verifyNoMoreInteractions(mock);
     }

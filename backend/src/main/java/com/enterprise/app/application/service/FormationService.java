@@ -8,7 +8,8 @@ import com.enterprise.app.domain.model.*;
 import com.enterprise.app.domain.repository.FormationRepository;
 import com.enterprise.app.domain.repository.FormationParticipationRepository;
 import com.enterprise.app.domain.repository.UserRepository;
-import com.enterprise.app.infrastructure.persistence.projection.FormationProjection;
+import com.enterprise.app.domain.repository.SecteurRepository;
+import com.enterprise.app.domain.repository.RegionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -18,46 +19,36 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
 public class FormationService {
-
     private final FormationRepository formationRepository;
     private final FormationParticipationRepository participationRepository;
     private final UserRepository userRepository;
+    private final SecteurRepository secteurRepository;
+    private final RegionRepository regionRepository;
 
     @Transactional(readOnly = true)
-    public Formation getFormationById(UUID id) {
+    public Formation getFormationById(Long id) {
         return formationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Formation non trouvée avec l'ID: " + id));
     }
 
     @Transactional(readOnly = true)
-    public Page<Formation> getAllFormations(Pageable pageable) {
-        return formationRepository.findAll(pageable);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<Formation> searchFormations(String secteur, String region, ModaliteFormation modalite,
+    public Page<Formation> searchFormations(Long secteurId, Long regionId, ModaliteFormation modalite,
                                           FormationStatut statut, Pageable pageable) {
-        return formationRepository.findByFilters(secteur, region, modalite, statut, pageable);
+        return formationRepository.findByFilters(secteurId, regionId, modalite, statut, pageable);
     }
 
     public Formation createFormation(Formation formation) {
         log.info("Création d'une nouvelle formation: {}", formation.getLibelle());
-
-        formation.validerCoherenceDates();
-        formation.validerNbParticipants();
-        formation.validerModaliteEtChamps();
-
         return formationRepository.save(formation);
     }
 
-    public Formation updateFormation(UUID id, Formation formationData) {
+    public Formation updateFormation(Long id, Formation formationData) {
         Formation existingFormation = getFormationById(id);
 
         if (existingFormation.getStatut() == FormationStatut.TERMINEE) {
@@ -78,10 +69,6 @@ public class FormationService {
         existingFormation.setVille(formationData.getVille());
         existingFormation.setLienParticipation(formationData.getLienParticipation());
 
-        existingFormation.validerCoherenceDates();
-        existingFormation.validerNbParticipants();
-        existingFormation.validerModaliteEtChamps();
-
         try {
             log.info("Mise à jour de la formation: {}", id);
             return formationRepository.save(existingFormation);
@@ -94,7 +81,7 @@ public class FormationService {
         }
     }
 
-    public void deleteFormation(UUID id) {
+    public void deleteFormation(Long id) {
         Formation formation = getFormationById(id);
 
         if (formation.getStatut() == FormationStatut.EN_COURS) {
@@ -105,7 +92,7 @@ public class FormationService {
         formationRepository.deleteById(id);
     }
 
-    public FormationParticipation inscrireUtilisateur(UUID formationId, UUID userId) {
+    public FormationParticipation inscrireUtilisateur(Long formationId, Long userId) {
         Formation formation = getFormationById(formationId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé avec l'ID: " + userId));
@@ -133,7 +120,7 @@ public class FormationService {
         return participationRepository.save(participation);
     }
 
-    public void desinscrireUtilisateur(UUID formationId, UUID userId) {
+    public void desinscrireUtilisateur(Long formationId, Long userId) {
         FormationParticipation participation = participationRepository.findByFormationIdAndUserId(formationId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Inscription non trouvée"));
 
@@ -146,22 +133,14 @@ public class FormationService {
     }
 
     @Transactional(readOnly = true)
-    public List<FormationParticipation> getParticipantsFormation(UUID formationId) {
+    public List<FormationParticipation> getParticipantsFormation(Long formationId) {
         if (!formationRepository.existsById(formationId)) {
             throw new ResourceNotFoundException("Formation non trouvée avec l'ID: " + formationId);
         }
         return participationRepository.findByFormationId(formationId);
     }
 
-    @Transactional(readOnly = true)
-    public Page<FormationParticipation> getFormationsUtilisateur(UUID userId, Pageable pageable) {
-        if (!userRepository.findById(userId).isPresent()) {
-            throw new ResourceNotFoundException("Utilisateur non trouvé avec l'ID: " + userId);
-        }
-        return participationRepository.findByUserId(userId, pageable);
-    }
-
-    public FormationParticipation marquerPresence(UUID formationId, UUID userId, boolean present) {
+    public FormationParticipation marquerPresence(Long formationId, Long userId, boolean present) {
         FormationParticipation participation = participationRepository.findByFormationIdAndUserId(formationId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Participation non trouvée"));
 
@@ -188,52 +167,61 @@ public class FormationService {
         return participationRepository.save(participation);
     }
 
-    // ================================
-    // MÉTHODES OPTIMISÉES AVEC PROJECTIONS
-    // ================================
 
-    @Transactional(readOnly = true)
-    public FormationProjection getFormationProjectionById(UUID id) {
-        return formationRepository.findProjectionById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Formation non trouvée avec l'ID: " + id));
+    // ================================
+    // MÉTHODES UTILITAIRES POUR SECTEUR ET RÉGION
+    // ================================
+    public Formation createFormationWithIds(Formation formation, Long secteurId, Long regionId) {
+        log.info("Création d'une nouvelle formation: {}", formation.getLibelle());
+
+        Secteur secteur = secteurRepository.findById(secteurId)
+                .orElseThrow(() -> new ResourceNotFoundException("Secteur non trouvé avec l'ID: " + secteurId));
+
+        Region region = regionRepository.findById(regionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Région non trouvée avec l'ID: " + regionId));
+
+        formation.setSecteur(secteur);
+        formation.setRegion(region);
+
+        return formationRepository.save(formation);
     }
 
-    @Transactional(readOnly = true)
-    public List<FormationProjection> getAllFormationProjections() {
-        return formationRepository.findAllProjections();
-    }
+    public Formation updateFormationWithIds(Long id, Formation formationData, Long secteurId, Long regionId) {
+        Formation existingFormation = getFormationById(id);
 
-    @Transactional(readOnly = true)
-    public Page<FormationProjection> searchFormationProjections(String secteur, String region,
-                                                               ModaliteFormation modalite, FormationStatut statut, Pageable pageable) {
-        if (statut == null) {
-            // Si pas de filtre statut, utilisation directe de la pagination en base
-            return formationRepository.findProjectionsByFilters(secteur, region, modalite, pageable);
-        } else {
-            // Si filtre statut présent, récupération de toutes les données puis filtrage côté application
-            // Note: Pour une vraie production, il faudrait implémenter une pagination custom plus sophistiquée
-            Page<FormationProjection> allProjections = formationRepository.findProjectionsByFilters(secteur, region, modalite, Pageable.unpaged());
+        if (existingFormation.getStatut() == FormationStatut.TERMINEE) {
+            throw new BusinessException("Impossible de modifier une formation terminée");
+        }
 
-            List<FormationProjection> filteredProjections = allProjections.getContent().stream()
-                    .filter(projection -> {
-                        // Le statut est calculé dynamiquement basé sur les dates et participants
-                        if (projection.getDateFormation().isBefore(java.time.LocalDate.now())) {
-                            return statut == FormationStatut.TERMINEE;
-                        } else if (projection.getDateFormation().equals(java.time.LocalDate.now())) {
-                            return statut == FormationStatut.EN_COURS;
-                        } else {
-                            // Formation à venir
-                            return statut == FormationStatut.A_VENIR;
-                        }
-                    })
-                    .collect(java.util.stream.Collectors.toList());
+        Secteur secteur = secteurRepository.findById(secteurId)
+                .orElseThrow(() -> new ResourceNotFoundException("Secteur non trouvé avec l'ID: " + secteurId));
 
-            // Pagination manuelle des résultats filtrés
-            int start = Math.min((int) pageable.getOffset(), filteredProjections.size());
-            int end = Math.min((start + pageable.getPageSize()), filteredProjections.size());
-            List<FormationProjection> pageContent = filteredProjections.subList(start, end);
+        Region region = regionRepository.findById(regionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Région non trouvée avec l'ID: " + regionId));
 
-            return new org.springframework.data.domain.PageImpl<>(pageContent, pageable, filteredProjections.size());
+        existingFormation.setLibelle(formationData.getLibelle());
+        existingFormation.setFormateurs(formationData.getFormateurs());
+        existingFormation.setDescription(formationData.getDescription());
+        existingFormation.setDateFormation(formationData.getDateFormation());
+        existingFormation.setHeureDebut(formationData.getHeureDebut());
+        existingFormation.setHeureFin(formationData.getHeureFin());
+        existingFormation.setSecteur(secteur);
+        existingFormation.setRegion(region);
+        existingFormation.setModalite(formationData.getModalite());
+        existingFormation.setNbParticipants(formationData.getNbParticipants());
+        existingFormation.setLieu(formationData.getLieu());
+        existingFormation.setVille(formationData.getVille());
+        existingFormation.setLienParticipation(formationData.getLienParticipation());
+
+        try {
+            log.info("Mise à jour de la formation: {}", id);
+            return formationRepository.save(existingFormation);
+        } catch (OptimisticLockingFailureException e) {
+            log.warn("Conflit de concurrence détecté lors de la mise à jour de la formation: {}", id);
+            throw new ConcurrentUpdateException(
+                "La formation a été modifiée par un autre utilisateur. Veuillez recharger la page et réessayer.",
+                e
+            );
         }
     }
 }

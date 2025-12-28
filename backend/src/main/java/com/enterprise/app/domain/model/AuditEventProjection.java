@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 /**
  * CQRS Query Model - Read side for audit events.
@@ -23,7 +22,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(
-    name = "audit_events_projection",
+    name = "audit_event_projections",
     indexes = {
         @Index(name = "idx_audit_proj_timestamp", columnList = "timestamp"),
         @Index(name = "idx_audit_proj_user", columnList = "user_id, timestamp"),
@@ -41,7 +40,7 @@ import java.util.UUID;
 public class AuditEventProjection {
 
     @Id
-    private UUID id; // Same ID as command model
+    private Long id; // Same ID as command model
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
@@ -51,7 +50,7 @@ public class AuditEventProjection {
     private String eventCategory; // Denormalized: USER, AUTH, BATCH, SECURITY, SYSTEM
 
     @Column(name = "user_id")
-    private UUID userId;
+    private Long userId;
 
     @Column(name = "username", length = 50)
     private String username;
@@ -60,7 +59,7 @@ public class AuditEventProjection {
     private String targetEntityType;
 
     @Column(name = "target_entity_id")
-    private UUID targetEntityId;
+    private String targetEntityId;
 
     @Column(name = "target_entity_name", length = 200)
     private String targetEntityName; // Denormalized for display

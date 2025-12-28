@@ -51,12 +51,12 @@ class BatchImportServiceTest {
 
     private User testUser;
     private BatchImport testBatchImport;
-    private UUID batchImportId;
+    private Long batchImportId;
     private Pageable pageable;
 
     @BeforeEach
     void setUp() {
-        batchImportId = UUID.randomUUID();
+        batchImportId = 1L;
         pageable = PageRequest.of(0, 20);
 
         // Create a spy to prevent async method execution in tests
@@ -66,10 +66,10 @@ class BatchImportServiceTest {
 
         // Stub the async method to do nothing (prevent actual async execution)
         // Use lenient() to avoid UnnecessaryStubbingException for tests that don't call createBatchImport
-        lenient().doNothing().when(batchImportService).processFileAsync(any(UUID.class), any());
+        lenient().doNothing().when(batchImportService).processFileAsync(any(Long.class), any());
 
         testUser = User.builder()
-            .id(UUID.randomUUID())
+            .id(1L)
             .username("testuser")
             .email("test@example.com")
             .firstName("Test")
@@ -150,7 +150,7 @@ class BatchImportServiceTest {
     @DisplayName("Should throw ResourceNotFoundException when batch import not found")
     void shouldThrowExceptionWhenBatchImportNotFound() {
         // Given
-        UUID nonExistentId = UUID.randomUUID();
+        Long nonExistentId = 999L;
         when(batchImportPort.findById(nonExistentId)).thenReturn(Optional.empty());
 
         // When & Then
@@ -262,8 +262,8 @@ class BatchImportServiceTest {
     @DisplayName("Should update batch import results with processed lines")
     void shouldUpdateBatchImportResults() {
         // Given
-        User createdUser1 = User.builder().id(UUID.randomUUID()).username("user1").build();
-        User createdUser2 = User.builder().id(UUID.randomUUID()).username("user2").build();
+        User createdUser1 = User.builder().id(1L).username("user1").build();
+        User createdUser2 = User.builder().id(1L).username("user2").build();
 
         BatchImportLine successLine = BatchImportLine.builder()
             .lineNumber(1)
@@ -300,7 +300,7 @@ class BatchImportServiceTest {
     @DisplayName("Should mark batch import as completed when all lines succeed")
     void shouldMarkAsCompletedWhenAllLinesSucceed() {
         // Given
-        User createdUser = User.builder().id(UUID.randomUUID()).username("user1").build();
+        User createdUser = User.builder().id(1L).username("user1").build();
 
         BatchImportLine successLine = BatchImportLine.builder()
             .lineNumber(1)
@@ -393,7 +393,7 @@ class BatchImportServiceTest {
     @DisplayName("Should throw exception when canceling non-existent batch import")
     void shouldThrowExceptionWhenCancelingNonExistentBatchImport() {
         // Given
-        UUID nonExistentId = UUID.randomUUID();
+        Long nonExistentId = 999L;
         when(batchImportPort.findById(nonExistentId)).thenReturn(Optional.empty());
 
         // When & Then
@@ -409,7 +409,7 @@ class BatchImportServiceTest {
     @DisplayName("Should throw exception when failing non-existent batch import")
     void shouldThrowExceptionWhenFailingNonExistentBatchImport() {
         // Given
-        UUID nonExistentId = UUID.randomUUID();
+        Long nonExistentId = 999L;
         when(batchImportPort.findById(nonExistentId)).thenReturn(Optional.empty());
 
         // When & Then
@@ -425,7 +425,7 @@ class BatchImportServiceTest {
     @DisplayName("Should throw exception when updating results for non-existent batch import")
     void shouldThrowExceptionWhenUpdatingNonExistentBatchImport() {
         // Given
-        UUID nonExistentId = UUID.randomUUID();
+        Long nonExistentId = 999L;
         when(batchImportPort.findById(nonExistentId)).thenReturn(Optional.empty());
 
         List<BatchImportLine> lines = new ArrayList<>();

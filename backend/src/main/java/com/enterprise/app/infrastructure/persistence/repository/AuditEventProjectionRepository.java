@@ -23,12 +23,12 @@ import java.util.UUID;
  * Implements AuditEventQueryPort following hexagonal architecture.
  */
 @Repository
-public interface AuditEventProjectionRepository extends JpaRepository<AuditEventProjection, UUID>, AuditEventQueryPort {
+public interface AuditEventProjectionRepository extends JpaRepository<AuditEventProjection, Long>, AuditEventQueryPort {
 
     /**
      * Find events by user with pagination.
      */
-    Page<AuditEventProjection> findByUserIdOrderByTimestampDesc(UUID userId, Pageable pageable);
+    Page<AuditEventProjection> findByUserIdOrderByTimestampDesc(Long userId, Pageable pageable);
 
     /**
      * Find events by event type.
@@ -68,7 +68,7 @@ public interface AuditEventProjectionRepository extends JpaRepository<AuditEvent
     /**
      * Complex query with multiple filters.
      */
-    @Query("SELECT a FROM AuditEventProjection a WHERE " +
+    /*@Query("SELECT a FROM AuditEventProjection a WHERE " +
            "(:eventTypes IS NULL OR a.eventType IN :eventTypes) AND " +
            "(:eventCategory IS NULL OR a.eventCategory = :eventCategory) AND " +
            "(:userId IS NULL OR a.userId = :userId) AND " +
@@ -90,7 +90,7 @@ public interface AuditEventProjectionRepository extends JpaRepository<AuditEvent
         @Param("fromDate") LocalDateTime fromDate,
         @Param("toDate") LocalDateTime toDate,
         Pageable pageable
-    );
+    );*/
 
     /**
      * Count total events.

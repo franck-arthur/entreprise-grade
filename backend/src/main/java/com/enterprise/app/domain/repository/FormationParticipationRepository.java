@@ -7,33 +7,30 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public interface FormationParticipationRepository {
 
-    Optional<FormationParticipation> findById(UUID id);
+    Optional<FormationParticipation> findById(Long id);
 
-    Optional<FormationParticipation> findByFormationIdAndUserId(UUID formationId, UUID userId);
+    Optional<FormationParticipation> findByFormationIdAndUserId(Long formationId, Long userId);
 
-    List<FormationParticipation> findByFormationId(UUID formationId);
+    List<FormationParticipation> findByFormationId(Long formationId);
 
-    List<FormationParticipation> findByFormationIdAndStatutParticipation(UUID formationId, StatutParticipation statut);
+    List<FormationParticipation> findByFormationIdAndStatutParticipation(Long formationId, StatutParticipation statut);
 
-    Page<FormationParticipation> findByUserId(UUID userId, Pageable pageable);
-
-    Page<FormationParticipation> findByUserIdAndStatutParticipation(UUID userId, StatutParticipation statut, Pageable pageable);
+    Page<FormationParticipation> findByUserIdAndStatutParticipation(Long userId, StatutParticipation statut, Pageable pageable);
 
     FormationParticipation save(FormationParticipation participation);
 
-    void deleteById(UUID id);
+    void deleteById(Long id);
 
-    void deleteByFormationIdAndUserId(UUID formationId, UUID userId);
+    void deleteByFormationIdAndUserId(Long formationId, Long userId);
 
-    boolean existsByFormationIdAndUserId(UUID formationId, UUID userId);
+    boolean existsByFormationIdAndUserId(Long formationId, Long userId);
 
-    int countByFormationIdAndStatutParticipation(UUID formationId, StatutParticipation statut);
+    int countByFormationIdAndStatutParticipation(Long formationId, StatutParticipation statut);
 
-    int countByFormationId(UUID formationId);
+    int countByFormationId(Long formationId);
 
     long count();
 }

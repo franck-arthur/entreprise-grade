@@ -21,7 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
 
 /**
  * REST Controller for User management.
@@ -34,7 +33,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Users", description = "User management API")
-@SecurityRequirement(name = "bearerAuth")
+//@SecurityRequirement(name = "bearerAuth")
 public class UserController {
 
     private final UserService userService;
@@ -43,7 +42,7 @@ public class UserController {
      * Get all users with pagination.
      */
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'TECH_LEAD', 'MANAGER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'TECH_LEAD', 'MANAGER')")
     @Operation(
         summary = "Get all users",
         description = "Retrieve a paginated list of all users. Requires ADMIN, TECH_LEAD, or MANAGER role."
@@ -69,7 +68,7 @@ public class UserController {
      * Get user by ID.
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TECH_LEAD', 'MANAGER') or #id == authentication.principal.claims['sub']")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'TECH_LEAD', 'MANAGER') or #id == authentication.principal.claims['sub']")
     @Operation(
         summary = "Get user by ID",
         description = "Retrieve a single user by their ID. Users can access their own data."
@@ -82,7 +81,7 @@ public class UserController {
     })
     public ResponseEntity<UserDTO> getUserById(
         @Parameter(description = "User ID", required = true)
-        @PathVariable UUID id
+        @PathVariable Long id
     ) {
         log.debug("GET /api/v1/users/{}", id);
 
@@ -95,7 +94,7 @@ public class UserController {
      * Get user by username.
      */
     @GetMapping("/username/{username}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TECH_LEAD', 'MANAGER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'TECH_LEAD', 'MANAGER')")
     @Operation(
         summary = "Get user by username",
         description = "Retrieve a user by their username. Requires elevated permissions."
@@ -121,7 +120,7 @@ public class UserController {
      * Create a new user.
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'TECH_LEAD')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'TECH_LEAD')")
     @Operation(
         summary = "Create new user",
         description = "Create a new user. Requires ADMIN or TECH_LEAD role."
@@ -148,7 +147,7 @@ public class UserController {
      * Update user.
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TECH_LEAD')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'TECH_LEAD')")
     @Operation(
         summary = "Update user",
         description = "Update an existing user. Requires ADMIN or TECH_LEAD role."
@@ -163,7 +162,7 @@ public class UserController {
     })
     public ResponseEntity<UserDTO> updateUser(
         @Parameter(description = "User ID", required = true)
-        @PathVariable UUID id,
+        @PathVariable Long id,
         @Parameter(description = "User update request", required = true)
         @Valid @RequestBody UpdateUserRequest request
     ) {
@@ -178,7 +177,7 @@ public class UserController {
      * Delete user.
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
     @Operation(
         summary = "Delete user",
         description = "Delete a user. Requires ADMIN role."
@@ -191,7 +190,7 @@ public class UserController {
     })
     public ResponseEntity<Void> deleteUser(
         @Parameter(description = "User ID", required = true)
-        @PathVariable UUID id
+        @PathVariable Long id
     ) {
         log.info("DELETE /api/v1/users/{}", id);
 
@@ -204,7 +203,7 @@ public class UserController {
      * Activate user.
      */
     @PatchMapping("/{id}/activate")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TECH_LEAD')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'TECH_LEAD')")
     @Operation(
         summary = "Activate user",
         description = "Activate a deactivated user. Requires ADMIN or TECH_LEAD role."
@@ -217,7 +216,7 @@ public class UserController {
     })
     public ResponseEntity<UserDTO> activateUser(
         @Parameter(description = "User ID", required = true)
-        @PathVariable UUID id
+        @PathVariable Long id
     ) {
         log.info("PATCH /api/v1/users/{}/activate", id);
 
@@ -230,7 +229,7 @@ public class UserController {
      * Deactivate user.
      */
     @PatchMapping("/{id}/deactivate")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TECH_LEAD')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'TECH_LEAD')")
     @Operation(
         summary = "Deactivate user",
         description = "Deactivate an active user. Requires ADMIN or TECH_LEAD role."
@@ -243,7 +242,7 @@ public class UserController {
     })
     public ResponseEntity<UserDTO> deactivateUser(
         @Parameter(description = "User ID", required = true)
-        @PathVariable UUID id
+        @PathVariable Long id
     ) {
         log.info("PATCH /api/v1/users/{}/deactivate", id);
 

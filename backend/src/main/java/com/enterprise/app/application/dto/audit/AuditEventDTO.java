@@ -17,13 +17,13 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuditEventDTO {
-    private UUID id;
+    private Long id;
     private AuditEventType eventType;
     private String eventCategory;
-    private UUID userId;
+    private Long userId;
     private String username;
     private String targetEntityType;
-    private UUID targetEntityId;
+    private Long targetEntityId;
     private String targetEntityName;
     private String ipAddress;
     private String userAgent;

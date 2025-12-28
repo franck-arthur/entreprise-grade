@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * REST Controller for User management - API Version 2.
@@ -120,7 +119,7 @@ public class UserControllerV2 {
     })
     public ResponseEntity<Map<String, Object>> getUserByIdV2(
         @Parameter(description = "User ID", required = true)
-        @PathVariable UUID id
+        @PathVariable Long id
     ) {
         log.debug("GET /api/v2/users/{}", id);
 
@@ -241,7 +240,7 @@ public class UserControllerV2 {
     })
     public ResponseEntity<Map<String, Object>> patchUserV2(
         @Parameter(description = "User ID", required = true)
-        @PathVariable UUID id,
+        @PathVariable Long id,
         @Parameter(description = "Partial update data", required = true)
         @RequestBody Map<String, Object> partialUpdate
     ) {
@@ -274,7 +273,7 @@ public class UserControllerV2 {
     )
     public ResponseEntity<Map<String, Object>> updateUserV2(
         @Parameter(description = "User ID", required = true)
-        @PathVariable UUID id,
+        @PathVariable Long id,
         @Parameter(description = "User update request", required = true)
         @Valid @RequestBody UpdateUserRequest request
     ) {
@@ -305,7 +304,7 @@ public class UserControllerV2 {
     )
     public ResponseEntity<Map<String, Object>> deleteUserV2(
         @Parameter(description = "User ID", required = true)
-        @PathVariable UUID id
+        @PathVariable Long id
     ) {
         log.info("DELETE /api/v2/users/{}", id);
 

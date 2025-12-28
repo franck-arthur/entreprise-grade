@@ -4,6 +4,7 @@ import com.enterprise.app.application.dto.audit.AuditEventDTO;
 import com.enterprise.app.application.dto.audit.AuditStatisticsDTO;
 import com.enterprise.app.application.service.audit.AuditQueryService;
 import com.enterprise.app.domain.model.AuditEventType;
+import com.enterprise.app.presentation.controller.v1.AuditController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,11 @@ import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -40,18 +45,18 @@ class AuditControllerTest {
     private AuditController auditController;
 
     private AuditEventDTO testEventDTO;
-    private UUID testUserId;
-    private UUID testEntityId;
+    private Long testUserId;
+    private Long testEntityId;
     private Pageable pageable;
 
     @BeforeEach
     void setUp() {
-        testUserId = UUID.randomUUID();
-        testEntityId = UUID.randomUUID();
+        testUserId = 1L;
+        testEntityId = 2L;
         pageable = PageRequest.of(0, 50);
 
         testEventDTO = AuditEventDTO.builder()
-            .id(UUID.randomUUID())
+            .id(1L)
             .eventType(AuditEventType.USER_CREATED)
             .eventCategory("USER")
             .userId(testUserId)

@@ -9,7 +9,6 @@ import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Port interface for audit event query operations (CQRS READ side).
@@ -35,7 +34,7 @@ public interface AuditEventQueryPort {
      * @param id The projection ID
      * @return The projection if found
      */
-    Optional<AuditEventProjection> findById(UUID id);
+    Optional<AuditEventProjection> findById(Long id);
 
     /**
      * Find all projections with pagination.
@@ -52,7 +51,7 @@ public interface AuditEventQueryPort {
      * @param pageable Pagination parameters
      * @return Page of projections
      */
-    Page<AuditEventProjection> findByUserIdOrderByTimestampDesc(UUID userId, Pageable pageable);
+    Page<AuditEventProjection> findByUserIdOrderByTimestampDesc(Long userId, Pageable pageable);
 
     /**
      * Find events by event type.
@@ -108,7 +107,7 @@ public interface AuditEventQueryPort {
      * @return Page of projections
      */
     Page<AuditEventProjection> findByTargetEntityTypeAndTargetEntityIdOrderByTimestampDesc(
-        String entityType, UUID entityId, Pageable pageable
+        String entityType, Long entityId, Pageable pageable
     );
 
     /**
@@ -126,18 +125,18 @@ public interface AuditEventQueryPort {
      * @param pageable Pagination parameters
      * @return Page of projections
      */
-    Page<AuditEventProjection> findByFilters(
+    /*Page<AuditEventProjection> findByFilters(
         List<AuditEventType> eventTypes,
         String eventCategory,
-        UUID userId,
+        Long userId,
         String username,
         String targetEntityType,
-        UUID targetEntityId,
+        Long targetEntityId,
         Boolean success,
         LocalDateTime fromDate,
         LocalDateTime toDate,
         Pageable pageable
-    );
+    );*/
 
     /**
      * Count total events.

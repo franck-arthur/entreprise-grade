@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * User DTO for API responses.
@@ -19,7 +18,7 @@ import java.util.UUID;
 @Builder
 public class UserDTO {
 
-    private UUID id;
+    private Long id;
     private String username;
     private String email;
     private String firstName;

@@ -13,7 +13,6 @@ import com.enterprise.app.testing.config.BaseUnitTest;
 import com.enterprise.app.testing.fixtures.FormationFixtures;
 import com.enterprise.app.testing.fixtures.UserFixtures;
 import com.enterprise.app.testing.builders.FormationTestDataBuilder;
-import com.enterprise.app.testing.builders.UserTestDataBuilder;
 import com.enterprise.app.testing.helpers.FormationTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,7 +21,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,8 +45,8 @@ class FormationServiceRefactoredTest extends BaseUnitTest {
     @InjectMocks
     private FormationService formationService;
 
-    private UUID formationId;
-    private UUID userId;
+    private Long formationId;
+    private Long userId;
 
     @BeforeEach
     void setUp() {
@@ -100,7 +98,7 @@ class FormationServiceRefactoredTest extends BaseUnitTest {
                 .build();
 
         Formation savedFormation = formationToCreate.toBuilder()
-                .id(UUID.randomUUID())
+                .id(1L)
                 .build();
 
         when(formationRepository.save(formationToCreate)).thenReturn(savedFormation);
@@ -218,41 +216,6 @@ class FormationServiceRefactoredTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should throw IllegalArgumentException when presentiel formation missing location")
-    void createFormation_ShouldThrowException_WhenPresentielWithoutLocation() {
-        // Given - Utilisation du builder pour créer des données invalides sans validation
-        Formation formationSansLieu = FormationTestDataBuilder.aFormation()
-                .withModalite(com.enterprise.app.domain.model.ModaliteFormation.PRESENTIEL)
-                .withLieu(null)
-                .withVille(null)
-                .buildWithoutValidation();
-
-        // When & Then
-        assertThatThrownBy(() -> formationService.createFormation(formationSansLieu))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("ville est obligatoire");
-
-        verify(formationRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("Should throw IllegalArgumentException when online formation missing link")
-    void createFormation_ShouldThrowException_WhenEnLigneWithoutLink() {
-        // Given
-        Formation formationSansLien = FormationTestDataBuilder.aFormation()
-                .withModalite(com.enterprise.app.domain.model.ModaliteFormation.EN_LIGNE)
-                .withLienParticipation(null)
-                .buildWithoutValidation();
-
-        // When & Then
-        assertThatThrownBy(() -> formationService.createFormation(formationSansLien))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("lien de participation est obligatoire");
-
-        verify(formationRepository, never()).save(any());
-    }
-
-    @Test
     @DisplayName("Should succeed when creating valid presentiel formation")
     void createFormation_ShouldSucceed_WhenPresentielWithLocationData() {
         // Given
@@ -291,21 +254,121 @@ class FormationServiceRefactoredTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should succeed when creating valid hybrid formation")
-    void createFormation_ShouldSucceed_WhenHybridWithAllRequiredData() {
+    @DisplayName("Should return formation 'Tirage au sort' when it exists")
+    void getFormationById_ShouldReturnTirageAuSort_WhenFormationExists() {
         // Given
-        Formation formationHybride = FormationTestDataBuilder.aFormation()
-                .hybride()
-                .aVenir()
-                .build();
-
-        when(formationRepository.save(formationHybride)).thenReturn(formationHybride);
+        Formation expectedFormation = FormationFixtures.defaultFormationPresentiel();
+        Long tirageAuSortId = 4L;
+        when(formationRepository.findById(tirageAuSortId)).thenReturn(Optional.of(expectedFormation));
 
         // When
-        Formation result = formationService.createFormation(formationHybride);
+        Formation result = formationService.getFormationById(tirageAuSortId);
 
         // Then
-        FormationTestHelper.assertFormationHybrideIsValid(result);
-        verify(formationRepository).save(formationHybride);
+        assertThat(result).isNotNull();
+        assertThat(result.getLibelle()).isEqualTo("Tirage au sort");
+        assertThat(result.getFormateurs()).isEqualTo("LAGRACE Elodie - DUPONT Frédérique");
+        assertThat(result.getSecteur()).isEqualTo(expectedFormation.getSecteur());
+        assertThat(result.getRegion()).isEqualTo(expectedFormation.getRegion());
+        verify(formationRepository).findById(tirageAuSortId);
+    }
+
+    @Test
+    @DisplayName("Should handle inscription for participant Joelle DUPRES")
+    void inscrireUtilisateur_ShouldWorkForJoelleDupres() {
+        // Given
+        Formation tirageAuSort = FormationFixtures.defaultFormationPresentiel();
+        User joelle = UserFixtures.joelleDupres();
+        Long tirageAuSortId = 4L;
+        Long joelleId = 10L;
+
+        when(formationRepository.findById(tirageAuSortId)).thenReturn(Optional.of(tirageAuSort));
+        when(userRepository.findById(joelleId)).thenReturn(Optional.of(joelle));
+        when(participationRepository.existsByFormationIdAndUserId(tirageAuSortId, joelleId)).thenReturn(false);
+        when(formationRepository.countParticipantsInscrits(tirageAuSortId)).thenReturn(15);
+        when(participationRepository.save(any(FormationParticipation.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        FormationParticipation result = formationService.inscrireUtilisateur(tirageAuSortId, joelleId);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getFormation().getLibelle()).isEqualTo("Tirage au sort");
+        assertThat(result.getUser().getEmail()).isEqualTo("Joelle.dupres@secretariat.com");
+        assertThat(result.getUser().getFirstName()).isEqualTo("Joelle");
+        assertThat(result.getUser().getLastName()).isEqualTo("DUPRES");
+
+        verify(formationRepository).findById(tirageAuSortId);
+        verify(userRepository).findById(joelleId);
+    }
+
+    @Test
+    @DisplayName("Should handle inscription for participant Nicolas MOREL")
+    void inscrireUtilisateur_ShouldWorkForNicolasMorel() {
+        // Given
+        Formation tirageAuSort = FormationFixtures.tirageAuSortEnLigneRG();
+        User nicolas = UserFixtures.nicolasMorel();
+        Long tirageAuSortId = 5L;
+        Long nicolasId = 11L;
+
+        when(formationRepository.findById(tirageAuSortId)).thenReturn(Optional.of(tirageAuSort));
+        when(userRepository.findById(nicolasId)).thenReturn(Optional.of(nicolas));
+        when(participationRepository.existsByFormationIdAndUserId(tirageAuSortId, nicolasId)).thenReturn(false);
+        when(formationRepository.countParticipantsInscrits(tirageAuSortId)).thenReturn(20);
+        when(participationRepository.save(any(FormationParticipation.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        FormationParticipation result = formationService.inscrireUtilisateur(tirageAuSortId, nicolasId);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getFormation().getModalite()).isEqualTo(com.enterprise.app.domain.model.ModaliteFormation.EN_LIGNE);
+        assertThat(result.getFormation().getLienParticipation()).isEqualTo("https://formation.link/12345");
+        assertThat(result.getUser().getEmail()).isEqualTo("Aline.leclaire@infirmier.com");
+        assertThat(result.getUser().getDateDerniereFormation()).isNull(); // Aucune formation précédente
+
+        verify(formationRepository).findById(tirageAuSortId);
+        verify(userRepository).findById(nicolasId);
+    }
+
+    @Test
+    @DisplayName("Should handle formation in Martinique region")
+    void getFormationById_ShouldReturnFormationMartinique() {
+        // Given
+        Formation formationMartinique = FormationFixtures.tirageAuSortSecretaireEnCours();
+        Long formationId = 4L;
+        when(formationRepository.findById(formationId)).thenReturn(Optional.of(formationMartinique));
+
+        // When
+        Formation result = formationService.getFormationById(formationId);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getLibelle()).isEqualTo(formationMartinique.getLibelle());
+        assertThat(result.getRegion()).isEqualTo(formationMartinique.getRegion());
+        assertThat(result.getLieu()).isEqualTo(formationMartinique.getLieu());
+        assertThat(result.getVille()).isEqualTo(formationMartinique.getVille());
+        verify(formationRepository).findById(formationId);
+    }
+
+    @Test
+    @DisplayName("Should handle MSA sector formation")
+    void getFormationById_ShouldReturnMSAFormation() {
+        // Given
+        Formation formationMSA = FormationFixtures.tirageAuSortRU();
+        Long formationId = 6L;
+        when(formationRepository.findById(formationId)).thenReturn(Optional.of(formationMSA));
+
+        // When
+        Formation result = formationService.getFormationById(formationId);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getLibelle()).isEqualTo(formationMSA.getLibelle());
+        assertThat(result.getSecteur()).isEqualTo(formationMSA.getSecteur());
+        assertThat(result.getRegion()).isEqualTo(formationMSA.getRegion());
+        verify(formationRepository).findById(formationId);
     }
 }

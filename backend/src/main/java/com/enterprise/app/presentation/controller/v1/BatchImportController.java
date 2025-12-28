@@ -27,7 +27,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.UUID;
 
 /**
  * REST Controller for Batch Import operations.
@@ -107,7 +106,7 @@ public class BatchImportController {
     })
     public ResponseEntity<BatchImportDetailResponse> getBatchImportById(
         @Parameter(description = "Batch import ID", required = true)
-        @PathVariable UUID id
+        @PathVariable Long id
     ) {
         log.debug("GET /api/v1/batch-imports/{}", id);
 
@@ -135,7 +134,7 @@ public class BatchImportController {
     })
     public ResponseEntity<BatchImportResponse> getBatchImportStatus(
         @Parameter(description = "Batch import ID", required = true)
-        @PathVariable UUID id
+        @PathVariable Long id
     ) {
         log.debug("GET /api/v1/batch-imports/{}/status", id);
 
@@ -218,7 +217,7 @@ public class BatchImportController {
     })
     public ResponseEntity<BatchImportResponse> cancelBatchImport(
         @Parameter(description = "Batch import ID", required = true)
-        @PathVariable UUID id
+        @PathVariable Long id
     ) {
         log.info("POST /api/v1/batch-imports/{}/cancel", id);
 

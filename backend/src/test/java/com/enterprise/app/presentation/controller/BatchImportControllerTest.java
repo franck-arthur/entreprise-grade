@@ -9,6 +9,7 @@ import com.enterprise.app.domain.model.BatchImport;
 import com.enterprise.app.domain.model.BatchImportStatus;
 import com.enterprise.app.domain.model.Role;
 import com.enterprise.app.domain.model.User;
+import com.enterprise.app.presentation.controller.v1.BatchImportController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -66,16 +66,16 @@ class BatchImportControllerTest {
     private BatchImport testBatchImport;
     private BatchImportResponse testResponse;
     private BatchImportDetailResponse testDetailResponse;
-    private UUID batchImportId;
+    private Long batchImportId;
     private Pageable pageable;
 
     @BeforeEach
     void setUp() {
-        batchImportId = UUID.randomUUID();
+        batchImportId = 1L;
         pageable = PageRequest.of(0, 20);
 
         testUser = User.builder()
-            .id(UUID.randomUUID())
+            .id(2L)
             .username("testuser")
             .email("test@example.com")
             .firstName("Test")

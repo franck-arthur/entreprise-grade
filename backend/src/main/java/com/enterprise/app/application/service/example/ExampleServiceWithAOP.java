@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Exemple de service utilisant l'approche hybride optimale :
@@ -40,7 +39,7 @@ public class ExampleServiceWithAOP {
         validateUserData(username, email);
 
         User user = User.builder()
-            .id(UUID.randomUUID())
+            .id(System.currentTimeMillis()) // Generating a Long ID
             .username(username)
             .email(email)
             .build();
@@ -71,7 +70,7 @@ public class ExampleServiceWithAOP {
         includeResult = true,
         prefix = "SECURITY"
     )
-    public boolean updateUserPassword(UUID userId, String oldPassword, String newPassword) {
+    public boolean updateUserPassword(Long userId, String oldPassword, String newPassword) {
         // Logique métier pure
         User user = findUserById(userId);
         validatePassword(oldPassword, user);
@@ -98,7 +97,7 @@ public class ExampleServiceWithAOP {
         entryLevel = TechnicalLogging.LogLevel.WARN,
         prefix = "MULTI_ROLE"
     )
-    public void assignRoles(UUID userId, List<String> roles) {
+    public void assignRoles(Long userId, List<String> roles) {
         User user = findUserById(userId);
         //user.setRoles(roles);
 
@@ -128,7 +127,7 @@ public class ExampleServiceWithAOP {
     /**
      * Gestion d'erreur avec double logging.
      */
-    public void deleteUser(UUID userId) {
+    public void deleteUser(Long userId) {
         try {
             User user = findUserById(userId);
             performUserDeletion(user);
@@ -161,7 +160,7 @@ public class ExampleServiceWithAOP {
         // Validation...
     }
 
-    private User findUserById(UUID userId) {
+    private User findUserById(Long userId) {
         // Recherche...
         return User.builder().id(userId).username("example").build();
     }

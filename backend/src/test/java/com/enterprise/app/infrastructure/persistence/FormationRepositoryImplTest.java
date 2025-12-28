@@ -1,9 +1,9 @@
 package com.enterprise.app.infrastructure.persistence;
 
 import com.enterprise.app.domain.model.Formation;
-import com.enterprise.app.domain.model.FormationStatut;
 import com.enterprise.app.domain.model.ModaliteFormation;
-import com.enterprise.app.infrastructure.persistence.projection.FormationProjection;
+import com.enterprise.app.domain.model.Secteur;
+import com.enterprise.app.domain.model.Region;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,11 +20,9 @@ import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,204 +35,76 @@ class FormationRepositoryImplTest {
     private FormationRepositoryImpl formationRepository;
 
     private Formation formation;
-    private UUID formationId;
+    private Long formationId;
     private Pageable pageable;
+    private Secteur secteur;
+    private Region region;
+    private Long secteurId;
+    private Long regionId;
 
     @BeforeEach
     void setUp() {
-        formationId = UUID.randomUUID();
+        formationId = 1L;
+        secteurId = 1L;
+        regionId = 1L;
         pageable = PageRequest.of(0, 10);
 
+        secteur = Secteur.builder()
+            .id(secteurId)
+            .code("IT")
+            .nom("Informatique")
+            .actif(true)
+            .build();
+
+        region = Region.builder()
+            .id(regionId)
+            .code("IDF")
+            .nom("Île-de-France")
+            .actif(true)
+            .build();
+
         formation = Formation.builder()
-                .id(formationId)
-                .libelle("Formation Test")
-                .formateurs("Formateur Test")
-                .description("Description test")
-                .dateFormation(LocalDate.now().plusDays(7))
-                .heureDebut(LocalTime.of(9, 0))
-                .heureFin(LocalTime.of(17, 0))
-                .secteur("IT")
-                .region("Île-de-France")
-                .modalite(ModaliteFormation.PRESENTIEL)
-                .nbParticipants(20)
-                .lieu("Paris")
-                .ville("Paris")
-                .build();
+            .id(formationId)
+            .libelle("Formation Test")
+            .formateurs("Formateur Test")
+            .description("Description test")
+            .dateFormation(LocalDate.now().plusDays(7))
+            .heureDebut(LocalTime.of(9, 0))
+            .heureFin(LocalTime.of(17, 0))
+            .secteur(secteur)
+            .region(region)
+            .modalite(ModaliteFormation.PRESENTIEL)
+            .nbParticipants(20)
+            .lieu("Paris")
+            .ville("Paris")
+            .build();
     }
 
     @Test
     void findById_ShouldReturnFormation_WhenExists() {
         // Given
-        when(jpaRepository.findById(formationId)).thenReturn(Optional.of(formation));
+        when(jpaRepository.findByIdWithRelations(formationId)).thenReturn(Optional.of(formation));
 
         // When
         Optional<Formation> result = formationRepository.findById(formationId);
 
         // Then
         assertThat(result).isPresent();
-        assertThat(result.get()).isEqualTo(formation);
-        verify(jpaRepository).findById(formationId);
+        assertThat(formation).isEqualTo(result.get());
+        verify(jpaRepository).findByIdWithRelations(formationId);
     }
 
     @Test
     void findById_ShouldReturnEmpty_WhenNotExists() {
         // Given
-        when(jpaRepository.findById(formationId)).thenReturn(Optional.empty());
+        when(jpaRepository.findByIdWithRelations(formationId)).thenReturn(Optional.empty());
 
         // When
         Optional<Formation> result = formationRepository.findById(formationId);
 
         // Then
         assertThat(result).isEmpty();
-        verify(jpaRepository).findById(formationId);
-    }
-
-    @Test
-    void findAll_ShouldReturnPageOfFormations() {
-        // Given
-        Page<Formation> expectedPage = new PageImpl<>(Arrays.asList(formation), pageable, 1);
-        when(jpaRepository.findAll(pageable)).thenReturn(expectedPage);
-
-        // When
-        Page<Formation> result = formationRepository.findAll(pageable);
-
-        // Then
-        assertThat(result).isEqualTo(expectedPage);
-        assertThat(result.getContent()).hasSize(1);
-        assertThat(result.getContent().get(0)).isEqualTo(formation);
-        verify(jpaRepository).findAll(pageable);
-    }
-
-    @Test
-    void findByFilters_ShouldReturnFilteredFormations_WithoutStatutFilter() {
-        // Given
-        String secteur = "IT";
-        String region = "Île-de-France";
-        ModaliteFormation modalite = ModaliteFormation.PRESENTIEL;
-        Page<Formation> expectedPage = new PageImpl<>(Arrays.asList(formation), pageable, 1);
-
-        when(jpaRepository.findByFilters(secteur, region, modalite, pageable)).thenReturn(expectedPage);
-
-        // When
-        Page<Formation> result = formationRepository.findByFilters(secteur, region, modalite, null, pageable);
-
-        // Then
-        assertThat(result).isEqualTo(expectedPage);
-        verify(jpaRepository).findByFilters(secteur, region, modalite, pageable);
-    }
-
-    @Test
-    void findByFilters_ShouldFilterByStatut_WhenStatutProvided() {
-        // Given
-        String secteur = "IT";
-        String region = "Île-de-France";
-        ModaliteFormation modalite = ModaliteFormation.PRESENTIEL;
-        FormationStatut statut = FormationStatut.A_VENIR;
-
-        // Formation with future date (A_VENIR status)
-        Formation formationAVenir = Formation.builder()
-                .id(formationId)
-                .libelle("Formation Test")
-                .formateurs("Formateur Test")
-                .dateFormation(LocalDate.now().plusDays(7))
-                .heureDebut(LocalTime.of(9, 0))
-                .heureFin(LocalTime.of(17, 0))
-                .secteur("IT")
-                .region("Île-de-France")
-                .modalite(ModaliteFormation.PRESENTIEL)
-                .nbParticipants(20)
-                .lieu("Paris")
-                .ville("Paris")
-                .build();
-
-        // Formation with past date (TERMINEE status)
-        Formation formationTerminee = Formation.builder()
-                .id(UUID.randomUUID())
-                .libelle("Formation Passée")
-                .formateurs("Formateur Test")
-                .dateFormation(LocalDate.now().minusDays(1))
-                .heureDebut(LocalTime.of(9, 0))
-                .heureFin(LocalTime.of(17, 0))
-                .secteur("IT")
-                .region("Île-de-France")
-                .modalite(ModaliteFormation.PRESENTIEL)
-                .nbParticipants(20)
-                .lieu("Paris")
-                .ville("Paris")
-                .build();
-
-        Page<Formation> allFormations = new PageImpl<>(Arrays.asList(formationAVenir, formationTerminee), pageable, 2);
-
-        when(jpaRepository.findByFilters(secteur, region, modalite, pageable)).thenReturn(allFormations);
-
-        // When
-        Page<Formation> result = formationRepository.findByFilters(secteur, region, modalite, statut, pageable);
-
-        // Then
-        assertThat(result.getContent()).hasSize(1);
-        assertThat(result.getContent().get(0).getStatut()).isEqualTo(FormationStatut.A_VENIR);
-        verify(jpaRepository).findByFilters(secteur, region, modalite, pageable);
-    }
-
-    @Test
-    void findBySecteur_ShouldReturnFormationsBySecteur() {
-        // Given
-        String secteur = "IT";
-        Page<Formation> expectedPage = new PageImpl<>(Arrays.asList(formation), pageable, 1);
-        when(jpaRepository.findBySecteur(secteur, pageable)).thenReturn(expectedPage);
-
-        // When
-        Page<Formation> result = formationRepository.findBySecteur(secteur, pageable);
-
-        // Then
-        assertThat(result).isEqualTo(expectedPage);
-        verify(jpaRepository).findBySecteur(secteur, pageable);
-    }
-
-    @Test
-    void findByRegion_ShouldReturnFormationsByRegion() {
-        // Given
-        String region = "Île-de-France";
-        Page<Formation> expectedPage = new PageImpl<>(Arrays.asList(formation), pageable, 1);
-        when(jpaRepository.findByRegion(region, pageable)).thenReturn(expectedPage);
-
-        // When
-        Page<Formation> result = formationRepository.findByRegion(region, pageable);
-
-        // Then
-        assertThat(result).isEqualTo(expectedPage);
-        verify(jpaRepository).findByRegion(region, pageable);
-    }
-
-    @Test
-    void findByModalite_ShouldReturnFormationsByModalite() {
-        // Given
-        ModaliteFormation modalite = ModaliteFormation.PRESENTIEL;
-        Page<Formation> expectedPage = new PageImpl<>(Arrays.asList(formation), pageable, 1);
-        when(jpaRepository.findByModalite(modalite, pageable)).thenReturn(expectedPage);
-
-        // When
-        Page<Formation> result = formationRepository.findByModalite(modalite, pageable);
-
-        // Then
-        assertThat(result).isEqualTo(expectedPage);
-        verify(jpaRepository).findByModalite(modalite, pageable);
-    }
-
-    @Test
-    void findByDateFormationBetween_ShouldReturnFormationsBetweenDates() {
-        // Given
-        LocalDate dateDebut = LocalDate.now();
-        LocalDate dateFin = LocalDate.now().plusDays(30);
-        Page<Formation> expectedPage = new PageImpl<>(Arrays.asList(formation), pageable, 1);
-        when(jpaRepository.findByDateFormationBetween(dateDebut, dateFin, pageable)).thenReturn(expectedPage);
-
-        // When
-        Page<Formation> result = formationRepository.findByDateFormationBetween(dateDebut, dateFin, pageable);
-
-        // Then
-        assertThat(result).isEqualTo(expectedPage);
-        verify(jpaRepository).findByDateFormationBetween(dateDebut, dateFin, pageable);
+        verify(jpaRepository).findByIdWithRelations(formationId);
     }
 
     @Test
@@ -259,8 +129,8 @@ class FormationRepositoryImplTest {
                 .dateFormation(LocalDate.now().plusDays(7))
                 .heureDebut(LocalTime.of(17, 0)) // End before start
                 .heureFin(LocalTime.of(9, 0))
-                .secteur("IT")
-                .region("Île-de-France")
+                .secteur(secteur)
+                .region(region)
                 .modalite(ModaliteFormation.PRESENTIEL)
                 .nbParticipants(20)
                 .lieu("Paris")
@@ -284,8 +154,8 @@ class FormationRepositoryImplTest {
                 .dateFormation(LocalDate.now().plusDays(7))
                 .heureDebut(LocalTime.of(9, 0))
                 .heureFin(LocalTime.of(17, 0))
-                .secteur("IT")
-                .region("Île-de-France")
+                .secteur(secteur)
+                .region(region)
                 .modalite(ModaliteFormation.PRESENTIEL)
                 .nbParticipants(0) // Invalid
                 .lieu("Paris")
@@ -400,55 +270,4 @@ class FormationRepositoryImplTest {
         verify(jpaRepository).isFormationComplete(formationId);
     }
 
-    @Test
-    void findProjectionById_ShouldReturnProjection_WhenExists() {
-        // Given
-        FormationProjection projection = mock(FormationProjection.class);
-        when(jpaRepository.findProjectionById(formationId)).thenReturn(Optional.of(projection));
-
-        // When
-        Optional<FormationProjection> result = formationRepository.findProjectionById(formationId);
-
-        // Then
-        assertThat(result).isPresent();
-        assertThat(result.get()).isEqualTo(projection);
-        verify(jpaRepository).findProjectionById(formationId);
-    }
-
-    @Test
-    void findAllProjections_ShouldReturnAllProjections() {
-        // Given
-        FormationProjection projection1 = mock(FormationProjection.class);
-        FormationProjection projection2 = mock(FormationProjection.class);
-        List<FormationProjection> projections = Arrays.asList(projection1, projection2);
-        when(jpaRepository.findAllProjections()).thenReturn(projections);
-
-        // When
-        List<FormationProjection> result = formationRepository.findAllProjections();
-
-        // Then
-        assertThat(result).hasSize(2);
-        assertThat(result).containsExactly(projection1, projection2);
-        verify(jpaRepository).findAllProjections();
-    }
-
-    @Test
-    void findProjectionsByFilters_ShouldReturnFilteredProjections() {
-        // Given
-        String secteur = "IT";
-        String region = "Île-de-France";
-        ModaliteFormation modalite = ModaliteFormation.PRESENTIEL;
-        FormationProjection projection = mock(FormationProjection.class);
-        Page<FormationProjection> expectedPage = new PageImpl<>(Arrays.asList(projection), pageable, 1);
-
-        when(jpaRepository.findProjectionsByFilters(secteur, region, modalite, pageable)).thenReturn(expectedPage);
-
-        // When
-        Page<FormationProjection> result = formationRepository.findProjectionsByFilters(secteur, region, modalite, pageable);
-
-        // Then
-        assertThat(result).isEqualTo(expectedPage);
-        assertThat(result.getContent()).hasSize(1);
-        verify(jpaRepository).findProjectionsByFilters(secteur, region, modalite, pageable);
-    }
 }

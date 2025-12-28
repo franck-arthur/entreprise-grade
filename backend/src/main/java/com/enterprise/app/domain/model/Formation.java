@@ -9,18 +9,20 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.UUID;
+
+import static com.enterprise.app.domain.model.ModaliteFormation.PRESENTIEL;
+import static org.springframework.util.StringUtils.hasText;
 
 @Entity
 @Table(
     name = "formations",
     indexes = {
-        @Index(name = "idx_formation_date", columnList = "date_formation"),
-        @Index(name = "idx_formation_secteur", columnList = "secteur"),
-        @Index(name = "idx_formation_region", columnList = "region"),
+        @Index(name = "idx_formation_secteur", columnList = "secteur_id"),
+        @Index(name = "idx_formation_region", columnList = "region_id"),
         @Index(name = "idx_formation_modalite", columnList = "modalite"),
-        @Index(name = "idx_formation_date_secteur", columnList = "date_formation,secteur"),
-        @Index(name = "idx_formation_date_region", columnList = "date_formation,region")
+        @Index(name = "idx_formation_date_heure", columnList = "date_formation, date_debut, date_fin"),
+        // Note: Les index calculés (date_formation + heure_debut/fin) sont créés en SQL
+        // car JPA ne supporte pas nativement les index sur expressions calculées
     }
 )
 @EntityListeners(AuditingEntityListener.class)
@@ -28,12 +30,12 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 public class Formation {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false, length = 200)
     private String libelle;
@@ -53,11 +55,13 @@ public class Formation {
     @Column(name = "heure_fin", nullable = false)
     private LocalTime heureFin;
 
-    @Column(nullable = false, length = 100)
-    private String secteur;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "secteur_id", nullable = false)
+    private Secteur secteur;
 
-    @Column(nullable = false, length = 100)
-    private String region;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "region_id", nullable = false)
+    private Region region;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -101,7 +105,12 @@ public class Formation {
     }
 
     public boolean isComplet() {
-        return false; // Sera calculé via le repository
+        // Le calcul sera fait dans le mapper avec les données de participations
+        return false;
+    }
+
+    public Boolean getComplet() {
+        return isComplet();
     }
 
     public boolean peutAccepterInscription() {
@@ -116,37 +125,4 @@ public class Formation {
         return LocalDateTime.of(dateFormation, heureFin);
     }
 
-    public void validerCoherenceDates() {
-        if (heureFin.isBefore(heureDebut) || heureFin.equals(heureDebut)) {
-            throw new IllegalArgumentException("L'heure de fin doit être postérieure à l'heure de début");
-        }
-    }
-
-    public void validerNbParticipants() {
-        if (nbParticipants == null || nbParticipants <= 0) {
-            throw new IllegalArgumentException("Le nombre de participants doit être positif");
-        }
-    }
-
-    public void validerModaliteEtChamps() {
-        if (modalite == null) {
-            throw new IllegalArgumentException("La modalité de formation est obligatoire");
-        }
-
-        switch (modalite) {
-            case PRESENTIEL:
-                if (ville == null || ville.trim().isEmpty()) {
-                    throw new IllegalArgumentException("La ville est obligatoire pour une formation en présentiel");
-                }
-                if (lieu == null || lieu.trim().isEmpty()) {
-                    throw new IllegalArgumentException("Le lieu est obligatoire pour une formation en présentiel");
-                }
-                break;
-            case EN_LIGNE:
-                if (lienParticipation == null || lienParticipation.trim().isEmpty()) {
-                    throw new IllegalArgumentException("Le lien de participation est obligatoire pour une formation en ligne");
-                }
-                break;
-        }
-    }
 }

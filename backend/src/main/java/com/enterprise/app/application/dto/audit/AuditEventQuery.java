@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * CQRS Query - Search audit events (Read side).
@@ -21,10 +20,10 @@ import java.util.UUID;
 public class AuditEventQuery {
     private List<AuditEventType> eventTypes;
     private String eventCategory;
-    private UUID userId;
+    private Long userId;
     private String username;
     private String targetEntityType;
-    private UUID targetEntityId;
+    private Long targetEntityId;
     private Boolean success;
     private LocalDateTime fromDate;
     private LocalDateTime toDate;

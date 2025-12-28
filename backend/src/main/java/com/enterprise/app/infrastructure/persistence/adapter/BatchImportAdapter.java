@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Adapter implementation for BatchImportPort.
@@ -29,7 +28,7 @@ public class BatchImportAdapter implements BatchImportPort {
     }
 
     @Override
-    public Optional<BatchImport> findById(UUID id) {
+    public Optional<BatchImport> findById(Long id) {
         return batchImportRepository.findById(id);
     }
 
@@ -44,7 +43,7 @@ public class BatchImportAdapter implements BatchImportPort {
     }
 
     @Override
-    public Page<BatchImport> findByInitiatedByUserId(UUID userId, Pageable pageable) {
+    public Page<BatchImport> findByInitiatedByUserId(Long userId, Pageable pageable) {
         return batchImportRepository.findByInitiatedByUserId(userId, pageable);
     }
 
@@ -54,7 +53,8 @@ public class BatchImportAdapter implements BatchImportPort {
     }
 
     @Override
-    public boolean existsById(UUID id) {
+    public boolean existsById(Long id) {
         return batchImportRepository.existsById(id);
     }
+
 }

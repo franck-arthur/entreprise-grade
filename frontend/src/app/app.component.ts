@@ -1,8 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { HeaderComponent } from './shared/components/header/header.component';
-import { LanguageService } from './core/services/language.service';
 
 /**
  * Root application component.
@@ -28,13 +27,6 @@ import { LanguageService } from './core/services/language.service';
     `,
   ],
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
   title = 'Application Enterprise';
-
-  constructor(private languageService: LanguageService) {}
-
-  ngOnInit() {
-    // Language service is initialized in its constructor
-    // This ensures the language is set before the app loads
-  }
 }

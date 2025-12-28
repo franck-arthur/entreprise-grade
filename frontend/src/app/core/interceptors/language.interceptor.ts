@@ -1,5 +1,5 @@
 import { HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { inject, Injector } from '@angular/core';
 import { LanguageService } from '../services/language.service';
 
 /**
@@ -10,20 +10,42 @@ import { LanguageService } from '../services/language.service';
  * error messages and content.
  */
 export const languageInterceptor: HttpInterceptorFn = (req, next) => {
-  const languageService = inject(LanguageService);
-
-  // Don't add Accept-Language to translation file requests
+  // Don't add Accept-Language to translation file requests to avoid circular dependency
   if (req.url.includes('/assets/i18n/')) {
     return next(req);
   }
 
-  const languageHeader = languageService.getLanguageHeader();
+  try {
+    const injector = inject(Injector);
+    const languageService = injector.get(LanguageService, null);
 
-  const clonedRequest = req.clone({
-    setHeaders: {
-      'Accept-Language': languageHeader,
-    },
-  });
+    // If LanguageService is not yet available (during app initialization),
+    // use default language header
+    if (!languageService) {
+      const clonedRequest = req.clone({
+        setHeaders: {
+          'Accept-Language': 'en-US',
+        },
+      });
+      return next(clonedRequest);
+    }
 
-  return next(clonedRequest);
+    const languageHeader = languageService.getLanguageHeader();
+
+    const clonedRequest = req.clone({
+      setHeaders: {
+        'Accept-Language': languageHeader,
+      },
+    });
+
+    return next(clonedRequest);
+  } catch (error) {
+    // Fallback to default language if there's any injection error
+    const clonedRequest = req.clone({
+      setHeaders: {
+        'Accept-Language': 'en-US',
+      },
+    });
+    return next(clonedRequest);
+  }
 };

@@ -114,7 +114,7 @@ public class MockMvcTestHelper {
      * Vérifie qu'une réponse JSON contient un tableau avec la taille attendue.
      */
     public static ResultMatcher expectJsonArrayOfSize(int size) {
-        return jsonPath("$").isArray().value(org.hamcrest.Matchers.hasSize(size));
+        return jsonPath("$").value(org.hamcrest.Matchers.hasSize(size));
     }
 
     /**
@@ -129,7 +129,7 @@ public class MockMvcTestHelper {
      */
     public static ResultMatcher[] expectPageResponse(int contentSize, int totalElements, int totalPages) {
         return new ResultMatcher[] {
-            jsonPath("$.content").isArray().value(org.hamcrest.Matchers.hasSize(contentSize)),
+            jsonPath("$.content").value(org.hamcrest.Matchers.hasSize(contentSize)),
             jsonPath("$.totalElements").value(totalElements),
             jsonPath("$.totalPages").value(totalPages),
             jsonPath("$.size").exists(),

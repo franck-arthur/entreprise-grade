@@ -57,6 +57,7 @@
               "src/styles.scss"
             ],
             "scripts": [
+              "src/assets/js/dsfr-loader.js",
               "node_modules/@gouvfr/dsfr/dist/dsfr.module.min.js"
             ]
           },

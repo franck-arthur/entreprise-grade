@@ -89,4 +89,5 @@ public class BatchImportMapper {
                 ? line.getCreatedUser().getUsername() : null)
             .build();
     }
+
 }

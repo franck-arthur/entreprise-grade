@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * Implementation bridge between domain port and JPA repository.
@@ -25,7 +24,7 @@ public class UserRepositoryImpl implements UserRepository {
     private final JpaUserRepository jpaUserRepository;
 
     @Override
-    public Optional<User> findById(UUID id) {
+    public Optional<User> findById(Long id) {
         return jpaUserRepository.findById(id);
     }
 
@@ -60,7 +59,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public void deleteById(UUID id) {
+    public void deleteById(Long id) {
         jpaUserRepository.deleteById(id);
     }
 
@@ -86,6 +85,6 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public Page<User> findWithFilters(Boolean active, Set<Role> roles, String search, Pageable pageable) {
-        return jpaUserRepository.findWithFilters(active, roles, search, pageable);
+        return jpaUserRepository.findWithFilters(active, pageable);
     }
 }

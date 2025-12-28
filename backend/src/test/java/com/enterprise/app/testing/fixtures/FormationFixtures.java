@@ -1,11 +1,12 @@
 package com.enterprise.app.testing.fixtures;
 
-import com.enterprise.app.domain.model.Formation;
-import com.enterprise.app.domain.model.ModaliteFormation;
+import com.enterprise.app.application.dto.*;
+import com.enterprise.app.domain.model.*;
+import org.instancio.Instancio;
+import static org.instancio.Select.field;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.UUID;
 
 /**
  * Fixtures centralisées pour les données de test Formation.
@@ -13,160 +14,275 @@ import java.util.UUID;
  */
 public final class FormationFixtures {
 
+    public static final String LIBELLE_FORMATION = "Tirage au sort - Sécrétaire";
+    public static final String LIBELLE_FORMATION_2 = "Tirage au sort";
+
+    public static final String FORMATEURS = "LAGRACE Elodie - DUPONT Frédérique";
+    public static final String DESCRIPTION_FORMATION = "Tirage au sort - Régime général";
+
+    public static final String LIEU_FORMATION_1 = "1 rue serpentine Courbevoie";
+    public static final String LIEU_FORMATION_2 = "1 place du Fort";
+
+    public static final String VILLE_FORMATION_1 = "Courbevoie";
+    public static final String VILLE_FORMATION_2 = "Fort de France";
+
+    public static final LocalTime HEURE_DEBUT = LocalTime.of(9, 0);
+    public static final LocalTime HEURE_FIN = LocalTime.of(15, 0);
+    public static final LocalTime HEURE_FIN_TARDIF = LocalTime.of(23, 50);
+    public static final int NB_PARTICIPANTS = 30;
+    public static final String LIBELLE_FORMATION_3 = "Tirage au sort - RU";
+
     private FormationFixtures() {}
 
     // IDs constants pour les tests
-    public static final UUID FORMATION_ID_1 = UUID.fromString("123e4567-e89b-12d3-a456-426614174001");
-    public static final UUID FORMATION_ID_2 = UUID.fromString("123e4567-e89b-12d3-a456-426614174002");
-    public static final UUID FORMATION_ID_3 = UUID.fromString("123e4567-e89b-12d3-a456-426614174003");
+    public static final Long FORMATION_ID_1 = 1L;
+    public static final Long FORMATION_ID_2 = 2L;
+    public static final Long FORMATION_ID_3 = 3L;
+    public static final Long FORMATION_ID_4 = 4L;
 
-    // Libellés constants
-    public static final String FORMATION_LIBELLE_JAVA = "Formation Java Avancé";
-    public static final String FORMATION_LIBELLE_PYTHON = "Formation Python Expert";
-    public static final String FORMATION_LIBELLE_REACT = "Formation React";
+    // Secteurs et régions constants
+    public static final Secteur SECTEUR_RG = Secteur.builder()
+            .id(1L)
+            .code("RG")
+            .nom("Regime général")
+            .description("Régime général de sécurité sociale")
+            .actif(true)
+            .build();
 
-    // Formateurs constants
-    public static final String FORMATEUR_JEAN_DUPONT = "Jean Dupont";
-    public static final String FORMATEUR_MARIE_MARTIN = "Marie Martin";
-    public static final String FORMATEUR_EXPERT_FRONTEND = "Expert Frontend";
+    public static final Secteur SECTEUR_MSA = Secteur.builder()
+            .id(2L)
+            .code("MSA")
+            .nom("MSA")
+            .description("Mutualité Sociale Agricole")
+            .actif(true)
+            .build();
+
+    public static final Region REGION_IDF = Region.builder()
+            .id(1L)
+            .code("IDF")
+            .nom("Île-de-France")
+            .description("Région parisienne et départements limitrophes")
+            .actif(true)
+            .build();
+
+    public static final Region REGION_AURA = Region.builder()
+            .id(2L)
+            .code("AURA")
+            .nom("Auvergne-Rhône-Alpes")
+            .description("Région du sud-est de la France")
+            .actif(true)
+            .build();
+
+    public static final Region REGION_MARTINIQUE = Region.builder()
+            .id(3L)
+            .code("MTQ")
+            .nom("Martinique")
+            .description("Région d'outre-mer des Antilles")
+            .actif(true)
+            .build();
 
     /**
-     * Formation présentielle standard pour les tests.
+     * Formation "Tirage au sort" en présentiel - Régime général.
      */
     public static Formation defaultFormationPresentiel() {
-        return Formation.builder()
-                .id(FORMATION_ID_1)
-                .libelle(FORMATION_LIBELLE_JAVA)
-                .formateurs(FORMATEUR_JEAN_DUPONT)
-                .description("Formation approfondie sur Java Enterprise")
-                .dateFormation(LocalDate.now().plusDays(15))
-                .heureDebut(LocalTime.of(9, 0))
-                .heureFin(LocalTime.of(17, 0))
-                .secteur("Informatique")
-                .region("Île-de-France")
-                .modalite(ModaliteFormation.PRESENTIEL)
-                .nbParticipants(20)
-                .lieu("Salle A")
-                .ville("Paris")
+        return Instancio.of(Formation.class)
+                .set(field(Formation::getId), FORMATION_ID_1)
+                .set(field(Formation::getLibelle), LIBELLE_FORMATION_2)
+                .set(field(Formation::getFormateurs), FORMATEURS)
+                .set(field(Formation::getDescription), DESCRIPTION_FORMATION)
+                .set(field(Formation::getDateFormation), LocalDate.of(2026, 1, 15))
+                .set(field(Formation::getHeureDebut), HEURE_DEBUT)
+                .set(field(Formation::getHeureFin), HEURE_FIN)
+                .set(field(Formation::getSecteur), SECTEUR_RG)
+                .set(field(Formation::getRegion), REGION_IDF)
+                .set(field(Formation::getModalite), ModaliteFormation.PRESENTIEL)
+                .set(field(Formation::getNbParticipants), NB_PARTICIPANTS)
+                .set(field(Formation::getLieu), LIEU_FORMATION_1)
+                .set(field(Formation::getVille), VILLE_FORMATION_1)
+                .set(field(Formation::getLienParticipation), null)
+                .create();
+    }
+
+    /**
+     * Formation "Tirage au sort" en ligne - Régime général.
+     */
+    public static Formation tirageAuSortEnLigneRG() {
+        return Instancio.of(Formation.class)
+            .set(field(Formation::getId), FORMATION_ID_2)
+            .set(field(Formation::getLibelle), LIBELLE_FORMATION_2)
+            .set(field(Formation::getFormateurs), FORMATEURS)
+            .set(field(Formation::getDescription), DESCRIPTION_FORMATION)
+            .set(field(Formation::getDateFormation), LocalDate.of(2026, 1, 15))
+            .set(field(Formation::getHeureDebut), HEURE_DEBUT)
+            .set(field(Formation::getHeureFin), HEURE_FIN)
+            .set(field(Formation::getSecteur), SECTEUR_RG)
+            .set(field(Formation::getRegion), REGION_IDF)
+            .set(field(Formation::getModalite), ModaliteFormation.EN_LIGNE)
+            .set(field(Formation::getNbParticipants), NB_PARTICIPANTS)
+            .set(field(Formation::getLieu), null)
+            .set(field(Formation::getVille), null)
+            .set(field(Formation::getLienParticipation), "https://formation.link/12345")
+            .create();
+    }
+
+    /**
+     * Formation "Tirage au sort - RU" en présentiel - MSA.
+     */
+    public static Formation tirageAuSortRU() {
+        return Instancio.of(Formation.class)
+                .set(field(Formation::getId), FORMATION_ID_3)
+                .set(field(Formation::getLibelle), LIBELLE_FORMATION_3)
+                .set(field(Formation::getFormateurs), FORMATEURS)
+                .set(field(Formation::getDescription), DESCRIPTION_FORMATION)
+                .set(field(Formation::getDateFormation), LocalDate.of(2026, 1, 15))
+                .set(field(Formation::getHeureDebut), HEURE_DEBUT)
+                .set(field(Formation::getHeureFin), HEURE_FIN)
+                .set(field(Formation::getSecteur), SECTEUR_MSA)
+                .set(field(Formation::getRegion), REGION_IDF)
+                .set(field(Formation::getModalite), ModaliteFormation.PRESENTIEL)
+                .set(field(Formation::getNbParticipants), NB_PARTICIPANTS)
+                .set(field(Formation::getLieu), LIEU_FORMATION_1)
+                .set(field(Formation::getVille), VILLE_FORMATION_1)
+                .set(field(Formation::getLienParticipation), null)
+                .create();
+    }
+
+    /**
+     * Formation "Tirage au sort - Sécrétaire" en présentiel - Martinique.
+     */
+    public static Formation tirageAuSortSecretaireEnCours() {
+        return Instancio.of(Formation.class)
+                .set(field(Formation::getId), FORMATION_ID_4)
+                .set(field(Formation::getLibelle), LIBELLE_FORMATION)
+                .set(field(Formation::getFormateurs), FORMATEURS)
+                .set(field(Formation::getDescription), DESCRIPTION_FORMATION)
+                .set(field(Formation::getDateFormation), LocalDate.now())
+                .set(field(Formation::getHeureDebut), HEURE_DEBUT)
+                .set(field(Formation::getHeureFin), HEURE_FIN_TARDIF)
+                .set(field(Formation::getSecteur), SECTEUR_RG)
+                .set(field(Formation::getRegion), REGION_MARTINIQUE)
+                .set(field(Formation::getModalite), ModaliteFormation.PRESENTIEL)
+                .set(field(Formation::getNbParticipants), NB_PARTICIPANTS)
+                .set(field(Formation::getLieu), LIEU_FORMATION_2)
+                .set(field(Formation::getVille), VILLE_FORMATION_2)
+                .set(field(Formation::getLienParticipation), null)
+                .create();
+    }
+
+    /**
+     * Crée un FormationDTO par défaut.
+     */
+    public static FormationDTO createDefaultFormationDTO() {
+        Formation formation = FormationFixtures.defaultFormationPresentiel();
+        return FormationDTO.builder()
+                .id(formation.getId())
+                .libelle(formation.getLibelle())
+                .formateurs(formation.getFormateurs())
+                .description(formation.getDescription())
+                .dateFormation(formation.getDateFormation())
+                .heureDebut(formation.getHeureDebut())
+                .heureFin(formation.getHeureFin())
+                .secteur(convertSecteurToDTO(formation.getSecteur()))
+                .region(convertRegionToDTO(formation.getRegion()))
+                .modalite(formation.getModalite())
+                .nbParticipants(formation.getNbParticipants())
+                .lieu(formation.getLieu())
+                .ville(formation.getVille())
+                .lienParticipation(formation.getLienParticipation())
+                .statut(FormationStatut.A_VENIR)
+                .nbParticipantsInscrits(5)
+                .complet(false)
                 .build();
     }
 
     /**
-     * Formation en ligne standard pour les tests.
+     * Crée un CreateFormationRequest par défaut.
      */
-    public static Formation defaultFormationEnLigne() {
-        return Formation.builder()
-                .id(FORMATION_ID_2)
-                .libelle(FORMATION_LIBELLE_PYTHON)
-                .formateurs(FORMATEUR_MARIE_MARTIN)
-                .description("Formation expert Python et frameworks modernes")
-                .dateFormation(LocalDate.now().plusDays(20))
-                .heureDebut(LocalTime.of(10, 0))
-                .heureFin(LocalTime.of(16, 0))
-                .secteur("Informatique")
-                .region("Auvergne-Rhône-Alpes")
-                .modalite(ModaliteFormation.EN_LIGNE)
-                .nbParticipants(30)
-                .lienParticipation("https://python.example.com")
+    public static CreateFormationRequest createDefaultFormationRequest() {
+        Formation formation = FormationFixtures.defaultFormationPresentiel();
+        return CreateFormationRequest.builder()
+            .libelle(formation.getLibelle())
+            .formateurs(formation.getFormateurs())
+            .description(formation.getDescription())
+            .dateFormation(formation.getDateFormation())
+            .heureDebut(formation.getHeureDebut())
+            .heureFin(formation.getHeureFin())
+            .secteurId(formation.getSecteur().getId())
+            .regionId(formation.getRegion().getId())
+            .modalite(formation.getModalite())
+            .nbParticipants(formation.getNbParticipants())
+            .lieu(formation.getLieu())
+            .ville(formation.getVille())
+            .lienParticipation(formation.getLienParticipation())
+            .build();
+    }
+
+    public static CreateFormationRequest createDefaultFormationEnLigneRequest() {
+        Formation formation = FormationFixtures.tirageAuSortEnLigneRG();
+        return CreateFormationRequest.builder()
+                .libelle(formation.getLibelle())
+                .formateurs(formation.getFormateurs())
+                .description(formation.getDescription())
+                .dateFormation(formation.getDateFormation())
+                .heureDebut(formation.getHeureDebut())
+                .heureFin(formation.getHeureFin())
+                .secteurId(formation.getSecteur().getId())
+                .regionId(formation.getRegion().getId())
+                .modalite(formation.getModalite())
+                .nbParticipants(formation.getNbParticipants())
+                .lieu(formation.getLieu())
+                .ville(formation.getVille())
+                .lienParticipation(formation.getLienParticipation())
                 .build();
     }
 
     /**
-     * Formation hybride standard pour les tests.
+     * Crée un FormationDTO par défaut.
      */
-    public static Formation defaultFormationHybride() {
-        return Formation.builder()
-                .id(FORMATION_ID_3)
-                .libelle(FORMATION_LIBELLE_REACT)
-                .formateurs(FORMATEUR_EXPERT_FRONTEND)
-                .description("Formation React et Redux pour développeurs expérimentés")
-                .dateFormation(LocalDate.now().plusDays(25))
-                .heureDebut(LocalTime.of(9, 30))
-                .heureFin(LocalTime.of(17, 30))
-                .secteur("Informatique")
-                .region("Nouvelle-Aquitaine")
-                .modalite(ModaliteFormation.HYBRIDE)
-                .nbParticipants(15)
-                .lieu("Campus Innovation")
-                .ville("Bordeaux")
-                .lienParticipation("https://react.example.com")
+    public static UpdateFormationRequest createDefaultFormationUpdateRequest() {
+        Formation formation = FormationFixtures.tirageAuSortEnLigneRG();
+        return UpdateFormationRequest.builder()
+                .libelle(formation.getLibelle())
+                .formateurs(formation.getFormateurs())
+                .description(formation.getDescription())
+                .dateFormation(formation.getDateFormation())
+                .heureDebut(formation.getHeureDebut())
+                .heureFin(formation.getHeureFin())
+                .secteurId(formation.getSecteur().getId())
+                .regionId(formation.getRegion().getId())
+                .modalite(formation.getModalite())
+                .nbParticipants(formation.getNbParticipants())
+                .lieu(formation.getLieu())
+                .ville(formation.getVille())
+                .lienParticipation(formation.getLienParticipation())
                 .build();
     }
 
     /**
-     * Formation terminée (dans le passé).
+     * Convertit un Secteur en SecteurDTO.
      */
-    public static Formation formationTerminee() {
-        return defaultFormationPresentiel().toBuilder()
-                .dateFormation(LocalDate.now().minusDays(5))
+    private static SecteurDTO convertSecteurToDTO(Secteur secteur) {
+        if (secteur == null) return null;
+        return SecteurDTO.builder()
+                .id(secteur.getId())
+                .code(secteur.getCode())
+                .nom(secteur.getNom())
+                .description(secteur.getDescription())
+                .actif(secteur.getActif())
                 .build();
     }
 
     /**
-     * Formation en cours (aujourd'hui).
+     * Convertit une Region en RegionDTO.
      */
-    public static Formation formationEnCours() {
-        return defaultFormationPresentiel().toBuilder()
-                .dateFormation(LocalDate.now())
-                .heureDebut(LocalTime.of(9, 0))
-                .heureFin(LocalTime.of(23, 59))
-                .build();
-    }
-
-    /**
-     * Formation à venir (dans le futur).
-     */
-    public static Formation formationAVenir() {
-        return defaultFormationPresentiel().toBuilder()
-                .dateFormation(LocalDate.now().plusDays(30))
-                .build();
-    }
-
-    /**
-     * Formation avec données minimales.
-     */
-    public static Formation formationMinimale() {
-        return Formation.builder()
-                .libelle("Formation Minimale")
-                .formateurs("Formateur Test")
-                .description("Description minimale")
-                .dateFormation(LocalDate.now().plusDays(7))
-                .heureDebut(LocalTime.of(9, 0))
-                .heureFin(LocalTime.of(17, 0))
-                .secteur("Test")
-                .region("Test")
-                .modalite(ModaliteFormation.EN_LIGNE)
-                .nbParticipants(10)
-                .lienParticipation("https://test.example.com")
-                .build();
-    }
-
-    /**
-     * Formation avec validation d'horaires invalides.
-     */
-    public static Formation formationHorairesInvalides() {
-        return defaultFormationPresentiel().toBuilder()
-                .heureDebut(LocalTime.of(17, 0))
-                .heureFin(LocalTime.of(9, 0))
-                .build();
-    }
-
-    /**
-     * Formation présentielle sans lieu (pour tests de validation).
-     */
-    public static Formation formationPresentielSansLieu() {
-        return defaultFormationPresentiel().toBuilder()
-                .lieu(null)
-                .ville(null)
-                .build();
-    }
-
-    /**
-     * Formation en ligne sans lien (pour tests de validation).
-     */
-    public static Formation formationEnLigneSansLien() {
-        return defaultFormationEnLigne().toBuilder()
-                .lienParticipation(null)
+    private static RegionDTO convertRegionToDTO(Region region) {
+        if (region == null) return null;
+        return RegionDTO.builder()
+                .id(region.getId())
+                .code(region.getCode())
+                .nom(region.getNom())
+                .description(region.getDescription())
+                .actif(region.getActif())
                 .build();
     }
 }

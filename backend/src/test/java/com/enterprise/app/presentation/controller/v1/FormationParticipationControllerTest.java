@@ -6,6 +6,8 @@ import com.enterprise.app.application.mapper.FormationParticipationMapper;
 import com.enterprise.app.application.service.FormationService;
 import com.enterprise.app.application.usecase.UserService;
 import com.enterprise.app.domain.model.*;
+import com.enterprise.app.testing.fixtures.FormationFixtures;
+import com.enterprise.app.testing.fixtures.FormationParticipationFixtures;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,8 +26,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
-import java.util.UUID;
 
+
+import static com.enterprise.app.testing.fixtures.FormationParticipationFixtures.defaultParticipationDTO;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -54,54 +57,28 @@ class FormationParticipationControllerTest {
     private User user;
     private FormationParticipation participation;
     private FormationParticipationDTO participationDTO;
-    private UUID formationId;
-    private UUID userId;
+    private Long formationId;
+    private Long userId;
 
     @BeforeEach
     void setUp() {
-        formationId = UUID.randomUUID();
-        userId = UUID.randomUUID();
+        formationId = 1L;
+        userId = 1L;
 
-        formation = Formation.builder()
-                .id(formationId)
-                .libelle("Formation Test")
-                .formateurs("Formateur Test")
-                .description("Description test")
-                .dateFormation(LocalDate.now().plusDays(7))
-                .heureDebut(LocalTime.of(9, 0))
-                .heureFin(LocalTime.of(17, 0))
-                .secteur("IT")
-                .region("Île-de-France")
-                .modalite(ModaliteFormation.PRESENTIEL)
-                .nbParticipants(20)
-                .lieu("Paris")
-                .ville("Paris")
-                .build();
+        formation = FormationFixtures.defaultFormationPresentiel();
 
         user = User.builder()
-                .id(userId)
-                .username("testuser")
-                .email("test@example.com")
-                .firstName("Test")
-                .lastName("User")
-                .active(true)
-                .build();
+            .id(userId)
+            .username("testuser")
+            .email("test@example.com")
+            .firstName("Test")
+            .lastName("User")
+            .active(true)
+            .build();
 
-        participation = FormationParticipation.builder()
-                .id(UUID.randomUUID())
-                .formation(formation)
-                .user(user)
-                .statutParticipation(StatutParticipation.ABSENT)
-                .dateInscription(LocalDateTime.now())
-                .build();
+        participation = FormationParticipationFixtures.defaultParticipation();
 
-        participationDTO = FormationParticipationDTO.builder()
-                .id(participation.getId())
-                .formationId(formationId)
-                .userId(userId)
-                .statutParticipation(StatutParticipation.ABSENT)
-                .dateInscription(LocalDateTime.now())
-                .build();
+        participationDTO = defaultParticipationDTO();
     }
 
     @Test
@@ -142,28 +119,6 @@ class FormationParticipationControllerTest {
         verify(userService).getUserEntityByUsername("testuser");
         verify(formationService).desinscrireUtilisateur(formationId, userId);
     }
-
-    @Test
-    @WithMockUser(username = "testuser", roles = "USER")
-    void getFormationsUtilisateur_ShouldReturnFormations() throws Exception {
-        // Given
-        Page<FormationParticipation> participationPage = new PageImpl<>(Arrays.asList(participation));
-        Page<FormationParticipationDTO> dtoPage = new PageImpl<>(Arrays.asList(participationDTO));
-
-        when(userService.getUserEntityByUsername("testuser")).thenReturn(user);
-        when(formationService.getFormationsUtilisateur(eq(userId), any(Pageable.class))).thenReturn(participationPage);
-        when(participationMapper.toDTO(participation)).thenReturn(participationDTO);
-
-        // When & Then
-        mockMvc.perform(get("/api/v1/formations/mes-inscriptions"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content[0].userId").value(userId.toString()));
-
-        verify(userService).getUserEntityByUsername("testuser");
-        verify(formationService).getFormationsUtilisateur(eq(userId), any(Pageable.class));
-    }
-
 
     @Test
     @WithMockUser(roles = "ADMIN")
@@ -278,12 +233,4 @@ class FormationParticipationControllerTest {
         verify(formationService, never()).inscrireUtilisateur(any(), any());
     }
 
-    @Test
-    void getFormationsUtilisateur_ShouldReturnUnauthorized_WhenNotAuthenticated() throws Exception {
-        // When & Then
-        mockMvc.perform(get("/api/v1/formations/users/{userId}/inscriptions", userId))
-                .andExpect(status().isUnauthorized());
-
-        verify(formationService, never()).getFormationsUtilisateur(any(), any());
-    }
 }

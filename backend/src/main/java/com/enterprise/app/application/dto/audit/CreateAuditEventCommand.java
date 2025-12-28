@@ -17,10 +17,10 @@ import java.util.UUID;
 @AllArgsConstructor
 public class CreateAuditEventCommand {
     private AuditEventType eventType;
-    private UUID userId;
+    private Long userId;
     private String username;
     private String targetEntityType;
-    private UUID targetEntityId;
+    private Long targetEntityId;
     private String targetEntityName;
     private String ipAddress;
     private String userAgent;

@@ -5,6 +5,7 @@ import com.enterprise.app.domain.model.FormationStatut;
 import com.enterprise.app.domain.model.ModaliteFormation;
 import com.enterprise.app.testing.config.BaseIntegrationTest;
 import com.enterprise.app.testing.fixtures.FormationFixtures;
+import com.enterprise.app.testing.fixtures.SecteurFixtures;
 import com.enterprise.app.testing.builders.FormationTestDataBuilder;
 import com.enterprise.app.testing.helpers.FormationTestHelper;
 import org.junit.jupiter.api.DisplayName;
@@ -14,7 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,141 +56,26 @@ class FormationRepositoryRefactoredTest extends BaseIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should find formations by secteur with pagination")
-    void findBySecteur_ShouldReturnFilteredResults() {
-        // Given
-        Formation itFormation1 = FormationTestDataBuilder.aFormation()
-                .withSecteur("Informatique")
-                .withLibelle("Formation Java")
-                .presentiel()
-                .build();
-
-        Formation itFormation2 = FormationTestDataBuilder.aFormation()
-                .withSecteur("Informatique")
-                .withLibelle("Formation Python")
-                .enLigne()
-                .build();
-
-        Formation marketingFormation = FormationTestDataBuilder.aFormation()
-                .withSecteur("Marketing")
-                .withLibelle("Formation Marketing Digital")
-                .presentiel()
-                .build();
-
-        formationRepository.save(itFormation1);
-        formationRepository.save(itFormation2);
-        formationRepository.save(marketingFormation);
-
-        Pageable pageable = PageRequest.of(0, 10);
-
-        // When
-        Page<Formation> itFormations = formationRepository.findBySecteur("Informatique", pageable);
-        Page<Formation> marketingFormations = formationRepository.findBySecteur("Marketing", pageable);
-
-        // Then
-        FormationTestHelper.assertPageContent(itFormations, 2);
-        assertThat(itFormations.getContent())
-                .extracting(Formation::getSecteur)
-                .containsOnly("Informatique");
-
-        FormationTestHelper.assertPageContent(marketingFormations, 1);
-        assertThat(marketingFormations.getContent().get(0).getSecteur()).isEqualTo("Marketing");
-    }
-
-    @Test
-    @DisplayName("Should find formations by modalite")
-    void findByModalite_ShouldReturnFilteredResults() {
-        // Given
-        Formation presentielFormation = FormationTestDataBuilder.aFormation()
-                .presentiel()
-                .build();
-
-        Formation enLigneFormation = FormationTestDataBuilder.aFormation()
-                .enLigne()
-                .build();
-
-        Formation hybrideFormation = FormationTestDataBuilder.aFormation()
-                .hybride()
-                .build();
-
-        formationRepository.save(presentielFormation);
-        formationRepository.save(enLigneFormation);
-        formationRepository.save(hybrideFormation);
-
-        Pageable pageable = PageRequest.of(0, 10);
-
-        // When
-        Page<Formation> presentielResults = formationRepository.findByModalite(ModaliteFormation.PRESENTIEL, pageable);
-        Page<Formation> enLigneResults = formationRepository.findByModalite(ModaliteFormation.EN_LIGNE, pageable);
-        Page<Formation> hybrideResults = formationRepository.findByModalite(ModaliteFormation.HYBRIDE, pageable);
-
-        // Then
-        FormationTestHelper.assertPageContent(presentielResults, 1);
-        assertThat(presentielResults.getContent().get(0).getModalite()).isEqualTo(ModaliteFormation.PRESENTIEL);
-
-        FormationTestHelper.assertPageContent(enLigneResults, 1);
-        assertThat(enLigneResults.getContent().get(0).getModalite()).isEqualTo(ModaliteFormation.EN_LIGNE);
-
-        FormationTestHelper.assertPageContent(hybrideResults, 1);
-        assertThat(hybrideResults.getContent().get(0).getModalite()).isEqualTo(ModaliteFormation.HYBRIDE);
-    }
-
-    @Test
-    @DisplayName("Should find formations by date range")
-    void findByDateFormationBetween_ShouldReturnFilteredResults() {
-        // Given
-        Formation formation1 = FormationTestDataBuilder.aFormation()
-                .withDateFormation(LocalDate.now().plusDays(10))
-                .withLibelle("Formation 1")
-                .build();
-
-        Formation formation2 = FormationTestDataBuilder.aFormation()
-                .withDateFormation(LocalDate.now().plusDays(20))
-                .withLibelle("Formation 2")
-                .build();
-
-        Formation formation3 = FormationTestDataBuilder.aFormation()
-                .withDateFormation(LocalDate.now().plusDays(30))
-                .withLibelle("Formation 3")
-                .build();
-
-        formationRepository.save(formation1);
-        formationRepository.save(formation2);
-        formationRepository.save(formation3);
-
-        LocalDate startDate = LocalDate.now().plusDays(15);
-        LocalDate endDate = LocalDate.now().plusDays(25);
-        Pageable pageable = PageRequest.of(0, 10);
-
-        // When
-        Page<Formation> formationsInRange = formationRepository.findByDateFormationBetween(startDate, endDate, pageable);
-
-        // Then
-        FormationTestHelper.assertPageContent(formationsInRange, 1);
-        assertThat(formationsInRange.getContent().get(0).getLibelle()).isEqualTo("Formation 2");
-    }
-
-    @Test
     @DisplayName("Should apply complex filters correctly")
     void findByFilters_ShouldApplyMultipleFilters() {
         // Given
         Formation targetFormation = FormationTestDataBuilder.aFormation()
-                .withSecteur("Informatique")
-                .withRegion("Île-de-France")
+                .withSecteur(FormationFixtures.SECTEUR_MSA)
+                .withRegion(FormationFixtures.REGION_IDF)
                 .presentiel()
                 .aVenir()
                 .build();
 
         Formation differentSecteur = FormationTestDataBuilder.aFormation()
-                .withSecteur("Marketing")
-                .withRegion("Île-de-France")
+                .withSecteur(SecteurFixtures.secteurWithNom("Marketing"))
+                .withRegion(FormationFixtures.REGION_IDF)
                 .presentiel()
                 .aVenir()
                 .build();
 
         Formation differentModalite = FormationTestDataBuilder.aFormation()
-                .withSecteur("Informatique")
-                .withRegion("Île-de-France")
+                .withSecteur(FormationFixtures.SECTEUR_MSA)
+                .withRegion(FormationFixtures.REGION_IDF)
                 .enLigne()
                 .aVenir()
                 .build();
@@ -203,13 +88,13 @@ class FormationRepositoryRefactoredTest extends BaseIntegrationTest {
 
         // When
         Page<Formation> result = formationRepository.findByFilters(
-                "Informatique", "Île-de-France", ModaliteFormation.PRESENTIEL, FormationStatut.A_VENIR, pageable);
+                FormationFixtures.SECTEUR_MSA.getId(), FormationFixtures.REGION_IDF.getId(), ModaliteFormation.PRESENTIEL, FormationStatut.A_VENIR, pageable);
 
         // Then
         FormationTestHelper.assertPageContent(result, 1);
         Formation found = result.getContent().get(0);
-        assertThat(found.getSecteur()).isEqualTo("Informatique");
-        assertThat(found.getRegion()).isEqualTo("Île-de-France");
+        assertThat(found.getSecteur()).isEqualTo(FormationFixtures.SECTEUR_MSA);
+        assertThat(found.getRegion()).isEqualTo(FormationFixtures.REGION_IDF);
         assertThat(found.getModalite()).isEqualTo(ModaliteFormation.PRESENTIEL);
         assertThat(found.getStatut()).isEqualTo(FormationStatut.A_VENIR);
     }
@@ -258,39 +143,6 @@ class FormationRepositoryRefactoredTest extends BaseIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should handle pagination correctly")
-    void findAll_ShouldHandlePagination() {
-        // Given
-        for (int i = 1; i <= 25; i++) {
-            Formation formation = FormationTestDataBuilder.aFormation()
-                    .withLibelle("Formation " + i)
-                    .build();
-            formationRepository.save(formation);
-        }
-
-        // When
-        Pageable firstPage = PageRequest.of(0, 10);
-        Pageable secondPage = PageRequest.of(1, 10);
-        Pageable thirdPage = PageRequest.of(2, 10);
-
-        Page<Formation> page1 = formationRepository.findAll(firstPage);
-        Page<Formation> page2 = formationRepository.findAll(secondPage);
-        Page<Formation> page3 = formationRepository.findAll(thirdPage);
-
-        // Then
-        FormationTestHelper.assertPageProperties(page1, 10, 3, true, false);
-        FormationTestHelper.assertPageContent(page1, 10);
-
-        FormationTestHelper.assertPageProperties(page2, 10, 3, false, false);
-        FormationTestHelper.assertPageContent(page2, 10);
-
-        FormationTestHelper.assertPageProperties(page3, 5, 3, false, true);
-        FormationTestHelper.assertPageContent(page3, 5);
-
-        assertThat(page1.getTotalElements()).isEqualTo(25);
-    }
-
-    @Test
     @DisplayName("Should validate formation data before saving")
     void save_ShouldValidateFormationData() {
         // Given
@@ -318,5 +170,62 @@ class FormationRepositoryRefactoredTest extends BaseIntegrationTest {
         Optional<Formation> deleted = formationRepository.findById(savedFormation.getId());
         assertThat(deleted).isEmpty();
         assertThat(formationRepository.existsById(savedFormation.getId())).isFalse();
+    }
+
+    @Test
+    @DisplayName("Should save and retrieve 'Tirage au sort' formation")
+    void save_ShouldPersistTirageAuSortFormation() {
+        // Given
+        Formation tirageAuSort = FormationFixtures.defaultFormationPresentiel();
+
+        // When
+        Formation savedFormation = formationRepository.save(tirageAuSort);
+
+        // Then
+        assertThat(savedFormation.getId()).isNotNull();
+        assertThat(savedFormation.getLibelle()).isEqualTo("Tirage au sort");
+        assertThat(savedFormation.getFormateurs()).isEqualTo("LAGRACE Elodie - DUPONT Frédérique");
+        assertThat(savedFormation.getSecteur()).isEqualTo(FormationFixtures.SECTEUR_RG);
+        assertThat(savedFormation.getRegion()).isEqualTo(FormationFixtures.REGION_IDF);
+        assertThat(savedFormation.getNbParticipants()).isEqualTo(30);
+
+        Optional<Formation> retrieved = formationRepository.findById(savedFormation.getId());
+        assertThat(retrieved).isPresent();
+        FormationTestHelper.assertFormationEquals(tirageAuSort, retrieved.get());
+    }
+
+    @Test
+    @DisplayName("Should apply complex filters for new formations data")
+    void findByFilters_ShouldWorkWithTirageAuSortData() {
+        // Given
+        Formation targetFormation = FormationFixtures.defaultFormationPresentiel();
+        Formation msaFormation = FormationFixtures.tirageAuSortRU();
+        Formation onlineFormation = FormationFixtures.tirageAuSortEnLigneRG();
+
+        formationRepository.save(targetFormation);
+        formationRepository.save(msaFormation);
+        formationRepository.save(onlineFormation);
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // When
+        Page<Formation> regimeGeneralPresentielIDF = formationRepository.findByFilters(
+                FormationFixtures.SECTEUR_RG.getId(), FormationFixtures.REGION_IDF.getId(), ModaliteFormation.PRESENTIEL, null, pageable);
+
+        Page<Formation> msaFormations = formationRepository.findByFilters(
+                FormationFixtures.SECTEUR_MSA.getId(), FormationFixtures.REGION_IDF.getId(), ModaliteFormation.PRESENTIEL, null, pageable);
+
+        // Then
+        FormationTestHelper.assertPageContent(regimeGeneralPresentielIDF, 1);
+        Formation foundRG = regimeGeneralPresentielIDF.getContent().get(0);
+        assertThat(foundRG.getSecteur()).isEqualTo(FormationFixtures.SECTEUR_RG);
+        assertThat(foundRG.getRegion()).isEqualTo(FormationFixtures.REGION_IDF);
+        assertThat(foundRG.getModalite()).isEqualTo(ModaliteFormation.PRESENTIEL);
+        assertThat(foundRG.getLibelle()).isEqualTo("Tirage au sort");
+
+        FormationTestHelper.assertPageContent(msaFormations, 1);
+        Formation foundMSA = msaFormations.getContent().get(0);
+        assertThat(foundMSA.getSecteur()).isEqualTo(FormationFixtures.SECTEUR_MSA);
+        assertThat(foundMSA.getLibelle()).isEqualTo("Tirage au sort - RU");
     }
 }

@@ -1,6 +1,8 @@
 package com.enterprise.app.application.dto;
 
 import com.enterprise.app.domain.model.ModaliteFormation;
+import com.enterprise.app.domain.validation.ValidFormationTiming;
+import com.enterprise.app.domain.validation.ValidModaliteFields;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -12,9 +14,11 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
+@ValidFormationTiming
+@ValidModaliteFields
 public class CreateFormationRequest {
 
     @NotBlank(message = "Le libellé est obligatoire")
@@ -41,13 +45,11 @@ public class CreateFormationRequest {
     @JsonFormat(pattern = "HH:mm")
     private LocalTime heureFin;
 
-    @NotBlank(message = "Le secteur est obligatoire")
-    @Size(max = 100, message = "Le secteur ne peut pas dépasser 100 caractères")
-    private String secteur;
+    @NotNull(message = "Le secteur est obligatoire")
+    private Long secteurId;
 
-    @NotBlank(message = "La région est obligatoire")
-    @Size(max = 100, message = "La région ne peut pas dépasser 100 caractères")
-    private String region;
+    @NotNull(message = "La région est obligatoire")
+    private Long regionId;
 
     @NotNull(message = "La modalité est obligatoire")
     private ModaliteFormation modalite;
@@ -64,28 +66,6 @@ public class CreateFormationRequest {
     private String ville;
 
     @Size(max = 500, message = "Le lien de participation ne peut pas dépasser 500 caractères")
-    @Pattern(regexp = "^(https?://).*", message = "Le lien doit être une URL valide", groups = {})
     private String lienParticipation;
 
-    public void validerModaliteEtChamps() {
-        if (modalite == null) {
-            throw new IllegalArgumentException("La modalité de formation est obligatoire");
-        }
-
-        switch (modalite) {
-            case PRESENTIEL:
-                if (ville == null || ville.trim().isEmpty()) {
-                    throw new IllegalArgumentException("La ville est obligatoire pour une formation en présentiel");
-                }
-                if (lieu == null || lieu.trim().isEmpty()) {
-                    throw new IllegalArgumentException("Le lieu est obligatoire pour une formation en présentiel");
-                }
-                break;
-            case EN_LIGNE:
-                if (lienParticipation == null || lienParticipation.trim().isEmpty()) {
-                    throw new IllegalArgumentException("Le lien de participation est obligatoire pour une formation en ligne");
-                }
-                break;
-        }
-    }
 }

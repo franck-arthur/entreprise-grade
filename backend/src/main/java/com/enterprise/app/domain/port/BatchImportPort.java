@@ -7,7 +7,6 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Port interface for batch import persistence operations.
@@ -23,7 +22,7 @@ public interface BatchImportPort {
     /**
      * Find a batch import by ID.
      */
-    Optional<BatchImport> findById(UUID id);
+    Optional<BatchImport> findById(Long id);
 
     /**
      * Find all batch imports with pagination.
@@ -38,7 +37,7 @@ public interface BatchImportPort {
     /**
      * Find batch imports by initiated user.
      */
-    Page<BatchImport> findByInitiatedByUserId(UUID userId, Pageable pageable);
+    Page<BatchImport> findByInitiatedByUserId(Long userId, Pageable pageable);
 
     /**
      * Delete a batch import.
@@ -48,5 +47,5 @@ public interface BatchImportPort {
     /**
      * Check if a batch import exists.
      */
-    boolean existsById(UUID id);
+    boolean existsById(Long id);
 }

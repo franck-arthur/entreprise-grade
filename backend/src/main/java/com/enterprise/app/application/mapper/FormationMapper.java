@@ -4,42 +4,38 @@ import com.enterprise.app.application.dto.CreateFormationRequest;
 import com.enterprise.app.application.dto.FormationDTO;
 import com.enterprise.app.application.dto.UpdateFormationRequest;
 import com.enterprise.app.domain.model.Formation;
-import com.enterprise.app.infrastructure.persistence.projection.FormationProjection;
+import com.enterprise.app.domain.repository.FormationParticipationRepository;
 import org.mapstruct.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
 /**
  * MapStruct mapper for Formation entity and DTOs.
- * Utilise les projections pour optimiser les requêtes avec comptage des participants.
+ * Les DTOs peuvent maintenant être retournés directement depuis les repositories.
  */
 @Mapper(
     componentModel = "spring",
     unmappedTargetPolicy = ReportingPolicy.IGNORE,
-    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
+    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+    uses = {SecteurMapper.class, RegionMapper.class}
 )
-public interface FormationMapper {
+public abstract class FormationMapper {
+
+    @Autowired
+    protected FormationParticipationRepository participationRepository;
 
     /**
-     * Map Formation entity to FormationDTO.
-     * Note: Utilise FormationProjection pour éviter les requêtes N+1.
+     * Map Formation entity to FormationDTO (pour les opérations CRUD standards).
      */
-    @Mapping(target = "complet", expression = "java(projection.isComplet())")
-    FormationDTO toDTO(FormationProjection projection);
+    @Mapping(target = "nbParticipantsInscrits", expression = "java(countParticipants(formation.getId()))")
+    @Mapping(target = "complet", expression = "java(isFormationComplete(formation))")
+    public abstract FormationDTO toDTO(Formation formation);
 
     /**
-     * Map Formation entity to FormationDTO (fallback sans projection).
-     * @deprecated Préférer la méthode avec projection pour les performances.
+     * Map list of Formations to list of FormationDTOs.
      */
-    @Deprecated
-    @Mapping(target = "nbParticipantsInscrits", ignore = true)
-    @Mapping(target = "complet", ignore = true)
-    FormationDTO toDTO(Formation formation);
-
-    /**
-     * Map list of FormationProjections to list of FormationDTOs.
-     */
-    List<FormationDTO> toDTOList(List<FormationProjection> projections);
+    public abstract List<FormationDTO> toDTOList(List<Formation> formations);
 
     /**
      * Map CreateFormationRequest to Formation entity.
@@ -48,7 +44,9 @@ public interface FormationMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "version", ignore = true)
-    Formation toEntity(CreateFormationRequest request);
+    @Mapping(target = "secteur", ignore = true)
+    @Mapping(target = "region", ignore = true)
+    public abstract Formation toEntity(CreateFormationRequest request);
 
     /**
      * Update existing Formation entity from UpdateFormationRequest.
@@ -59,5 +57,28 @@ public interface FormationMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "version", ignore = true)
-    void updateEntityFromDTO(UpdateFormationRequest request, @MappingTarget Formation formation);
+    @Mapping(target = "secteur", ignore = true)
+    @Mapping(target = "region", ignore = true)
+    public abstract void updateEntityFromDTO(UpdateFormationRequest request, @MappingTarget Formation formation);
+
+    /**
+     * Compte le nombre de participants inscrits pour une formation.
+     */
+    protected Integer countParticipants(Long formationId) {
+        if (formationId == null) {
+            return 0;
+        }
+        return Math.toIntExact(participationRepository.countByFormationId(formationId));
+    }
+
+    /**
+     * Détermine si une formation est complète.
+     */
+    protected Boolean isFormationComplete(Formation formation) {
+        if (formation == null || formation.getId() == null || formation.getNbParticipants() == null) {
+            return false;
+        }
+        Integer nbInscrits = countParticipants(formation.getId());
+        return nbInscrits >= formation.getNbParticipants();
+    }
 }

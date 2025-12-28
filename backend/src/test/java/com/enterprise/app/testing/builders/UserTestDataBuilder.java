@@ -3,20 +3,17 @@ package com.enterprise.app.testing.builders;
 import com.enterprise.app.domain.model.User;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 /**
  * Builder pour créer des instances de User personnalisées pour les tests.
  */
 public class UserTestDataBuilder {
 
-    private UUID id = UUID.randomUUID();
+    private Long id = 1L;
     private String username = "testuser";
     private String email = "test@example.com";
     private String firstName = "Test";
     private String lastName = "User";
-    private String nom = "User";
-    private String prenom = "Test";
     private boolean active = true;
     private LocalDateTime dateDerniereFormation;
 
@@ -30,7 +27,7 @@ public class UserTestDataBuilder {
     /**
      * Définit l'ID de l'utilisateur.
      */
-    public UserTestDataBuilder withId(UUID id) {
+    public UserTestDataBuilder withId(Long id) {
         this.id = id;
         return this;
     }
@@ -56,7 +53,6 @@ public class UserTestDataBuilder {
      */
     public UserTestDataBuilder withFirstName(String firstName) {
         this.firstName = firstName;
-        this.prenom = firstName;
         return this;
     }
 
@@ -65,7 +61,6 @@ public class UserTestDataBuilder {
      */
     public UserTestDataBuilder withLastName(String lastName) {
         this.lastName = lastName;
-        this.nom = lastName;
         return this;
     }
 
@@ -138,8 +133,6 @@ public class UserTestDataBuilder {
                 .email(email)
                 .firstName(firstName)
                 .lastName(lastName)
-                .nom(nom)
-                .prenom(prenom)
                 .active(active)
                 .dateDerniereFormation(dateDerniereFormation)
                 .build();

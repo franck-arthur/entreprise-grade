@@ -1,6 +1,5 @@
 package com.enterprise.app.infrastructure.persistence;
 
-import com.enterprise.app.domain.model.Role;
 import com.enterprise.app.domain.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,8 +9,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
 
 /**
  * JPA implementation of UserRepository (Adapter).
@@ -22,7 +19,7 @@ import java.util.UUID;
  * Spring Data JPA provides automatic implementation of common methods.
  */
 @Repository
-public interface JpaUserRepository extends JpaRepository<User, UUID> {
+public interface JpaUserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByUsername(String username);
 
@@ -41,15 +38,7 @@ public interface JpaUserRepository extends JpaRepository<User, UUID> {
     long countActive();
 
     @Query("SELECT DISTINCT u FROM User u " +
-           "WHERE (:active IS NULL OR u.active = :active) " +
-           "AND (:roles IS NULL OR SIZE(:roles) = 0 OR EXISTS (SELECT r FROM u.roles r WHERE r IN :roles)) " +
-           "AND (:search IS NULL OR :search = '' OR " +
-           "     LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "     LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "     LOWER(u.firstName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "     LOWER(u.lastName) LIKE LOWER(CONCAT('%', :search, '%')))")
+           "WHERE (:active IS NULL OR u.active = :active)")
     Page<User> findWithFilters(@Param("active") Boolean active,
-                              @Param("roles") Set<Role> roles,
-                              @Param("search") String search,
                               Pageable pageable);
 }

@@ -7,34 +7,13 @@
 
     <!-- Console Appender with JSON format for production -->
     <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
             <providers>
                 <timestamp/>
-                <version/>
-                <message/>
-                <loggerName/>
-                <threadName/>
                 <logLevel/>
-                <logLevelValue/>
-                <callerData/>
-                <stackTrace/>
-                <context/>
-                <mdc/>
-                <arguments/>
-                <pattern>
-                    <pattern>
-                        {
-                        "app": "${appName}",
-                        "version": "${appVersion}",
-                        "environment": "${SPRING_PROFILES_ACTIVE:-dev}"
-                        }
-                    </pattern>
-                </pattern>
+                <loggerName/>
+                <message/>
             </providers>
-            <includeMdc>true</includeMdc>
-            <includeContext>true</includeContext>
-            <includeCallerData>false</includeCallerData>
-            <includeStackTrace>true</includeStackTrace>
         </encoder>
     </appender>
 
@@ -72,30 +51,13 @@
             <maxHistory>365</maxHistory>
             <totalSizeCap>10GB</totalSizeCap>
         </rollingPolicy>
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
             <providers>
                 <timestamp/>
-                <version/>
-                <message/>
-                <loggerName/>
-                <threadName/>
                 <logLevel/>
-                <logLevelValue/>
-                <mdc/>
-                <arguments/>
-                <pattern>
-                    <pattern>
-                        {
-                        "app": "${appName}",
-                        "version": "${appVersion}",
-                        "environment": "${SPRING_PROFILES_ACTIVE:-dev}",
-                        "logType": "BUSINESS_AUDIT"
-                        }
-                    </pattern>
-                </pattern>
+                <loggerName/>
+                <message/>
             </providers>
-            <includeMdc>true</includeMdc>
-            <includeContext>true</includeContext>
         </encoder>
     </appender>
 

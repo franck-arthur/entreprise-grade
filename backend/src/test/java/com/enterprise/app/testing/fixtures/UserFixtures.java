@@ -1,9 +1,10 @@
 package com.enterprise.app.testing.fixtures;
 
 import com.enterprise.app.domain.model.User;
+import org.instancio.Instancio;
+import static org.instancio.Select.field;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 /**
  * Fixtures centralisées pour les données de test User.
@@ -13,9 +14,9 @@ public final class UserFixtures {
     private UserFixtures() {}
 
     // IDs constants pour les tests
-    public static final UUID USER_ID_1 = UUID.fromString("456e7890-e89b-12d3-a456-426614174001");
-    public static final UUID USER_ID_2 = UUID.fromString("456e7890-e89b-12d3-a456-426614174002");
-    public static final UUID USER_ID_3 = UUID.fromString("456e7890-e89b-12d3-a456-426614174003");
+    public static final Long USER_ID_1 = 1L;
+    public static final Long USER_ID_2 = 2L;
+    public static final Long USER_ID_3 = 3L;
 
     // Usernames constants
     public static final String USERNAME_TESTUSER = "testuser";
@@ -26,65 +27,141 @@ public final class UserFixtures {
      * Utilisateur standard pour les tests.
      */
     public static User defaultUser() {
-        return User.builder()
-                .id(USER_ID_1)
-                .username(USERNAME_TESTUSER)
-                .email("testuser@example.com")
-                .firstName("Test")
-                .lastName("User")
-                .nom("User")
-                .prenom("Test")
-                .active(true)
-                .build();
+        return Instancio.of(User.class)
+                .set(field(User::getId), USER_ID_1)
+                .set(field(User::getUsername), USERNAME_TESTUSER)
+                .set(field(User::getEmail), "testuser@example.com")
+                .set(field(User::getFirstName), "Test")
+                .set(field(User::getLastName), "User")
+                .set(field(User::isActive), true)
+                .set(field(User::getDateDerniereFormation), null)
+                .create();
     }
 
     /**
      * Utilisateur administrateur.
      */
     public static User adminUser() {
-        return User.builder()
-                .id(USER_ID_2)
-                .username(USERNAME_ADMIN)
-                .email("admin@example.com")
-                .firstName("Admin")
-                .lastName("System")
-                .nom("System")
-                .prenom("Admin")
-                .active(true)
-                .build();
+        return Instancio.of(User.class)
+                .set(field(User::getId), USER_ID_2)
+                .set(field(User::getUsername), USERNAME_ADMIN)
+                .set(field(User::getEmail), "admin@example.com")
+                .set(field(User::getFirstName), "Admin")
+                .set(field(User::getLastName), "System")
+                .set(field(User::isActive), true)
+                .set(field(User::getDateDerniereFormation), null)
+                .create();
     }
 
     /**
      * Utilisateur manager.
      */
     public static User managerUser() {
-        return User.builder()
-                .id(USER_ID_3)
-                .username(USERNAME_MANAGER)
-                .email("manager@example.com")
-                .firstName("Manager")
-                .lastName("Lead")
-                .nom("Lead")
-                .prenom("Manager")
-                .active(true)
-                .build();
+        return Instancio.of(User.class)
+                .set(field(User::getId), USER_ID_3)
+                .set(field(User::getUsername), USERNAME_MANAGER)
+                .set(field(User::getEmail), "manager@example.com")
+                .set(field(User::getFirstName), "Manager")
+                .set(field(User::getLastName), "Lead")
+                .set(field(User::isActive), true)
+                .set(field(User::getDateDerniereFormation), null)
+                .create();
     }
 
     /**
      * Utilisateur inactif.
      */
     public static User inactiveUser() {
-        return defaultUser().toBuilder()
-                .active(false)
-                .build();
+        return Instancio.of(User.class)
+                .set(field(User::getId), USER_ID_1)
+                .set(field(User::getUsername), USERNAME_TESTUSER)
+                .set(field(User::getEmail), "testuser@example.com")
+                .set(field(User::getFirstName), "Test")
+                .set(field(User::getLastName), "User")
+                .set(field(User::isActive), false)
+                .set(field(User::getDateDerniereFormation), null)
+                .create();
     }
 
     /**
      * Utilisateur avec dernière formation.
      */
     public static User userWithLastFormation() {
-        return defaultUser().toBuilder()
-                .dateDerniereFormation(LocalDateTime.now().minusDays(10))
-                .build();
+        return Instancio.of(User.class)
+                .set(field(User::getId), USER_ID_1)
+                .set(field(User::getUsername), USERNAME_TESTUSER)
+                .set(field(User::getEmail), "testuser@example.com")
+                .set(field(User::getFirstName), "Test")
+                .set(field(User::getLastName), "User")
+                .set(field(User::isActive), true)
+                .set(field(User::getDateDerniereFormation), LocalDateTime.now().minusDays(10))
+                .create();
+    }
+
+    /**
+     * Génère un utilisateur aléatoire avec Instancio.
+     */
+    public static User randomUser() {
+        return Instancio.of(User.class)
+                .set(field(User::isActive), true)
+                .create();
+    }
+
+    /**
+     * Génère un utilisateur aléatoire avec ID spécifique.
+     */
+    public static User randomUserWithId(Long id) {
+        return Instancio.of(User.class)
+                .set(field(User::getId), id)
+                .set(field(User::isActive), true)
+                .create();
+    }
+
+    /**
+     * Participant Joelle DUPRES - Secrétariat.
+     */
+    public static User joelleDupres() {
+        return Instancio.of(User.class)
+                .set(field(User::getId), 10L)
+                .set(field(User::getEmail), "Joelle.dupres@secretariat.com")
+                .set(field(User::getFirstName), "Joelle")
+                .set(field(User::getLastName), "DUPRES")
+                .set(field(User::getPhoneNumber), "0600000001")
+                .set(field(User::getDateDerniereFormation), LocalDateTime.of(2017, 10, 6, 0, 0))
+                .set(field(User::getUsername), "joelle.dupres")
+                .set(field(User::isActive), true)
+                .create();
+    }
+
+    /**
+     * Participant Nicolas MOREL - Infirmier.
+     */
+    public static User nicolasMorel() {
+        return Instancio.of(User.class)
+                .set(field(User::getId), 11L)
+                .set(field(User::getEmail), "Aline.leclaire@infirmier.com")
+                .set(field(User::getFirstName), "Nicolas")
+                .set(field(User::getLastName), "MOREL")
+                .set(field(User::getPhoneNumber), "0600000001")
+                .set(field(User::getDateDerniereFormation), null)
+                .set(field(User::getUsername), "nicolas.morel")
+                .set(field(User::isActive), true)
+                .create();
+    }
+
+    /**
+     * Participant Clément GOS.
+     */
+    public static User clementGos() {
+        return Instancio.of(User.class)
+                .set(field(User::getId), 12L)
+                .set(field(User::getEmail), "goclement@gmail.com")
+                .set(field(User::getFirstName), "Clement")
+                .set(field(User::getLastName), "GOS")
+                .set(field(User::getPhoneNumber), "0600000001")
+                .set(field(User::getDateDerniereFormation), LocalDateTime.of(2025, 10, 6, 0, 0))
+                .set(field(User::getUsername), "clement.gos")
+                .set(field(User::isActive), true)
+                .create();
     }
 }

@@ -240,7 +240,7 @@ class GlobalExceptionHandlerTest {
     @DisplayName("Should handle NullPointerException as generic exception")
     void shouldHandleNullPointerException() {
         // Given
-        NullPointerException exception = new NullPointerException("Null value");
+        NullPointerException exception = new NullPointerException("Field error in object 'user' on field 'email': rejected value [null]; codes []; arguments []; default message [must be a valid email]] [Field error in object 'user' on field 'email': rejected value [null]; codes []; arguments []; default message [must not be blank]");
 
         when(messageSource.getMessage(eq("error.internal"), isNull(), any(Locale.class)))
             .thenReturn("Internal server error");

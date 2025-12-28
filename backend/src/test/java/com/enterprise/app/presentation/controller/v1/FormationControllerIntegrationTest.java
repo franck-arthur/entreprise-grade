@@ -3,6 +3,7 @@ package com.enterprise.app.presentation.controller.v1;
 import com.enterprise.app.application.dto.CreateFormationRequest;
 import com.enterprise.app.application.dto.UpdateFormationRequest;
 import com.enterprise.app.domain.model.Formation;
+import com.enterprise.app.testing.fixtures.FormationFixtures;
 import com.enterprise.app.domain.model.FormationStatut;
 import com.enterprise.app.domain.model.ModaliteFormation;
 import com.enterprise.app.infrastructure.persistence.JpaFormationRepository;
@@ -26,8 +27,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.UUID;
 
+import static com.enterprise.app.domain.model.ModaliteFormation.EN_LIGNE;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -81,8 +82,8 @@ class FormationControllerIntegrationTest {
                 .dateFormation(LocalDate.now().plusDays(30))
                 .heureDebut(LocalTime.of(9, 0))
                 .heureFin(LocalTime.of(17, 0))
-                .secteur("Informatique")
-                .region("Île-de-France")
+                .secteur(FormationFixtures.SECTEUR_MSA)
+                .region(FormationFixtures.REGION_IDF)
                 .modalite(ModaliteFormation.PRESENTIEL)
                 .nbParticipants(20)
                 .lieu("Centre de formation")
@@ -96,8 +97,8 @@ class FormationControllerIntegrationTest {
                 .dateFormation(LocalDate.now().plusDays(15))
                 .heureDebut(LocalTime.of(10, 0))
                 .heureFin(LocalTime.of(18, 0))
-                .secteur("Informatique")
-                .region("Auvergne-Rhône-Alpes")
+                .secteurId(FormationFixtures.SECTEUR_MSA.getId())
+                .regionId(FormationFixtures.REGION_AURA.getId())
                 .modalite(ModaliteFormation.PRESENTIEL)
                 .nbParticipants(15)
                 .lieu("Campus universitaire")
@@ -128,18 +129,18 @@ class FormationControllerIntegrationTest {
     @DisplayName("Should filter formations by secteur")
     void getAllFormations_ShouldFilterBySecteur() throws Exception {
         // Given
-        Formation formation1 = formation.toBuilder().secteur("Informatique").build();
-        Formation formation2 = formation.toBuilder().secteur("Marketing").libelle("Formation Marketing").build();
+        Formation formation1 = formation.toBuilder().secteur(FormationFixtures.SECTEUR_MSA).build();
+        Formation formation2 = formation.toBuilder().secteur(FormationFixtures.SECTEUR_RG).libelle("Formation Marketing").build();
 
         formationRepository.save(formation1);
         formationRepository.save(formation2);
 
         // When & Then
         mockMvc.perform(get("/api/v1/formations")
-                .param("secteur", "Informatique"))
+                .param("secteurId", FormationFixtures.SECTEUR_MSA.getId().toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
-                .andExpect(jsonPath("$.content[0].secteur").value("Informatique"));
+                .andExpect(jsonPath("$.content[0].secteur.nom").value("Informatique"));
     }
 
     @Test
@@ -147,18 +148,18 @@ class FormationControllerIntegrationTest {
     @DisplayName("Should filter formations by region")
     void getAllFormations_ShouldFilterByRegion() throws Exception {
         // Given
-        Formation formation1 = formation.toBuilder().region("Île-de-France").build();
-        Formation formation2 = formation.toBuilder().region("Auvergne-Rhône-Alpes").libelle("Formation Lyon").build();
+        Formation formation1 = formation.toBuilder().region(FormationFixtures.REGION_IDF).build();
+        Formation formation2 = formation.toBuilder().region(FormationFixtures.REGION_AURA).libelle("Formation Lyon").build();
 
         formationRepository.save(formation1);
         formationRepository.save(formation2);
 
         // When & Then
         mockMvc.perform(get("/api/v1/formations")
-                .param("region", "Île-de-France"))
+                .param("regionId", FormationFixtures.REGION_IDF.getId().toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
-                .andExpect(jsonPath("$.content[0].region").value("Île-de-France"));
+                .andExpect(jsonPath("$.content[0].region.nom").value("Île-de-France"));
     }
 
     @Test
@@ -168,7 +169,7 @@ class FormationControllerIntegrationTest {
         // Given
         Formation formation1 = formation.toBuilder().modalite(ModaliteFormation.PRESENTIEL).build();
         Formation formation2 = formation.toBuilder()
-                .modalite(ModaliteFormation.EN_LIGNE)
+                .modalite(EN_LIGNE)
                 .libelle("Formation en ligne")
                 .lieu(null)
                 .ville(null)
@@ -196,7 +197,7 @@ class FormationControllerIntegrationTest {
         // When & Then
         mockMvc.perform(get("/api/v1/formations/{id}", savedFormation.getId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(savedFormation.getId().toString()))
+                .andExpect(jsonPath("$.id").value(savedFormation.getId()))
                 .andExpect(jsonPath("$.libelle").value("Formation Spring Boot"))
                 .andExpect(jsonPath("$.formateurs").value("Expert Spring"))
                 .andExpect(jsonPath("$.modalite").value("PRESENTIEL"));
@@ -207,7 +208,7 @@ class FormationControllerIntegrationTest {
     @DisplayName("Should return 404 when formation not found")
     void getFormationById_ShouldReturn404_WhenNotFound() throws Exception {
         // Given
-        UUID nonExistentId = UUID.randomUUID();
+        Long nonExistentId = 999L;
 
         // When & Then
         mockMvc.perform(get("/api/v1/formations/{id}", nonExistentId))
@@ -277,9 +278,9 @@ class FormationControllerIntegrationTest {
                 .dateFormation(LocalDate.now().plusDays(45))
                 .heureDebut(LocalTime.of(8, 30))
                 .heureFin(LocalTime.of(17, 30))
-                .secteur("Informatique")
-                .region("Île-de-France")
-                .modalite(ModaliteFormation.HYBRIDE)
+                .secteurId(FormationFixtures.SECTEUR_MSA.getId())
+                .regionId(FormationFixtures.REGION_IDF.getId())
+                .modalite(EN_LIGNE)
                 .nbParticipants(25)
                 .lieu("Nouveau centre")
                 .ville("Paris")
@@ -294,7 +295,7 @@ class FormationControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.libelle").value("Formation Spring Boot Avancée"))
                 .andExpect(jsonPath("$.formateurs").value("Expert Spring Senior"))
-                .andExpect(jsonPath("$.modalite").value("HYBRIDE"));
+                .andExpect(jsonPath("$.modalite").value(EN_LIGNE));
     }
 
     @Test
@@ -344,55 +345,14 @@ class FormationControllerIntegrationTest {
     @DisplayName("Should handle complex filtering scenarios")
     void getAllFormations_ShouldHandleComplexFiltering() throws Exception {
         // Given
-        Formation formation1 = Formation.builder()
-                .libelle("Formation Java")
-                .formateurs("Expert Java")
-                .dateFormation(LocalDate.now().plusDays(10))
-                .heureDebut(LocalTime.of(9, 0))
-                .heureFin(LocalTime.of(17, 0))
-                .secteur("Informatique")
-                .region("Île-de-France")
-                .modalite(ModaliteFormation.PRESENTIEL)
-                .nbParticipants(20)
-                .lieu("Paris")
-                .ville("Paris")
-                .build();
-
-        Formation formation2 = Formation.builder()
-                .libelle("Formation Python")
-                .formateurs("Expert Python")
-                .dateFormation(LocalDate.now().plusDays(20))
-                .heureDebut(LocalTime.of(9, 0))
-                .heureFin(LocalTime.of(17, 0))
-                .secteur("Informatique")
-                .region("Auvergne-Rhône-Alpes")
-                .modalite(ModaliteFormation.EN_LIGNE)
-                .nbParticipants(15)
-                .lienParticipation("https://python.example.com")
-                .build();
-
-        Formation formation3 = Formation.builder()
-                .libelle("Formation Marketing")
-                .formateurs("Expert Marketing")
-                .dateFormation(LocalDate.now().plusDays(15))
-                .heureDebut(LocalTime.of(10, 0))
-                .heureFin(LocalTime.of(16, 0))
-                .secteur("Marketing")
-                .region("Île-de-France")
-                .modalite(ModaliteFormation.PRESENTIEL)
-                .nbParticipants(12)
-                .lieu("Paris")
-                .ville("Paris")
-                .build();
-
-        formationRepository.save(formation1);
-        formationRepository.save(formation2);
-        formationRepository.save(formation3);
+        formationRepository.save(FormationFixtures.defaultFormationPresentiel());
+        formationRepository.save(FormationFixtures.tirageAuSortRU());
+        formationRepository.save(FormationFixtures.tirageAuSortEnLigneRG());
 
         // When & Then - Filter by secteur and region
         mockMvc.perform(get("/api/v1/formations")
-                .param("secteur", "Informatique")
-                .param("region", "Île-de-France"))
+                .param("secteurId", FormationFixtures.SECTEUR_MSA.getId().toString())
+                .param("regionId", FormationFixtures.REGION_IDF.getId().toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.content[0].libelle").value("Formation Java"));

@@ -9,13 +9,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.UUID;
 
 /**
  * JPA Repository for BatchImport entities.
  */
 @Repository
-public interface BatchImportRepository extends JpaRepository<BatchImport, UUID> {
+public interface BatchImportRepository extends JpaRepository<BatchImport, Long> {
 
     /**
      * Find batch imports by status.
@@ -26,7 +25,7 @@ public interface BatchImportRepository extends JpaRepository<BatchImport, UUID> 
      * Find batch imports by initiated user with pagination.
      */
     @Query("SELECT bi FROM BatchImport bi WHERE bi.initiatedBy.id = :userId")
-    Page<BatchImport> findByInitiatedByUserId(UUID userId, Pageable pageable);
+    Page<BatchImport> findByInitiatedByUserId(Long userId, Pageable pageable);
 
     /**
      * Find all batch imports ordered by creation date descending.

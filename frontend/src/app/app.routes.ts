@@ -46,6 +46,13 @@ export const routes: Routes = [
     title: 'Audit',
   },
   {
+    path: 'formations',
+    loadChildren: () => import('./features/formations/formations.routes').then(m => m.FORMATIONS_ROUTES),
+    canActivate: [authGuard],
+    data: { roles: ['ADMIN', 'MANAGER', 'TECH_LEAD'] },
+    title: 'Formations',
+  },
+  {
     path: 'unauthorized',
     loadComponent: () =>
       import('./features/auth/pages/unauthorized/unauthorized.component').then(

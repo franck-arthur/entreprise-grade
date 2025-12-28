@@ -11,29 +11,24 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
-public interface JpaFormationParticipationRepository extends JpaRepository<FormationParticipation, UUID> {
+public interface JpaFormationParticipationRepository extends JpaRepository<FormationParticipation, Long> {
 
-    Optional<FormationParticipation> findByFormationIdAndUserId(UUID formationId, UUID userId);
+    Optional<FormationParticipation> findByFormationIdAndUserId(Long formationId, Long userId);
 
-    List<FormationParticipation> findByFormationId(UUID formationId);
+    List<FormationParticipation> findByFormationId(Long formationId);
 
-    List<FormationParticipation> findByFormationIdAndStatutParticipation(UUID formationId, StatutParticipation statut);
+    List<FormationParticipation> findByFormationIdAndStatutParticipation(Long formationId, StatutParticipation statut);
 
-    Page<FormationParticipation> findByUserId(UUID userId, Pageable pageable);
+    Page<FormationParticipation> findByUserIdAndStatutParticipation(Long userId, StatutParticipation statut, Pageable pageable);
 
-    Page<FormationParticipation> findByUserIdAndStatutParticipation(UUID userId, StatutParticipation statut, Pageable pageable);
+    void deleteByFormationIdAndUserId(Long formationId, Long userId);
 
-    void deleteByFormationIdAndUserId(UUID formationId, UUID userId);
+    boolean existsByFormationIdAndUserId(Long formationId, Long userId);
 
-    boolean existsByFormationIdAndUserId(UUID formationId, UUID userId);
-
-    int countByFormationIdAndStatutParticipation(UUID formationId, StatutParticipation statut);
+    int countByFormationIdAndStatutParticipation(Long formationId, StatutParticipation statut);
 
     @Query("SELECT COUNT(fp) FROM FormationParticipation fp WHERE fp.formation.id = :formationId")
-    int countByFormationIdExcludingCancelled(@Param("formationId") UUID formationId);
-
-    int countByFormationId(UUID formationId);
+    int countByFormationIdExcludingCancelled(@Param("formationId") Long formationId);
 }

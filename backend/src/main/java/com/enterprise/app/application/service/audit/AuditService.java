@@ -55,7 +55,7 @@ public class AuditService {
             .userId(performedBy != null ? performedBy.getId() : null)
             .username(performedBy != null ? performedBy.getUsername() : "system")
             .targetEntityType("User")
-            .targetEntityId(targetUser.getId())
+            .targetEntityId((targetUser.getId()))
             .targetEntityName(targetUser.getUsername())
             .success(success)
             .details("User updated: " + targetUser.getUsername())
@@ -67,13 +67,13 @@ public class AuditService {
     /**
      * Audit user deletion.
      */
-    public void auditUserDeletion(User performedBy, UUID targetUserId, String targetUsername, boolean success) {
+    public void auditUserDeletion(User performedBy, Long targetUserId, String targetUsername, boolean success) {
         CreateAuditEventCommand command = CreateAuditEventCommand.builder()
             .eventType(AuditEventType.USER_DELETED)
-            .userId(performedBy != null ? performedBy.getId() : null)
+            .userId(performedBy != null ? (performedBy.getId()) : null)
             .username(performedBy != null ? performedBy.getUsername() : "system")
             .targetEntityType("User")
-            .targetEntityId(targetUserId)
+            .targetEntityId((targetUserId))
             .targetEntityName(targetUsername)
             .success(success)
             .details("User deleted: " + targetUsername)
@@ -88,10 +88,10 @@ public class AuditService {
     public void auditUserActivation(User performedBy, User targetUser) {
         CreateAuditEventCommand command = CreateAuditEventCommand.builder()
             .eventType(AuditEventType.USER_ACTIVATED)
-            .userId(performedBy != null ? performedBy.getId() : null)
+            .userId(performedBy != null ? (performedBy.getId()) : null)
             .username(performedBy != null ? performedBy.getUsername() : "system")
             .targetEntityType("User")
-            .targetEntityId(targetUser.getId())
+            .targetEntityId((targetUser.getId()))
             .targetEntityName(targetUser.getUsername())
             .success(true)
             .details("User activated: " + targetUser.getUsername())
@@ -106,10 +106,10 @@ public class AuditService {
     public void auditUserDeactivation(User performedBy, User targetUser) {
         CreateAuditEventCommand command = CreateAuditEventCommand.builder()
             .eventType(AuditEventType.USER_DEACTIVATED)
-            .userId(performedBy != null ? performedBy.getId() : null)
+            .userId(performedBy != null ? (performedBy.getId()) : null)
             .username(performedBy != null ? performedBy.getUsername() : "system")
             .targetEntityType("User")
-            .targetEntityId(targetUser.getId())
+            .targetEntityId((targetUser.getId()))
             .targetEntityName(targetUser.getUsername())
             .success(true)
             .details("User deactivated: " + targetUser.getUsername())
@@ -142,7 +142,7 @@ public class AuditService {
     public void auditLogout(User user, String ipAddress) {
         CreateAuditEventCommand command = CreateAuditEventCommand.builder()
             .eventType(AuditEventType.LOGOUT)
-            .userId(user.getId())
+            .userId((user.getId()))
             .username(user.getUsername())
             .ipAddress(ipAddress)
             .success(true)
@@ -156,14 +156,14 @@ public class AuditService {
      * Audit batch import start.
      */
     public void auditBatchImportStarted(
-        User initiatedBy, UUID batchImportId, String fileName
+        User initiatedBy, Long batchImportId, String fileName
     ) {
         CreateAuditEventCommand command = CreateAuditEventCommand.builder()
             .eventType(AuditEventType.BATCH_IMPORT_STARTED)
-            .userId(initiatedBy.getId())
+            .userId((initiatedBy.getId()))
             .username(initiatedBy.getUsername())
             .targetEntityType("BatchImport")
-            .targetEntityId(batchImportId)
+            .targetEntityId((batchImportId))
             .targetEntityName(fileName)
             .success(true)
             .details("Batch import started: " + fileName)
@@ -176,15 +176,15 @@ public class AuditService {
      * Audit batch import completion.
      */
     public void auditBatchImportCompleted(
-        User initiatedBy, UUID batchImportId, String fileName,
+        User initiatedBy, Long batchImportId, String fileName,
         int successCount, int failedCount
     ) {
         CreateAuditEventCommand command = CreateAuditEventCommand.builder()
             .eventType(AuditEventType.BATCH_IMPORT_COMPLETED)
-            .userId(initiatedBy.getId())
+            .userId((initiatedBy.getId()))
             .username(initiatedBy.getUsername())
             .targetEntityType("BatchImport")
-            .targetEntityId(batchImportId)
+            .targetEntityId((batchImportId))
             .targetEntityName(fileName)
             .success(true)
             .details(String.format("Batch import completed: %s (Success: %d, Failed: %d)",
@@ -198,14 +198,14 @@ public class AuditService {
      * Audit batch import failure.
      */
     public void auditBatchImportFailed(
-        User initiatedBy, UUID batchImportId, String fileName, String errorMessage
+        User initiatedBy, Long batchImportId, String fileName, String errorMessage
     ) {
         CreateAuditEventCommand command = CreateAuditEventCommand.builder()
             .eventType(AuditEventType.BATCH_IMPORT_FAILED)
-            .userId(initiatedBy.getId())
+            .userId((initiatedBy.getId()))
             .username(initiatedBy.getUsername())
             .targetEntityType("BatchImport")
-            .targetEntityId(batchImportId)
+            .targetEntityId((batchImportId))
             .targetEntityName(fileName)
             .success(false)
             .errorMessage(errorMessage)
@@ -240,7 +240,7 @@ public class AuditService {
     ) {
         CreateAuditEventCommand command = CreateAuditEventCommand.builder()
             .eventType(AuditEventType.FORBIDDEN_ACCESS)
-            .userId(user != null ? user.getId() : null)
+            .userId(user != null ? (user.getId()) : null)
             .username(user != null ? user.getUsername() : "unknown")
             .ipAddress(ipAddress)
             .success(false)
@@ -271,7 +271,7 @@ public class AuditService {
         AuditEventType eventType,
         User performedBy,
         String targetEntityType,
-        UUID targetEntityId,
+        Long targetEntityId,
         String targetEntityName,
         boolean success,
         String details,
@@ -279,10 +279,10 @@ public class AuditService {
     ) {
         CreateAuditEventCommand command = CreateAuditEventCommand.builder()
             .eventType(eventType)
-            .userId(performedBy != null ? performedBy.getId() : null)
+            .userId(performedBy != null ? (performedBy.getId()) : null)
             .username(performedBy != null ? performedBy.getUsername() : "system")
             .targetEntityType(targetEntityType)
-            .targetEntityId(targetEntityId)
+            .targetEntityId((targetEntityId))
             .targetEntityName(targetEntityName)
             .success(success)
             .details(details)
@@ -290,5 +290,16 @@ public class AuditService {
             .build();
 
         commandService.recordEvent(command);
+    }
+
+    /**
+     * Convert Long ID to UUID for audit command compatibility.
+     */
+    private UUID convertLongToUUID(Long id) {
+        if (id == null) {
+            return null;
+        }
+        // Convert Long to UUID using a deterministic approach
+        return new UUID(0L, id);
     }
 }

@@ -9,7 +9,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -87,15 +86,14 @@ public class FormationTestHelper {
             jsonPath("$.formateurs").value(formationDTO.getFormateurs()),
             jsonPath("$.modalite").value(formationDTO.getModalite().toString()),
             jsonPath("$.statut").value(formationDTO.getStatut().toString()),
-            jsonPath("$.nbParticipantsInscrits").value(formationDTO.getNbParticipantsInscrits()),
-            jsonPath("$.complet").value(formationDTO.isComplet())
+            jsonPath("$.nbParticipantsInscrits").value(formationDTO.getNbParticipantsInscrits())
         };
     }
 
     /**
      * Vérifie les interactions standard avec le service Formation (lecture seule).
      */
-    public static void verifyStandardFormationServiceCall(FormationService service, UUID formationId) {
+    public static void verifyStandardFormationServiceCall(FormationService service, Long formationId) {
         verify(service).getFormationById(formationId);
         verifyNoMoreInteractions(service);
     }
@@ -111,7 +109,7 @@ public class FormationTestHelper {
     /**
      * Vérifie les interactions standard de mise à jour avec le service Formation.
      */
-    public static void verifyStandardUpdateServiceCall(FormationService service, UUID formationId) {
+    public static void verifyStandardUpdateServiceCall(FormationService service, Long formationId) {
         verify(service).getFormationById(formationId);
         verify(service).updateFormation(org.mockito.ArgumentMatchers.eq(formationId),
                                        org.mockito.ArgumentMatchers.any(Formation.class));
@@ -174,17 +172,6 @@ public class FormationTestHelper {
     public static void assertFormationEnLigneIsValid(Formation formation) {
         assertFormationIsValid(formation);
         assertThat(formation.getModalite()).isEqualTo(com.enterprise.app.domain.model.ModaliteFormation.EN_LIGNE);
-        assertThat(formation.getLienParticipation()).isNotBlank();
-    }
-
-    /**
-     * Vérifie qu'une formation respecte les règles de modalité hybride.
-     */
-    public static void assertFormationHybrideIsValid(Formation formation) {
-        assertFormationIsValid(formation);
-        assertThat(formation.getModalite()).isEqualTo(com.enterprise.app.domain.model.ModaliteFormation.HYBRIDE);
-        assertThat(formation.getLieu()).isNotBlank();
-        assertThat(formation.getVille()).isNotBlank();
         assertThat(formation.getLienParticipation()).isNotBlank();
     }
 
