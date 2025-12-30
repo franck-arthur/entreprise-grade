@@ -7,6 +7,7 @@ import com.enterprise.app.application.service.FormationService;
 import com.enterprise.app.domain.model.*;
 import com.enterprise.app.testing.fixtures.FormationParticipationFixtures;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -66,6 +67,7 @@ class FormationControllerMockitoTest {
     }
 
     @Test
+    @DisplayName("Doit retourner les formations paginées")
     void getAllFormations_ShouldReturnPaginatedFormations() {
         // Given
         Page<Formation> expectedPage = new PageImpl<>(Collections.singletonList(formation), pageable, 1);
@@ -89,6 +91,7 @@ class FormationControllerMockitoTest {
     }
 
     @Test
+    @DisplayName("Doit retourner toutes les formations avec des filtres nuls")
     void getAllFormations_WithNullFilters_ShouldReturnAllFormations() {
         // Given
         Page<Formation> projectionPage = new PageImpl<>(Collections.singletonList(formation), pageable, 1);
@@ -107,6 +110,7 @@ class FormationControllerMockitoTest {
     }
 
     @Test
+    @DisplayName("Doit retourner une formation quand elle existe")
     void getFormationById_ShouldReturnFormation_WhenExists() {
         // Given
         when(formationService.getFormationById(formationId)).thenReturn(formation);
@@ -124,6 +128,7 @@ class FormationControllerMockitoTest {
     }
 
     @Test
+    @DisplayName("Doit retourner la formation créée avec une requête valide")
     void createFormation_ShouldReturnCreatedFormation_WhenValidRequest() {
         // Given
         ArgumentCaptor<Formation> captor = ArgumentCaptor.forClass(Formation.class);
@@ -157,6 +162,7 @@ class FormationControllerMockitoTest {
     }
 
     @Test
+    @DisplayName("Doit retourner la formation mise à jour avec une requête valide")
     void updateFormation_ShouldReturnUpdatedFormation_WhenValidRequest() {
         // Given
         Formation updatedFormation = formation.toBuilder()
@@ -186,6 +192,7 @@ class FormationControllerMockitoTest {
     }
 
     @Test
+    @DisplayName("Doit retourner aucun contenu quand la formation existe")
     void deleteFormation_ShouldReturnNoContent_WhenFormationExists() {
         // Given
         doNothing().when(formationService).deleteFormation(formationId);
@@ -201,6 +208,7 @@ class FormationControllerMockitoTest {
     }
 
     @Test
+    @DisplayName("Doit retourner la liste des participants de la formation")
     void getFormationParticipants_ShouldReturnParticipantsList() {
         FormationParticipation participation = FormationParticipationFixtures.defaultParticipation();
 
@@ -225,6 +233,7 @@ class FormationControllerMockitoTest {
     }
 
     @Test
+    @DisplayName("Doit retourner une liste vide quand il n'y a pas de participants")
     void getFormationParticipants_ShouldReturnEmptyList_WhenNoParticipants() {
         // Given
         when(formationService.getParticipantsFormation(formationId)).thenReturn(List.of());

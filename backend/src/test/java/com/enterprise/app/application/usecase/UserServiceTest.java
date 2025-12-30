@@ -31,7 +31,7 @@ import static org.mockito.Mockito.*;
  * Unit tests for UserService.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("UserService Tests")
+@DisplayName("Tests UserService")
 class UserServiceTest {
 
     @Mock
@@ -91,7 +91,7 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Should get user by ID successfully")
+    @DisplayName("Doit récupérer un utilisateur par ID avec succès")
     void shouldGetUserById() {
         // Given
         when(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser));
@@ -110,7 +110,7 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Should throw ResourceNotFoundException when user not found")
+    @DisplayName("Doit lancer une ResourceNotFoundException quand l'utilisateur n'est pas trouvé")
     void shouldThrowExceptionWhenUserNotFound() {
         // Given
         Long nonExistentId = 999L;
@@ -126,7 +126,7 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Should create user successfully")
+    @DisplayName("Doit créer un utilisateur avec succès")
     void shouldCreateUser() {
         // Given
         when(userRepository.existsByEmail(createRequest.getEmail())).thenReturn(false);
@@ -151,7 +151,7 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Should throw DuplicateResourceException when email exists")
+    @DisplayName("Doit lancer une DuplicateResourceException quand l'email existe")
     void shouldThrowExceptionWhenEmailExists() {
         // Given
         when(userRepository.existsByEmail(createRequest.getEmail())).thenReturn(true);
@@ -167,7 +167,7 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Should update user successfully")
+    @DisplayName("Doit mettre à jour un utilisateur avec succès")
     void shouldUpdateUser() {
         // Given
         UpdateUserRequest updateRequest = UpdateUserRequest.builder()
@@ -195,7 +195,7 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Should delete user successfully")
+    @DisplayName("Doit supprimer un utilisateur avec succès")
     void shouldDeleteUser() {
         // Given
         when(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser));
@@ -212,7 +212,7 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Should activate user successfully")
+    @DisplayName("Doit activer un utilisateur avec succès")
     void shouldActivateUser() {
         // Given
         testUser.setActive(false);
@@ -233,7 +233,7 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Should deactivate user successfully")
+    @DisplayName("Doit désactiver un utilisateur avec succès")
     void shouldDeactivateUser() {
         // Given
         when(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser));

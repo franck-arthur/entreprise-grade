@@ -29,7 +29,7 @@ import static org.mockito.Mockito.*;
  * Unit tests for StorageService.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("StorageService Tests")
+@DisplayName("Tests StorageService")
 class StorageServiceTest {
 
     @Mock
@@ -63,7 +63,7 @@ class StorageServiceTest {
     }
 
     @Test
-    @DisplayName("Should upload file successfully with folder")
+    @DisplayName("Doit uploader un fichier avec succès dans un dossier")
     void shouldUploadFileSuccessfullyWithFolder() {
         // Given
         String folder = "documents";
@@ -82,7 +82,7 @@ class StorageServiceTest {
     }
 
     @Test
-    @DisplayName("Should upload file successfully without folder")
+    @DisplayName("Doit uploader un fichier avec succès sans dossier")
     void shouldUploadFileSuccessfullyWithoutFolder() {
         // Given
         when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
@@ -99,7 +99,7 @@ class StorageServiceTest {
     }
 
     @Test
-    @DisplayName("Should throw exception when upload fails")
+    @DisplayName("Doit lancer une exception quand l'upload échoue")
     void shouldThrowExceptionWhenUploadFails() {
         // Given
         when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
@@ -112,7 +112,7 @@ class StorageServiceTest {
     }
 
     @Test
-    @DisplayName("Should download file successfully")
+    @DisplayName("Doit télécharger un fichier avec succès")
     void shouldDownloadFileSuccessfully() {
         // Given
         byte[] testContent = "Test content".getBytes();
@@ -134,7 +134,7 @@ class StorageServiceTest {
     }
 
     @Test
-    @DisplayName("Should throw exception when download fails")
+    @DisplayName("Doit lancer une exception quand le téléchargement échoue")
     void shouldThrowExceptionWhenDownloadFails() {
         // Given
         when(s3Client.getObject(any(GetObjectRequest.class)))
@@ -147,7 +147,7 @@ class StorageServiceTest {
     }
 
     @Test
-    @DisplayName("Should delete file successfully")
+    @DisplayName("Doit supprimer un fichier avec succès")
     void shouldDeleteFileSuccessfully() {
         // Given
         when(s3Client.deleteObject(any(DeleteObjectRequest.class)))
@@ -161,7 +161,7 @@ class StorageServiceTest {
     }
 
     @Test
-    @DisplayName("Should throw exception when delete fails")
+    @DisplayName("Doit lancer une exception quand la suppression échoue")
     void shouldThrowExceptionWhenDeleteFails() {
         // Given
         when(s3Client.deleteObject(any(DeleteObjectRequest.class)))
@@ -174,7 +174,7 @@ class StorageServiceTest {
     }
 
     @Test
-    @DisplayName("Should list files in folder successfully")
+    @DisplayName("Doit lister les fichiers dans un dossier avec succès")
     void shouldListFilesInFolderSuccessfully() {
         // Given
         String folder = "documents";
@@ -200,7 +200,7 @@ class StorageServiceTest {
     }
 
     @Test
-    @DisplayName("Should list all files successfully")
+    @DisplayName("Doit lister tous les fichiers avec succès")
     void shouldListAllFilesSuccessfully() {
         // Given
         S3Object object1 = S3Object.builder().key("file1.txt").build();
@@ -223,7 +223,7 @@ class StorageServiceTest {
     }
 
     @Test
-    @DisplayName("Should get file metadata successfully")
+    @DisplayName("Doit récupérer les métadonnées de fichier avec succès")
     void shouldGetFileMetadataSuccessfully() {
         // Given
         HeadObjectResponse metadata = HeadObjectResponse.builder()
@@ -244,7 +244,7 @@ class StorageServiceTest {
     }
 
     @Test
-    @DisplayName("Should return true when file exists")
+    @DisplayName("Doit retourner vrai quand le fichier existe")
     void shouldReturnTrueWhenFileExists() {
         // Given
         HeadObjectResponse metadata = HeadObjectResponse.builder().build();
@@ -259,7 +259,7 @@ class StorageServiceTest {
     }
 
     @Test
-    @DisplayName("Should return false when file does not exist")
+    @DisplayName("Doit retourner faux quand le fichier n'existe pas")
     void shouldReturnFalseWhenFileDoesNotExist() {
         // Given
         when(s3Client.headObject(any(HeadObjectRequest.class)))
@@ -273,7 +273,7 @@ class StorageServiceTest {
     }
 
     @Test
-    @DisplayName("Should clean filename properly")
+    @DisplayName("Doit nettoyer le nom de fichier correctement")
     void shouldCleanFilenameProperly() {
         // Given
         MockMultipartFile fileWithSpecialChars = new MockMultipartFile(

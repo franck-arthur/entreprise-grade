@@ -14,7 +14,6 @@ import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.Arrays;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -240,13 +239,93 @@ public class TechnicalLoggingAspect {
     private Method getMethod(JoinPoint joinPoint) {
         try {
             String methodName = joinPoint.getSignature().getName();
-            Class<?>[] paramTypes = Arrays.stream(joinPoint.getArgs())
-                .map(arg -> arg != null ? arg.getClass() : Object.class)
-                .toArray(Class<?>[]::new);
-            return joinPoint.getTarget().getClass().getMethod(methodName, paramTypes);
-        } catch (NoSuchMethodException e) {
+            Class<?> targetClass = joinPoint.getTarget().getClass();
+
+            // Première tentative : utiliser la signature exacte si disponible
+            if (joinPoint.getSignature() instanceof org.aspectj.lang.reflect.MethodSignature) {
+                org.aspectj.lang.reflect.MethodSignature methodSignature =
+                    (org.aspectj.lang.reflect.MethodSignature) joinPoint.getSignature();
+                return methodSignature.getMethod();
+            }
+
+            // Deuxième tentative : rechercher par nom et nombre de paramètres
+            Object[] args = joinPoint.getArgs();
+            Method[] methods = targetClass.getMethods();
+
+            for (Method method : methods) {
+                if (method.getName().equals(methodName) &&
+                    method.getParameterCount() == args.length) {
+
+                    // Vérifier la compatibilité des types de paramètres
+                    if (isMethodCompatible(method, args)) {
+                        return method;
+                    }
+                }
+            }
+
+            return null;
+        } catch (Exception e) {
+            log.debug("Could not resolve method for logging aspect: {}", e.getMessage());
             return null;
         }
+    }
+
+    /**
+     * Vérifie si une méthode est compatible avec les arguments fournis.
+     */
+    private boolean isMethodCompatible(Method method, Object[] args) {
+        Class<?>[] paramTypes = method.getParameterTypes();
+
+        if (paramTypes.length != args.length) {
+            return false;
+        }
+
+        for (int i = 0; i < paramTypes.length; i++) {
+            Object arg = args[i];
+            Class<?> paramType = paramTypes[i];
+
+            // null est compatible avec tous les types non-primitifs
+            if (arg == null) {
+                if (paramType.isPrimitive()) {
+                    return false;
+                }
+                continue;
+            }
+
+            // Vérifier la compatibilité de type (incluant l'héritage)
+            if (!paramType.isAssignableFrom(arg.getClass()) &&
+                !isBoxingCompatible(paramType, arg.getClass())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Vérifie la compatibilité entre types primitifs et leurs wrappers.
+     */
+    private boolean isBoxingCompatible(Class<?> paramType, Class<?> argType) {
+        if (paramType.isPrimitive()) {
+            if (paramType == int.class && argType == Integer.class) return true;
+            if (paramType == long.class && argType == Long.class) return true;
+            if (paramType == boolean.class && argType == Boolean.class) return true;
+            if (paramType == double.class && argType == Double.class) return true;
+            if (paramType == float.class && argType == Float.class) return true;
+            if (paramType == short.class && argType == Short.class) return true;
+            if (paramType == byte.class && argType == Byte.class) return true;
+            if (paramType == char.class && argType == Character.class) return true;
+        } else if (argType.isPrimitive()) {
+            if (argType == int.class && paramType == Integer.class) return true;
+            if (argType == long.class && paramType == Long.class) return true;
+            if (argType == boolean.class && paramType == Boolean.class) return true;
+            if (argType == double.class && paramType == Double.class) return true;
+            if (argType == float.class && paramType == Float.class) return true;
+            if (argType == short.class && paramType == Short.class) return true;
+            if (argType == byte.class && paramType == Byte.class) return true;
+            if (argType == char.class && paramType == Character.class) return true;
+        }
+        return false;
     }
 
     /**

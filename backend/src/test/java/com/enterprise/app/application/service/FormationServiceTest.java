@@ -12,6 +12,7 @@ import com.enterprise.app.domain.repository.RegionRepository;
 import com.enterprise.app.testing.fixtures.FormationParticipationFixtures;
 import com.enterprise.app.testing.fixtures.UserFixtures;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -66,6 +67,7 @@ class FormationServiceTest {
     }
 
     @Test
+    @DisplayName("Doit retourner une formation quand elle existe")
     void getFormationById_ShouldReturnFormation_WhenFormationExists() {
         // Given
         when(formationRepository.findById(formationId)).thenReturn(Optional.of(formation));
@@ -79,6 +81,7 @@ class FormationServiceTest {
     }
 
     @Test
+    @DisplayName("Doit lancer une exception quand la formation n'est pas trouvée")
     void getFormationById_ShouldThrowException_WhenFormationNotFound() {
         // Given
         when(formationRepository.findById(formationId)).thenReturn(Optional.empty());
@@ -90,6 +93,7 @@ class FormationServiceTest {
     }
 
     @Test
+    @DisplayName("Doit sauvegarder et retourner une formation lors de la création")
     void createFormation_ShouldSaveAndReturnFormation() {
         // Given
         when(formationRepository.save(formation)).thenReturn(formation);
@@ -103,6 +107,7 @@ class FormationServiceTest {
     }
 
     @Test
+    @DisplayName("Doit créer une participation quand l'inscription est valide")
     void inscrireUtilisateur_ShouldCreateParticipation_WhenValid() {
         // Given
         when(formationRepository.findById(formationId)).thenReturn(Optional.of(formation));
@@ -131,6 +136,7 @@ class FormationServiceTest {
     }
 
     @Test
+    @DisplayName("Doit lancer une exception quand l'utilisateur est déjà inscrit")
     void inscrireUtilisateur_ShouldThrowException_WhenUserAlreadyRegistered() {
         // Given
         when(formationRepository.findById(formationId)).thenReturn(Optional.of(formation));
@@ -144,6 +150,7 @@ class FormationServiceTest {
     }
 
     @Test
+    @DisplayName("Doit lancer une exception quand la formation est complète")
     void inscrireUtilisateur_ShouldThrowException_WhenFormationIsFull() {
         // Given
         when(formationRepository.findById(formationId)).thenReturn(Optional.of(formation));
@@ -158,6 +165,7 @@ class FormationServiceTest {
     }
 
     @Test
+    @DisplayName("Doit mettre à jour la présence et la date utilisateur quand présent")
     void marquerPresence_ShouldUpdatePresenceAndUserDate_WhenPresent() {
         // Given
         FormationParticipation participation = FormationParticipationFixtures.participationPresent();
@@ -178,6 +186,7 @@ class FormationServiceTest {
     }
 
     @Test
+    @DisplayName("Doit mettre à jour l'absence et réinitialiser la date utilisateur quand absent")
     void marquerPresence_ShouldUpdateAbsenceAndResetUserDate_WhenAbsent() {
         // Given
         FormationParticipation participation = FormationParticipationFixtures.participationPresent();
@@ -200,6 +209,7 @@ class FormationServiceTest {
     }
 
     @Test
+    @DisplayName("Doit lancer une exception quand la formation est terminée")
     void updateFormation_ShouldThrowException_WhenFormationIsFinished() {
         // Given
         Formation finishedFormation = tirageAuSortSecretaireEnCours().toBuilder()
@@ -215,6 +225,7 @@ class FormationServiceTest {
     }
 
     @Test
+    @DisplayName("Doit réussir la création d'une formation présentielle avec ville et lieu")
     void createFormation_ShouldSucceed_WhenPresentielWithVilleAndLieu() {
         // Given
         Formation formationPresentiel = defaultFormationPresentiel();
@@ -230,6 +241,7 @@ class FormationServiceTest {
     }
 
     @Test
+    @DisplayName("Doit réussir la création d'une formation en ligne avec lien")
     void createFormation_ShouldSucceed_WhenEnLigneWithLien() {
         // Given
         Formation formationEnLigne = tirageAuSortEnLigneRG();
@@ -245,6 +257,7 @@ class FormationServiceTest {
     }
 
     @Test
+    @DisplayName("Doit lancer une exception quand la formation n'est pas en cours")
     void marquerPresence_ShouldThrowException_WhenFormationNotInProgress() {
         // Given
         FormationParticipation participation = FormationParticipationFixtures.defaultParticipation();
@@ -259,6 +272,7 @@ class FormationServiceTest {
     }
 
     @Test
+    @DisplayName("Doit lancer une exception quand la formation n'est pas à venir")
     void inscrireUtilisateur_ShouldThrowException_WhenFormationNotAVenir() {
         // Given
         Formation formationEnCours = tirageAuSortSecretaireEnCours();
@@ -274,6 +288,7 @@ class FormationServiceTest {
     }
 
     @Test
+    @DisplayName("Doit lancer une exception lors de la désinscription si la formation n'est pas à venir")
     void desinscrireUtilisateur_ShouldThrowException_WhenFormationNotAVenir() {
         // Given
         FormationParticipation participation = FormationParticipationFixtures.participationPresent();

@@ -1,6 +1,7 @@
 package com.enterprise.app.application.service;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -46,6 +47,7 @@ class FileWorkflowBatchServiceTest {
     }
 
     @Test
+    @DisplayName("Doit lancer un job de workflow de fichiers avec succès")
     void launchFileWorkflowJob_ShouldLaunchJobSuccessfully() throws Exception {
         // Given
         String projectName = "test-project";
@@ -68,6 +70,7 @@ class FileWorkflowBatchServiceTest {
     }
 
     @Test
+    @DisplayName("Doit gérer l'exception quand le job est déjà en cours d'exécution")
     void launchFileWorkflowJob_ShouldHandleJobExecutionAlreadyRunningException() throws Exception {
         // Given
         String projectName = "running-project";
@@ -85,6 +88,7 @@ class FileWorkflowBatchServiceTest {
     }
 
     @Test
+    @DisplayName("Doit gérer l'exception lors du redémarrage du job")
     void launchFileWorkflowJob_ShouldHandleJobRestartException() throws Exception {
         // Given
         String projectName = "restart-fail-project";
@@ -102,6 +106,7 @@ class FileWorkflowBatchServiceTest {
     }
 
     @Test
+    @DisplayName("Doit gérer l'exception quand l'instance du job est déjà terminée")
     void launchFileWorkflowJob_ShouldHandleJobInstanceAlreadyCompleteException() throws Exception {
         // Given
         String projectName = "completed-project";
@@ -119,6 +124,7 @@ class FileWorkflowBatchServiceTest {
     }
 
     @Test
+    @DisplayName("Doit gérer l'exception pour des paramètres de job invalides")
     void launchFileWorkflowJob_ShouldHandleJobParametersInvalidException() throws Exception {
         // Given
         String projectName = "invalid-params-project";
@@ -136,6 +142,7 @@ class FileWorkflowBatchServiceTest {
     }
 
     @Test
+    @DisplayName("Doit inclure les paramètres de job corrects")
     void launchFileWorkflowJob_ShouldIncludeCorrectJobParameters() throws Exception {
         // Given
         String projectName = "param-test-project";
@@ -158,6 +165,7 @@ class FileWorkflowBatchServiceTest {
     }
 
     @Test
+    @DisplayName("Doit appeler le lancement de job de workflow de fichiers en mode asynchrone")
     void launchFileWorkflowJobAsync_ShouldCallLaunchFileWorkflowJob() throws Exception {
         // Given
         String projectName = "async-project";
@@ -175,6 +183,7 @@ class FileWorkflowBatchServiceTest {
     }
 
     @Test
+    @DisplayName("Doit retourner un statut inconnu pour l'exécution du job")
     void getJobExecutionStatus_ShouldReturnUnknownStatus() {
         // Given
         Long jobExecutionId = 123L;
@@ -187,6 +196,7 @@ class FileWorkflowBatchServiceTest {
     }
 
     @Test
+    @DisplayName("Doit retourner un message en attente pour le résumé d'exécution du job")
     void getJobExecutionSummary_ShouldReturnPendingMessage() {
         // Given
         Long jobExecutionId = 456L;
@@ -200,6 +210,7 @@ class FileWorkflowBatchServiceTest {
     }
 
     @Test
+    @DisplayName("Doit gérer des noms de fichiers vides")
     void launchFileWorkflowJob_ShouldHandleEmptyFileNames() throws Exception {
         // Given
         String projectName = "empty-files-project";
@@ -220,6 +231,7 @@ class FileWorkflowBatchServiceTest {
     }
 
     @Test
+    @DisplayName("Doit générer des horodatages uniques")
     void launchFileWorkflowJob_ShouldGenerateUniqueTimestamps() throws Exception {
         // Given
         String projectName = "timestamp-project";

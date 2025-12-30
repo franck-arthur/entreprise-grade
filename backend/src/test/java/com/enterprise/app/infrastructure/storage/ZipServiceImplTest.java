@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-@DisplayName("ZipServiceImpl Tests")
+@DisplayName("Tests ZipServiceImpl")
 class ZipServiceImplTest extends BaseUnitTest {
 
     @Mock
@@ -34,7 +34,7 @@ class ZipServiceImplTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should create ZIP from directory successfully")
+    @DisplayName("Doit créer un ZIP à partir d'un répertoire avec succès")
     void shouldCreateZipFromDirectorySuccessfully() throws IOException {
         String directoryPath = "test/directory";
         List<String> files = Arrays.asList(
@@ -71,7 +71,7 @@ class ZipServiceImplTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should return empty ZIP when no files in directory")
+    @DisplayName("Doit retourner un ZIP vide quand aucun fichier dans le répertoire")
     void shouldReturnEmptyZipWhenNoFilesInDirectory() {
         String directoryPath = "test/empty";
         when(fileStorage.listFiles("test/empty/")).thenReturn(List.of());
@@ -86,7 +86,7 @@ class ZipServiceImplTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should handle directory with only directory marker")
+    @DisplayName("Doit gérer un répertoire avec seulement le marqueur de répertoire")
     void shouldHandleDirectoryWithOnlyDirectoryMarker() throws IOException {
         String directoryPath = "test/directory";
         List<String> files = List.of("test/directory/.directory");
@@ -107,7 +107,7 @@ class ZipServiceImplTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should throw exception when file listing fails")
+    @DisplayName("Doit lancer une exception quand la liste des fichiers échoue")
     void shouldThrowExceptionWhenFileListingFails() {
         String directoryPath = "test/directory";
         when(fileStorage.listFiles("test/directory/"))
@@ -119,7 +119,7 @@ class ZipServiceImplTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should throw exception when file download fails")
+    @DisplayName("Doit lancer une exception quand le téléchargement de fichier échoue")
     void shouldThrowExceptionWhenFileDownloadFails() {
         String directoryPath = "test/directory";
         List<String> files = List.of("test/directory/file1.txt");
@@ -134,7 +134,7 @@ class ZipServiceImplTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should upload zipped directory successfully")
+    @DisplayName("Doit uploader un répertoire zippé avec succès")
     void shouldUploadZippedDirectorySuccessfully() {
         String directoryPath = "test/directory";
         String zipFileName = "test-archive";
@@ -153,7 +153,7 @@ class ZipServiceImplTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should add .zip extension if not present")
+    @DisplayName("Doit ajouter l'extension .zip si elle n'est pas présente")
     void shouldAddZipExtensionIfNotPresent() {
         String directoryPath = "test/directory";
         String zipFileName = "test-archive";
@@ -168,7 +168,7 @@ class ZipServiceImplTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should not add .zip extension if already present")
+    @DisplayName("Ne doit pas ajouter l'extension .zip si elle est déjà présente")
     void shouldNotAddZipExtensionIfAlreadyPresent() {
         String directoryPath = "test/directory";
         String zipFileName = "test-archive.zip";
@@ -183,7 +183,7 @@ class ZipServiceImplTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should clean filename with special characters")
+    @DisplayName("Doit nettoyer les noms de fichiers avec des caractères spéciaux")
     void shouldCleanFilenameWithSpecialCharacters() {
         String directoryPath = "test/directory";
         String zipFileName = "test@#$%archive.zip";
@@ -198,7 +198,7 @@ class ZipServiceImplTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should throw exception when upload fails")
+    @DisplayName("Doit lancer une exception quand l'upload échoue")
     void shouldThrowExceptionWhenUploadFails() {
         String directoryPath = "test/directory";
         String zipFileName = "test-archive";
@@ -212,7 +212,7 @@ class ZipServiceImplTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should handle nested directory structure")
+    @DisplayName("Doit gérer une structure de répertoire imbriquée")
     void shouldHandleNestedDirectoryStructure() throws IOException {
         String directoryPath = "test/directory";
         List<String> files = Arrays.asList(
@@ -240,7 +240,7 @@ class ZipServiceImplTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should handle empty directory path")
+    @DisplayName("Doit gérer un chemin de répertoire vide")
     void shouldHandleEmptyDirectoryPath() {
         String directoryPath = "";
         when(fileStorage.listFiles("")).thenReturn(List.of("file.txt"));
@@ -254,7 +254,7 @@ class ZipServiceImplTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should handle null directory path")
+    @DisplayName("Doit gérer un chemin de répertoire null")
     void shouldHandleNullDirectoryPath() {
         String directoryPath = null;
         when(fileStorage.listFiles("")).thenReturn(List.of("file.txt"));

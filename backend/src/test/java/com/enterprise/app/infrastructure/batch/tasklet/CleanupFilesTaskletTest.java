@@ -2,6 +2,7 @@ package com.enterprise.app.infrastructure.batch.tasklet;
 
 import com.enterprise.app.domain.storage.FileWorkflowManager;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -58,6 +59,7 @@ class CleanupFilesTaskletTest {
     }
 
     @Test
+    @DisplayName("Doit nettoyer les fichiers avec succès")
     void execute_ShouldCleanupFilesSuccessfully() throws Exception {
         // Given
         String jobId = "test-job-id-123";
@@ -71,6 +73,7 @@ class CleanupFilesTaskletTest {
     }
 
     @Test
+    @DisplayName("Doit lancer une exception quand l'ID du job est manquant")
     void execute_ShouldThrowException_WhenJobIdIsMissing() {
         // Given
         executionContext.remove("fileJobId");
@@ -86,6 +89,7 @@ class CleanupFilesTaskletTest {
     }
 
     @Test
+    @DisplayName("Doit gérer l'exception du FileWorkflowManager")
     void execute_ShouldHandleFileWorkflowManagerException() {
         // Given
         String jobId = "test-job-id-123";
@@ -104,6 +108,7 @@ class CleanupFilesTaskletTest {
     }
 
     @Test
+    @DisplayName("Doit gérer gracieusement l'absence de clés uploadées")
     void execute_ShouldHandleMissingUploadedKeysGracefully() throws Exception {
         // Given
         String jobId = "test-job-id-123";
@@ -119,6 +124,7 @@ class CleanupFilesTaskletTest {
     }
 
     @Test
+    @DisplayName("Doit logger les clés uploadées")
     void execute_ShouldLogUploadedKeys() throws Exception {
         // Given
         String jobId = "test-job-id-123";
@@ -137,6 +143,7 @@ class CleanupFilesTaskletTest {
     }
 
     @Test
+    @DisplayName("Doit gérer un ID de job null dans le contexte")
     void execute_ShouldHandleNullJobIdInContext() {
         // Given
         executionContext.putString("fileJobId", null);
@@ -152,6 +159,7 @@ class CleanupFilesTaskletTest {
     }
 
     @Test
+    @DisplayName("Doit gérer des clés uploadées vides")
     void execute_ShouldHandleEmptyUploadedKeys() throws Exception {
         // Given
         String jobId = "test-job-id-123";

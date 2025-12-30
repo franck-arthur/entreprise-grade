@@ -3,6 +3,7 @@ package com.enterprise.app.application.service;
 import com.enterprise.app.domain.storage.*;
 import com.enterprise.app.testing.config.BaseUnitTest;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
@@ -56,6 +57,7 @@ class EnhancedStorageServiceWorkflowTest extends BaseUnitTest {
     }
 
     @Test
+    @DisplayName("Doit créer un job de fichiers avec des fichiers vides")
     void shouldCreateFileJobWithEmptyFiles() {
         // Given
         String projectName = "test-project";
@@ -80,6 +82,7 @@ class EnhancedStorageServiceWorkflowTest extends BaseUnitTest {
     }
 
     @Test
+    @DisplayName("Doit vérifier si les fichiers du job sont prêts")
     void shouldCheckIfJobFilesAreReady() {
         // Given
         String jobId = "job-123";
@@ -94,6 +97,7 @@ class EnhancedStorageServiceWorkflowTest extends BaseUnitTest {
     }
 
     @Test
+    @DisplayName("Doit uploader les fichiers du job vers S3")
     void shouldUploadJobFilesToS3() {
         // Given
         String jobId = "job-123";
@@ -110,6 +114,7 @@ class EnhancedStorageServiceWorkflowTest extends BaseUnitTest {
     }
 
     @Test
+    @DisplayName("Doit nettoyer les fichiers locaux du job")
     void shouldCleanupJobLocalFiles() {
         // Given
         String jobId = "job-123";
@@ -122,6 +127,7 @@ class EnhancedStorageServiceWorkflowTest extends BaseUnitTest {
     }
 
     @Test
+    @DisplayName("Doit traiter le workflow complet")
     void shouldProcessCompleteWorkflow() {
         // Given
         String jobId = "job-123";
@@ -138,6 +144,7 @@ class EnhancedStorageServiceWorkflowTest extends BaseUnitTest {
     }
 
     @Test
+    @DisplayName("Doit récupérer les informations du job")
     void shouldGetJobInfo() {
         // Given
         String jobId = "job-123";
@@ -160,6 +167,7 @@ class EnhancedStorageServiceWorkflowTest extends BaseUnitTest {
     }
 
     @Test
+    @DisplayName("Doit supprimer un job")
     void shouldDeleteJob() {
         // Given
         String jobId = "job-123";
@@ -172,6 +180,7 @@ class EnhancedStorageServiceWorkflowTest extends BaseUnitTest {
     }
 
     @Test
+    @DisplayName("Doit lister les jobs actifs")
     void shouldListActiveJobs() {
         // Given
         List<FileWorkflowManager.FileJob> expectedJobs = List.of(
@@ -202,6 +211,7 @@ class EnhancedStorageServiceWorkflowTest extends BaseUnitTest {
     }
 
     @Test
+    @DisplayName("Doit récupérer le répertoire de travail temporaire")
     void shouldGetTempWorkingDirectory() {
         // Given
         Path tempDir = Paths.get("/tmp/enterprise-app");
@@ -216,6 +226,7 @@ class EnhancedStorageServiceWorkflowTest extends BaseUnitTest {
     }
 
     @Test
+    @DisplayName("Doit gérer l'exception lors de la création du job de fichiers")
     void shouldHandleExceptionInCreateFileJob() {
         // Given
         String projectName = "test-project";
@@ -231,6 +242,7 @@ class EnhancedStorageServiceWorkflowTest extends BaseUnitTest {
     }
 
     @Test
+    @DisplayName("Doit gérer l'exception lors de l'upload des fichiers vers S3")
     void shouldHandleExceptionInUploadFilesToS3() {
         // Given
         String jobId = "job-123";
@@ -245,6 +257,7 @@ class EnhancedStorageServiceWorkflowTest extends BaseUnitTest {
     }
 
     @Test
+    @DisplayName("Doit gérer l'exception lors du nettoyage des fichiers locaux")
     void shouldHandleExceptionInCleanupLocalFiles() {
         // Given
         String jobId = "job-123";
@@ -259,6 +272,7 @@ class EnhancedStorageServiceWorkflowTest extends BaseUnitTest {
     }
 
     @Test
+    @DisplayName("Doit gérer l'exception lors du traitement du workflow complet")
     void shouldHandleExceptionInProcessCompleteWorkflow() {
         // Given
         String jobId = "job-123";
@@ -273,6 +287,7 @@ class EnhancedStorageServiceWorkflowTest extends BaseUnitTest {
     }
 
     @Test
+    @DisplayName("Doit gérer l'exception lors de la suppression du job")
     void shouldHandleExceptionInDeleteJob() {
         // Given
         String jobId = "job-123";

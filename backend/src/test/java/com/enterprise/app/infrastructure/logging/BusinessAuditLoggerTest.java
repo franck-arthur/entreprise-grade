@@ -5,6 +5,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedStatic;
@@ -23,6 +24,7 @@ import static org.mockito.Mockito.*;
  * Tests pour BusinessAuditLogger utilisant Mockito.
  * Utilise une approche hybride : ListAppender pour capturer les logs + Mockito pour mocker MDC.
  */
+@DisplayName("Tests unitaires pour BusinessAuditLogger")
 @ExtendWith(MockitoExtension.class)
 class BusinessAuditLoggerTest {
 
@@ -55,6 +57,7 @@ class BusinessAuditLoggerTest {
     }
 
     @Test
+    @DisplayName("Doit logger l'action métier avec le bon format")
     void shouldLogBusinessActionWithCorrectFormat() {
         String userId = "USER123";
         String username = "john.doe";
@@ -90,6 +93,7 @@ class BusinessAuditLoggerTest {
     }
 
     @Test
+    @DisplayName("Doit logger l'action métier avec des valeurs null")
     void shouldLogBusinessActionWithNullValues() {
         // Mock MDC get pour sessionId
         mockedMDC.when(() -> MDC.get("sessionId")).thenReturn("test-session-id");
@@ -116,6 +120,7 @@ class BusinessAuditLoggerTest {
     }
 
     @Test
+    @DisplayName("Doit logger un événement de sécurité réussi")
     void shouldLogSecurityEventSuccess() {
         String eventType = "LOGIN_SUCCESS";
         String username = "admin.user";
@@ -146,6 +151,7 @@ class BusinessAuditLoggerTest {
     }
 
     @Test
+    @DisplayName("Doit logger un événement de sécurité échoué")
     void shouldLogSecurityEventFailure() {
         String eventType = "LOGIN_FAILED";
         String username = "invalid.user";
@@ -169,6 +175,7 @@ class BusinessAuditLoggerTest {
     }
 
     @Test
+    @DisplayName("Doit logger un processus métier avec des métadonnées")
     void shouldLogBusinessProcessWithMetadata() {
         String processType = "BATCH_IMPORT";
         String processId = "BATCH_001";
@@ -209,6 +216,7 @@ class BusinessAuditLoggerTest {
     }
 
     @Test
+    @DisplayName("Doit logger un processus métier avec des métadonnées null")
     void shouldLogBusinessProcessWithNullMetadata() {
         businessAuditLogger.logBusinessProcess("USER_EXPORT", "EXP_002", "STARTED", "user123", null);
 
@@ -224,6 +232,7 @@ class BusinessAuditLoggerTest {
     }
 
     @Test
+    @DisplayName("Doit logger un processus métier avec des métadonnées vides")
     void shouldLogBusinessProcessWithEmptyMetadata() {
         Map<String, Object> emptyMetadata = new HashMap<>();
 
@@ -240,6 +249,7 @@ class BusinessAuditLoggerTest {
     }
 
     @Test
+    @DisplayName("Doit logger une erreur métier")
     void shouldLogBusinessError() {
         String errorType = "VALIDATION_ERROR";
         String context = "Formation Creation";
@@ -268,6 +278,7 @@ class BusinessAuditLoggerTest {
     }
 
     @Test
+    @DisplayName("Doit logger un événement métier personnalisé")
     void shouldLogCustomBusinessEvent() {
         String eventType = "REPORT_GENERATED";
         Map<String, Object> context = new HashMap<>();
@@ -305,6 +316,7 @@ class BusinessAuditLoggerTest {
     }
 
     @Test
+    @DisplayName("Doit logger un événement métier personnalisé avec contexte null")
     void shouldLogCustomBusinessEventWithNullContext() {
         businessAuditLogger.logCustomBusinessEvent("SYSTEM_STARTUP", null);
 
@@ -320,6 +332,7 @@ class BusinessAuditLoggerTest {
     }
 
     @Test
+    @DisplayName("Doit logger un événement métier personnalisé avec contexte vide")
     void shouldLogCustomBusinessEventWithEmptyContext() {
         Map<String, Object> emptyContext = new HashMap<>();
 
@@ -337,6 +350,7 @@ class BusinessAuditLoggerTest {
     }
 
     @Test
+    @DisplayName("Doit nettoyer MDC après chaque log")
     void shouldClearMDCAfterEachLog() {
         // Mock MDC get pour sessionId
         mockedMDC.when(() -> MDC.get("sessionId")).thenReturn("test-session-id");
@@ -358,6 +372,7 @@ class BusinessAuditLoggerTest {
     }
 
     @Test
+    @DisplayName("Doit générer un sessionId quand absent du MDC")
     void shouldGenerateSessionIdWhenNotInMDC() {
         // MDC est vide au départ - retourne null
         mockedMDC.when(() -> MDC.get("sessionId")).thenReturn(null);
@@ -371,6 +386,7 @@ class BusinessAuditLoggerTest {
     }
 
     @Test
+    @DisplayName("Doit utiliser le sessionId existant du MDC")
     void shouldUseExistingSessionIdFromMDC() {
         String existingSessionId = "existing-session-123";
         // Mock MDC get pour retourner le sessionId existant

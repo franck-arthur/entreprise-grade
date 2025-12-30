@@ -1,5 +1,6 @@
 package com.enterprise.app.domain.model;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -10,6 +11,7 @@ import static org.assertj.core.api.Assertions.*;
 class FormationTest {
 
     @Test
+    @DisplayName("Doit retourner le statut A_VENIR quand la formation est dans le futur")
     void getStatut_ShouldReturnAVenir_WhenFormationIsInFuture() {
         // Given
         Formation formation = Formation.builder()
@@ -26,6 +28,7 @@ class FormationTest {
     }
 
     @Test
+    @DisplayName("Doit retourner le statut TERMINEE quand la formation est dans le passé")
     void getStatut_ShouldReturnTerminee_WhenFormationIsInPast() {
         // Given
         Formation formation = Formation.builder()
@@ -42,6 +45,7 @@ class FormationTest {
     }
 
     @Test
+    @DisplayName("Doit retourner le statut EN_COURS quand la formation est en cours")
     void getStatut_ShouldReturnEnCours_WhenFormationIsOngoing() {
         // Given - Formation today with extended hours to ensure it's ongoing
         Formation formation = Formation.builder()
@@ -58,6 +62,7 @@ class FormationTest {
     }
 
     @Test
+    @DisplayName("Doit retourner vrai pour accepter inscription quand la formation est à venir et non complète")
     void peutAccepterInscription_ShouldReturnTrue_WhenFormationIsAVenirAndNotComplete() {
         // Given
         Formation formation = Formation.builder()
@@ -74,6 +79,7 @@ class FormationTest {
     }
 
     @Test
+    @DisplayName("Doit retourner la date et heure de début correctes")
     void getDateDebutFormation_ShouldReturnCorrectDateTime() {
         // Given
         LocalDate date = LocalDate.of(2024, 1, 15);
@@ -92,6 +98,7 @@ class FormationTest {
     }
 
     @Test
+    @DisplayName("Doit retourner la date et heure de fin correctes")
     void getDateFinFormation_ShouldReturnCorrectDateTime() {
         // Given
         LocalDate date = LocalDate.of(2024, 1, 15);

@@ -55,6 +55,15 @@ spring:
       repositories:
         enabled: false
 
+  # Spring Batch configuration
+  batch:
+    # Tables Spring Batch dans le schéma principal
+    jdbc:
+      initialize-schema: always
+    job:
+      # Ne pas exécuter les jobs au démarrage
+      enabled: false
+
 # Server configuration
 server:
   port: 8080
@@ -155,6 +164,31 @@ app:
   pagination:
     default-page-size: 20
     max-page-size: 100
+
+  # CSV Export configuration
+  csv-export:
+    # Répertoire par défaut pour les exports CSV
+    default-output-directory: ${CSV_EXPORT_OUTPUT_DIR:/tmp/csv-exports}
+
+    # Configuration du scheduler automatique
+    scheduler:
+      enabled: ${CSV_EXPORT_SCHEDULER_ENABLED:true}
+      test-export:
+        enabled: ${CSV_EXPORT_TEST_ENABLED:false}
+
+    # Monitoring des exports
+    monitoring:
+      enabled: ${CSV_EXPORT_MONITORING_ENABLED:true}
+      max-duration-hours: 4
+      alert-duration-hours: 1
+
+    # Configuration des performances
+    performance:
+      chunk-size: ${CSV_EXPORT_CHUNK_SIZE:500}
+      fetch-size: ${CSV_EXPORT_FETCH_SIZE:1000}
+      excel-chunk-size: ${EXCEL_IMPORT_CHUNK_SIZE:50}
+
+# Spring Batch configuration (fusionné dans la section spring principale)
 
 # Resilience4j
 resilience4j:

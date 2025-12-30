@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-@DisplayName("S3DirectoryManager Tests")
+@DisplayName("Tests S3DirectoryManager")
 class S3DirectoryManagerTest extends BaseUnitTest {
 
     @Mock
@@ -32,7 +32,7 @@ class S3DirectoryManagerTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should create directory successfully")
+    @DisplayName("Doit créer un répertoire avec succès")
     void shouldCreateDirectorySuccessfully() {
         String directoryPath = "test/directory";
         when(fileStorage.uploadFile(any(InputStream.class), eq("test/directory/.directory"),
@@ -47,7 +47,7 @@ class S3DirectoryManagerTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should create directory with trailing slash")
+    @DisplayName("Doit créer un répertoire avec un slash de fin")
     void shouldCreateDirectoryWithTrailingSlash() {
         String directoryPath = "test/directory/";
         when(fileStorage.uploadFile(any(InputStream.class), eq("test/directory/.directory"),
@@ -62,7 +62,7 @@ class S3DirectoryManagerTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should handle empty directory path")
+    @DisplayName("Doit gérer un chemin de répertoire vide")
     void shouldHandleEmptyDirectoryPath() {
         String directoryPath = "";
         when(fileStorage.uploadFile(any(InputStream.class), eq(".directory"),
@@ -77,7 +77,7 @@ class S3DirectoryManagerTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should throw exception when create directory fails")
+    @DisplayName("Doit lancer une exception quand la création du répertoire échoue")
     void shouldThrowExceptionWhenCreateDirectoryFails() {
         String directoryPath = "test/directory";
         when(fileStorage.uploadFile(any(InputStream.class), anyString(), anyString(), anyLong()))
@@ -89,7 +89,7 @@ class S3DirectoryManagerTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should add file to directory successfully")
+    @DisplayName("Doit ajouter un fichier au répertoire avec succès")
     void shouldAddFileToDirectorySuccessfully() {
         String directoryPath = "test/directory";
         String fileName = "test.txt";
@@ -108,7 +108,7 @@ class S3DirectoryManagerTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should throw exception when add file to directory fails")
+    @DisplayName("Doit lancer une exception quand l'ajout de fichier au répertoire échoue")
     void shouldThrowExceptionWhenAddFileToDirectoryFails() {
         String directoryPath = "test/directory";
         String fileName = "test.txt";
@@ -124,7 +124,7 @@ class S3DirectoryManagerTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should add multiple files to directory successfully")
+    @DisplayName("Doit ajouter plusieurs fichiers au répertoire avec succès")
     void shouldAddMultipleFilesToDirectorySuccessfully() {
         String directoryPath = "test/directory";
         Map<String, FileData> files = Map.of(
@@ -142,7 +142,7 @@ class S3DirectoryManagerTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should check if directory exists")
+    @DisplayName("Doit vérifier si le répertoire existe")
     void shouldCheckIfDirectoryExists() {
         String directoryPath = "test/directory";
         when(fileStorage.fileExists("test/directory/.directory")).thenReturn(true);
@@ -154,7 +154,7 @@ class S3DirectoryManagerTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should return false when directory does not exist")
+    @DisplayName("Doit retourner faux quand le répertoire n'existe pas")
     void shouldReturnFalseWhenDirectoryDoesNotExist() {
         String directoryPath = "test/directory";
         when(fileStorage.fileExists("test/directory/.directory")).thenReturn(false);
@@ -165,7 +165,7 @@ class S3DirectoryManagerTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should delete directory successfully")
+    @DisplayName("Doit supprimer un répertoire avec succès")
     void shouldDeleteDirectorySuccessfully() {
         String directoryPath = "test/directory";
         List<String> files = List.of(
@@ -185,7 +185,7 @@ class S3DirectoryManagerTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should throw exception when delete directory fails")
+    @DisplayName("Doit lancer une exception quand la suppression du répertoire échoue")
     void shouldThrowExceptionWhenDeleteDirectoryFails() {
         String directoryPath = "test/directory";
         when(fileStorage.listFiles("test/directory/"))
@@ -197,7 +197,7 @@ class S3DirectoryManagerTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should normalize directory paths correctly")
+    @DisplayName("Doit normaliser les chemins de répertoire correctement")
     void shouldNormalizeDirectoryPathsCorrectly() {
         // Test with backslashes
         String windowsPath = "test\\directory\\subdirectory";
@@ -213,7 +213,7 @@ class S3DirectoryManagerTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should handle null directory path")
+    @DisplayName("Doit gérer un chemin de répertoire null")
     void shouldHandleNullDirectoryPath() {
         when(fileStorage.uploadFile(any(InputStream.class), eq(".directory"),
                                   eq("application/directory"), eq(0L)))

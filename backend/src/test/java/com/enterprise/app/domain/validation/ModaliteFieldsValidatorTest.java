@@ -5,6 +5,7 @@ import com.enterprise.app.domain.model.ModaliteFormation;
 import com.enterprise.app.testing.fixtures.FormationFixtures;
 import jakarta.validation.ConstraintValidatorContext;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -15,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@DisplayName("Tests unitaires pour ModaliteFieldsValidator")
 @ExtendWith(MockitoExtension.class)
 class ModaliteFieldsValidatorTest {
 
@@ -39,12 +41,14 @@ class ModaliteFieldsValidatorTest {
     }
 
     @Test
+    @DisplayName("Doit retourner vrai quand l'objet est null")
     void shouldReturnTrueForNullObject() {
         boolean result = validator.isValid(null, context);
         assertThat(result).isTrue();
     }
 
     @Test
+    @DisplayName("Doit retourner vrai quand la modalité est null")
     void shouldReturnTrueForNullModalite() {
         CreateFormationRequest request = FormationFixtures.createDefaultFormationRequest().toBuilder()
             .modalite(null)
@@ -56,6 +60,7 @@ class ModaliteFieldsValidatorTest {
     }
 
     @Test
+    @DisplayName("Doit valider une formation présentielle avec des champs valides")
     void shouldValidatePresentielFormationWithValidFields() {
         CreateFormationRequest request = FormationFixtures.createDefaultFormationRequest();
 
@@ -67,6 +72,7 @@ class ModaliteFieldsValidatorTest {
     }
 
     @Test
+    @DisplayName("Doit rejeter une formation présentielle sans ville")
     void shouldRejectPresentielFormationWithoutVille() {
         CreateFormationRequest request = FormationFixtures.createDefaultFormationRequest()
             .toBuilder()
@@ -83,6 +89,7 @@ class ModaliteFieldsValidatorTest {
     }
 
     @Test
+    @DisplayName("Doit rejeter une formation présentielle avec une ville vide")
     void shouldRejectPresentielFormationWithEmptyVille() {
         CreateFormationRequest request = FormationFixtures.createDefaultFormationRequest()
             .toBuilder()
@@ -97,6 +104,7 @@ class ModaliteFieldsValidatorTest {
     }
 
     @Test
+    @DisplayName("Doit rejeter une formation présentielle avec une ville contenant uniquement des espaces")
     void shouldRejectPresentielFormationWithBlankVille() {
         CreateFormationRequest request = FormationFixtures.createDefaultFormationRequest()
             .toBuilder()
@@ -111,6 +119,7 @@ class ModaliteFieldsValidatorTest {
     }
 
     @Test
+    @DisplayName("Doit rejeter une formation présentielle sans lieu")
     void shouldRejectPresentielFormationWithoutLieu() {
         CreateFormationRequest request = FormationFixtures.createDefaultFormationRequest()
             .toBuilder()
@@ -127,6 +136,7 @@ class ModaliteFieldsValidatorTest {
     }
 
     @Test
+    @DisplayName("Doit rejeter une formation présentielle avec un lieu vide")
     void shouldRejectPresentielFormationWithEmptyLieu() {
         CreateFormationRequest request = FormationFixtures.createDefaultFormationRequest()
             .toBuilder()
@@ -141,6 +151,7 @@ class ModaliteFieldsValidatorTest {
     }
 
     @Test
+    @DisplayName("Doit rejeter une formation présentielle avec un lieu contenant uniquement des espaces")
     void shouldRejectPresentielFormationWithBlankLieu() {
         CreateFormationRequest request = CreateFormationRequest.builder()
             .modalite(ModaliteFormation.PRESENTIEL)
@@ -156,6 +167,7 @@ class ModaliteFieldsValidatorTest {
     }
 
     @Test
+    @DisplayName("Doit rejeter une formation présentielle sans lieu ni ville")
     void shouldRejectPresentielFormationWithoutLieuAndVille() {
         CreateFormationRequest request = FormationFixtures.createDefaultFormationRequest()
             .toBuilder()
@@ -174,6 +186,7 @@ class ModaliteFieldsValidatorTest {
     }
 
     @Test
+    @DisplayName("Doit valider une formation en ligne avec un lien de participation valide")
     void shouldValidateOnlineFormationWithValidLienParticipation() {
         CreateFormationRequest request = createDefaultFormationEnLigneRequest();
 
@@ -185,6 +198,7 @@ class ModaliteFieldsValidatorTest {
     }
 
     @Test
+    @DisplayName("Doit rejeter une formation en ligne sans lien de participation")
     void shouldRejectOnlineFormationWithoutLienParticipation() {
         CreateFormationRequest request = createDefaultFormationEnLigneRequest().toBuilder()
             .lienParticipation(null)
@@ -200,6 +214,7 @@ class ModaliteFieldsValidatorTest {
     }
 
     @Test
+    @DisplayName("Doit rejeter une formation en ligne avec un lien de participation vide")
     void shouldRejectOnlineFormationWithEmptyLienParticipation() {
         CreateFormationRequest request = createDefaultFormationEnLigneRequest().toBuilder()
             .lienParticipation("")
@@ -213,6 +228,7 @@ class ModaliteFieldsValidatorTest {
     }
 
     @Test
+    @DisplayName("Doit rejeter une formation en ligne avec un lien de participation contenant uniquement des espaces")
     void shouldRejectOnlineFormationWithBlankLienParticipation() {
         CreateFormationRequest request = createDefaultFormationEnLigneRequest().toBuilder()
                 .lienParticipation("  ")
@@ -226,6 +242,7 @@ class ModaliteFieldsValidatorTest {
     }
 
     @Test
+    @DisplayName("Doit valider une formation en ligne avec des champs supplémentaires")
     void shouldValidateOnlineFormationWithExtraFields() {
         // Test d'une formation en ligne avec des champs de présentiel (qui seront ignorés)
         CreateFormationRequest request = createDefaultFormationEnLigneRequest().toBuilder()

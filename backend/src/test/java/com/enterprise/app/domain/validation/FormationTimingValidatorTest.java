@@ -1,10 +1,9 @@
 package com.enterprise.app.domain.validation;
 
 import com.enterprise.app.application.dto.CreateFormationRequest;
-import com.enterprise.app.application.dto.UpdateFormationRequest;
-import com.enterprise.app.domain.model.ModaliteFormation;
 import jakarta.validation.ConstraintValidatorContext;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -17,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@DisplayName("Tests unitaires pour FormationTimingValidator")
 @ExtendWith(MockitoExtension.class)
 class FormationTimingValidatorTest {
 
@@ -41,12 +41,14 @@ class FormationTimingValidatorTest {
     }
 
     @Test
+    @DisplayName("Doit retourner vrai quand l'objet est null")
     void shouldReturnTrueForNullObject() {
         boolean result = validator.isValid(null, context);
         assertThat(result).isTrue();
     }
 
     @Test
+    @DisplayName("Doit retourner vrai quand les heures sont null")
     void shouldReturnTrueForNullHeures() {
         CreateFormationRequest request = createDefaultFormationEnLigneRequest().toBuilder()
                 .heureDebut(null)
@@ -59,6 +61,7 @@ class FormationTimingValidatorTest {
     }
 
     @Test
+    @DisplayName("Doit retourner vrai quand l'heure de début est null")
     void shouldReturnTrueForNullHeureDebut() {
         CreateFormationRequest request = createDefaultFormationEnLigneRequest().toBuilder()
                 .heureDebut(null)
@@ -70,6 +73,7 @@ class FormationTimingValidatorTest {
     }
 
     @Test
+    @DisplayName("Doit retourner vrai quand l'heure de fin est null")
     void shouldReturnTrueForNullHeureFin() {
         CreateFormationRequest request = createDefaultFormationEnLigneRequest().toBuilder()
                 .heureFin(null)
@@ -81,6 +85,7 @@ class FormationTimingValidatorTest {
     }
 
     @Test
+    @DisplayName("Doit valider correctement un horaire valide")
     void shouldValidateValidTiming() {
         CreateFormationRequest request = createDefaultFormationEnLigneRequest();
 
@@ -93,6 +98,7 @@ class FormationTimingValidatorTest {
     }
 
     @Test
+    @DisplayName("Doit rejeter un horaire qui traverse minuit")
     void shouldValidateTimingAcrossMidnight() {
         CreateFormationRequest request = createDefaultFormationEnLigneRequest().toBuilder()
                 .heureDebut(LocalTime.of(23, 0))
@@ -109,6 +115,7 @@ class FormationTimingValidatorTest {
     }
 
     @Test
+    @DisplayName("Doit rejeter quand les heures de début et fin sont identiques")
     void shouldRejectSameTime() {
         CreateFormationRequest request = createDefaultFormationEnLigneRequest().toBuilder()
                 .heureDebut(LocalTime.of(9, 0))
@@ -125,6 +132,7 @@ class FormationTimingValidatorTest {
     }
 
     @Test
+    @DisplayName("Doit rejeter quand l'heure de fin est antérieure à l'heure de début")
     void shouldRejectHeureFinBeforeHeureDebut() {
         CreateFormationRequest request = createDefaultFormationEnLigneRequest().toBuilder()
                 .heureDebut(LocalTime.of(17, 0))
@@ -141,6 +149,7 @@ class FormationTimingValidatorTest {
     }
 
     @Test
+    @DisplayName("Doit gérer les erreurs de réflexion gracieusement")
     void shouldReturnFalseOnReflectionError() {
         // Test avec un objet qui n'a pas les champs requis
         // Le validator retourne true car les champs sont null, ce qui est géré par les autres validations

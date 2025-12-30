@@ -39,7 +39,7 @@ import static org.testcontainers.containers.localstack.LocalStackContainer.Servi
 
 @SpringBootTest
 @Testcontainers
-@DisplayName("EnhancedStorageService Integration Tests")
+@DisplayName("Tests d'intégration EnhancedStorageService")
 class EnhancedStorageServiceIntegrationTest {
 
     @Container
@@ -86,7 +86,7 @@ class EnhancedStorageServiceIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should create directory with multiple files successfully")
+    @DisplayName("Doit créer un répertoire avec plusieurs fichiers avec succès")
     void shouldCreateDirectoryWithMultipleFilesSuccessfully() {
         String projectName = "integration-test-project";
         MockMultipartFile file1 = new MockMultipartFile(
@@ -117,7 +117,7 @@ class EnhancedStorageServiceIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should create, populate, and zip directory in one operation")
+    @DisplayName("Doit créer, remplir et zipper un répertoire en une seule opération")
     void shouldCreatePopulateAndZipDirectoryInOneOperation() throws IOException {
         String projectName = "zip-integration-project";
         String zipFileName = "complete-project-archive";
@@ -155,7 +155,7 @@ class EnhancedStorageServiceIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should add files to existing directory")
+    @DisplayName("Doit ajouter des fichiers à un répertoire existant")
     void shouldAddFilesToExistingDirectory() throws IOException {
         String projectName = "expandable-project";
         MockMultipartFile initialFile = new MockMultipartFile(
@@ -179,7 +179,7 @@ class EnhancedStorageServiceIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should create ZIP from existing directory")
+    @DisplayName("Doit créer un ZIP à partir d'un répertoire existant")
     void shouldCreateZipFromExistingDirectory() throws IOException {
         String projectName = "existing-project";
         MockMultipartFile file1 = new MockMultipartFile(
@@ -221,7 +221,7 @@ class EnhancedStorageServiceIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should upload single file with folder organization")
+    @DisplayName("Doit uploader un fichier unique avec organisation par dossier")
     void shouldUploadSingleFileWithFolderOrganization() throws IOException {
         MockMultipartFile singleFile = new MockMultipartFile(
                 "single", "document.pdf", "application/pdf", "PDF content".getBytes());
@@ -239,7 +239,7 @@ class EnhancedStorageServiceIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should handle complete workflow - create, add, zip, delete")
+    @DisplayName("Doit gérer un workflow complet - créer, ajouter, zipper, supprimer")
     void shouldHandleCompleteWorkflow() throws IOException {
         String projectName = "workflow-test-project";
 
@@ -274,7 +274,7 @@ class EnhancedStorageServiceIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should handle special characters in filenames")
+    @DisplayName("Doit gérer les caractères spéciaux dans les noms de fichiers")
     void shouldHandleSpecialCharactersInFilenames() throws IOException {
         String projectName = "special-chars-project";
         MockMultipartFile fileWithSpecialName = new MockMultipartFile(
@@ -299,7 +299,7 @@ class EnhancedStorageServiceIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should throw exception when adding to non-existent directory")
+    @DisplayName("Doit lancer une exception lors de l'ajout à un répertoire inexistant")
     void shouldThrowExceptionWhenAddingToNonExistentDirectory() {
         String nonExistentPath = "projects/2024/12/27/non-existent-directory";
         MockMultipartFile file = new MockMultipartFile(
@@ -312,7 +312,7 @@ class EnhancedStorageServiceIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should handle empty file uploads")
+    @DisplayName("Doit gérer les uploads de fichiers vides")
     void shouldHandleEmptyFileUploads() {
         String projectName = "empty-files-project";
         MockMultipartFile emptyFile = new MockMultipartFile(
@@ -325,7 +325,7 @@ class EnhancedStorageServiceIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should generate unique directory paths for same project name")
+    @DisplayName("Doit générer des chemins de répertoire uniques pour le même nom de projet")
     void shouldGenerateUniqueDirectoryPathsForSameProjectName() {
         String projectName = "duplicate-name-project";
         MockMultipartFile file = new MockMultipartFile(

@@ -57,7 +57,7 @@ class TechnicalLoggingAspectTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should log method entry and exit when annotation is present")
+    @DisplayName("Doit logger l'entrée et la sortie de méthode quand l'annotation est présente")
     void shouldLogMethodEntryAndExit() throws Throwable {
         // Given
         setupBasicJoinPoint();
@@ -90,7 +90,7 @@ class TechnicalLoggingAspectTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should log error when method throws exception")
+    @DisplayName("Doit logger l'erreur quand la méthode lève une exception")
     void shouldLogErrorWhenMethodThrowsException() throws Throwable {
         // Given
         setupBasicJoinPoint();
@@ -115,7 +115,7 @@ class TechnicalLoggingAspectTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should mask sensitive parameters")
+    @DisplayName("Doit masquer les paramètres sensibles")
     void shouldMaskSensitiveParameters() throws Throwable {
         // Given
         setupJoinPointWithSensitiveParams();
@@ -135,7 +135,7 @@ class TechnicalLoggingAspectTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should not mask sensitive parameters when disabled")
+    @DisplayName("Doit ne pas masquer les paramètres sensibles quand désactivé")
     void shouldNotMaskSensitiveParametersWhenDisabled() throws Throwable {
         // Given
         setupJoinPointWithSensitiveParams();
@@ -154,7 +154,7 @@ class TechnicalLoggingAspectTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should not log when SpEL condition is false")
+    @DisplayName("Doit ne pas logger quand la condition SpEL est fausse")
     void shouldNotLogWhenSpelConditionIsFalse() throws Throwable {
         // Given
         when(technicalLogging.condition()).thenReturn("#args.length > 5");
@@ -171,7 +171,7 @@ class TechnicalLoggingAspectTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should handle invalid SpEL condition gracefully")
+    @DisplayName("Doit gérer gracieusement les conditions SpEL invalides")
     void shouldHandleInvalidSpelConditionGracefully() throws Throwable {
         // Given
         setupBasicJoinPoint();
@@ -193,7 +193,7 @@ class TechnicalLoggingAspectTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should not log when level is OFF")
+    @DisplayName("Doit ne pas logger quand le niveau est OFF")
     void shouldNotLogWhenLevelIsOff() throws Throwable {
         // Given
         when(technicalLogging.entryLevel()).thenReturn(TechnicalLogging.LogLevel.OFF);
@@ -210,7 +210,7 @@ class TechnicalLoggingAspectTest extends BaseUnitTest {
     }
 
     @Test
-    @DisplayName("Should set and clear MDC context")
+    @DisplayName("Doit définir et nettoyer le contexte MDC")
     void shouldSetAndClearMdcContext() throws Throwable {
         // Given
         setupBasicJoinPoint();

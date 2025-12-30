@@ -62,6 +62,7 @@ logging:
   level:
     root: WARN
     com.enterprise.app: INFO
+    com.enterprise.app.infrastructure.logging: DEBUG
     org.springframework: WARN
     org.hibernate: WARN
 
