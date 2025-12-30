@@ -749,6 +749,96 @@ class TechnicalLoggingAspectTest extends BaseUnitTest {
         assertThat(logMessage).contains("arg1=params");
     }
 
+    @Test
+    @DisplayName("Doit utiliser l'annotation au niveau méthode quand elle est présente")
+    void shouldUseMethodLevelAnnotation() throws Throwable {
+        // Given
+        TestClassWithMethodAnnotation testInstance = new TestClassWithMethodAnnotation();
+        when(joinPoint.getTarget()).thenReturn(testInstance);
+        when(joinPoint.getSignature()).thenReturn(methodSignature);
+        when(methodSignature.getDeclaringType()).thenReturn((Class<?>) TestClassWithMethodAnnotation.class);
+        when(methodSignature.getName()).thenReturn("methodWithCustomAnnotation");
+        when(joinPoint.getArgs()).thenReturn(new Object[]{"test"});
+        when(joinPoint.proceed()).thenReturn("result");
+
+        // When - Passer l'annotation réelle de la méthode
+        TechnicalLogging methodAnnotation = TestClassWithMethodAnnotation.class
+            .getMethod("methodWithCustomAnnotation", String.class)
+            .getAnnotation(TechnicalLogging.class);
+
+        Object result = aspect.logMethodExecution(joinPoint, methodAnnotation);
+
+        // Then
+        assertThat(result).isEqualTo("result");
+        verify(joinPoint).proceed();
+
+        // Vérifier que l'annotation méthode est utilisée (INFO level au lieu de DEBUG)
+        assertThat(logAppender.list).hasSize(2); // entry + exit
+        assertThat(logAppender.list.get(0).getLevel()).isEqualTo(Level.INFO); // entryLevel = INFO
+        assertThat(logAppender.list.get(1).getLevel()).isEqualTo(Level.WARN); // exitLevel = WARN
+    }
+
+    @Test
+    @DisplayName("Doit prioritiser l'annotation méthode sur l'annotation classe")
+    void shouldPrioritizeMethodAnnotationOverClassAnnotation() throws Throwable {
+        // Given
+        when(joinPoint.getSignature()).thenReturn(methodSignature);
+        when(methodSignature.getDeclaringType()).thenReturn((Class<?>) TestClassWithBothAnnotations.class);
+        when(methodSignature.getName()).thenReturn("methodWithSpecificAnnotation");
+        when(joinPoint.getArgs()).thenReturn(new Object[]{});
+        when(joinPoint.proceed()).thenReturn("result");
+
+        // Set logger level to TRACE to capture all logs
+        logger.setLevel(Level.TRACE);
+
+        // When - Passer l'annotation de la méthode
+        TechnicalLogging methodAnnotation = TestClassWithBothAnnotations.class
+            .getMethod("methodWithSpecificAnnotation")
+            .getAnnotation(TechnicalLogging.class);
+
+        Object result = aspect.logMethodExecution(joinPoint, methodAnnotation);
+
+        // Then
+        assertThat(result).isEqualTo("result");
+        verify(joinPoint).proceed();
+
+        // Vérifier que c'est bien l'annotation méthode qui est utilisée (TRACE au lieu de DEBUG de la classe)
+        assertThat(logAppender.list).hasSize(2);
+        assertThat(logAppender.list.get(0).getLevel()).isEqualTo(Level.TRACE);
+        assertThat(logAppender.list.get(0).getFormattedMessage()).contains("[METHOD]"); // prefix de la méthode
+    }
+
+    @Test
+    @DisplayName("Doit logger une méthode avec annotation personnalisée sans arguments")
+    void shouldLogMethodWithCustomAnnotationNoArgs() throws Throwable {
+        // Given
+        TestClassWithMethodAnnotation testInstance = new TestClassWithMethodAnnotation();
+        when(joinPoint.getTarget()).thenReturn(testInstance);
+        when(joinPoint.getSignature()).thenReturn(methodSignature);
+        when(methodSignature.getDeclaringType()).thenReturn((Class<?>) TestClassWithMethodAnnotation.class);
+        when(methodSignature.getName()).thenReturn("methodWithNoArgsLogging");
+        when(joinPoint.getArgs()).thenReturn(new Object[]{});
+        when(joinPoint.proceed()).thenReturn("no args result");
+
+        // When
+        TechnicalLogging methodAnnotation = TestClassWithMethodAnnotation.class
+            .getMethod("methodWithNoArgsLogging")
+            .getAnnotation(TechnicalLogging.class);
+
+        Object result = aspect.logMethodExecution(joinPoint, methodAnnotation);
+
+        // Then
+        assertThat(result).isEqualTo("no args result");
+        verify(joinPoint).proceed();
+
+        // Vérifier les propriétés spécifiques de cette annotation
+        assertThat(logAppender.list).hasSize(1); // Seulement entry car exitLevel = OFF
+        ILoggingEvent entryLog = logAppender.list.get(0);
+        assertThat(entryLog.getLevel()).isEqualTo(Level.DEBUG);
+        assertThat(entryLog.getFormattedMessage()).contains("()"); // includeArgs=false donc pas d'args affichés
+        assertThat(entryLog.getFormattedMessage()).doesNotContain("→"); // pas de temps d'exécution
+    }
+
     private String extractCorrelationId(ILoggingEvent logEvent) {
         String message = logEvent.getFormattedMessage();
         int startIndex = message.indexOf("[") + 1;
@@ -840,6 +930,52 @@ class TechnicalLoggingAspectTest extends BaseUnitTest {
     public static class TestClassWithAnnotation {
         public String testMethod() {
             return "result";
+        }
+    }
+
+    // Classe avec annotations au niveau méthode
+    public static class TestClassWithMethodAnnotation {
+
+        @TechnicalLogging(
+            entryLevel = TechnicalLogging.LogLevel.INFO,
+            exitLevel = TechnicalLogging.LogLevel.WARN,
+            includeResult = true,
+            includeExecutionTime = true
+        )
+        public String methodWithCustomAnnotation(String param) {
+            return "result";
+        }
+
+        @TechnicalLogging(
+            entryLevel = TechnicalLogging.LogLevel.DEBUG,
+            exitLevel = TechnicalLogging.LogLevel.OFF,
+            includeArgs = false,
+            includeExecutionTime = false
+        )
+        public String methodWithNoArgsLogging() {
+            return "result";
+        }
+    }
+
+    // Classe avec annotation à la fois sur la classe et sur une méthode
+    @TechnicalLogging(
+        entryLevel = TechnicalLogging.LogLevel.DEBUG,
+        exitLevel = TechnicalLogging.LogLevel.DEBUG,
+        prefix = "[CLASS]"
+    )
+    public static class TestClassWithBothAnnotations {
+
+        public String normalMethod() {
+            return "result from class annotation";
+        }
+
+        @TechnicalLogging(
+            entryLevel = TechnicalLogging.LogLevel.TRACE,
+            exitLevel = TechnicalLogging.LogLevel.TRACE,
+            prefix = "[METHOD]"
+        )
+        public String methodWithSpecificAnnotation() {
+            return "result from method annotation";
         }
     }
 }
